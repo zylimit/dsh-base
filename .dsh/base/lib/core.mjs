@@ -289,6 +289,11 @@ export function canonicalDiff ({ staged = false } = {}) {
   if (!isGitRepo()) return null
   const args = ['-c', 'core.quotePath=false', 'diff', '--no-color', '--no-ext-diff', '--unified=3']
   if (staged) args.push('--cached')
+  // The default identity is the whole working tree against HEAD, staged and
+  // unstaged alike. A bare `git diff` sees only unstaged content, so a fully
+  // staged change would hash as "nothing changed" and a receipt would bind
+  // nothing. On an unborn branch there is no HEAD to compare against.
+  else if (headCommit()) args.push('HEAD')
   const tracked = git(args).stdout
   const u = git(['-c', 'core.quotePath=false', 'ls-files', '-z', '--others', '--exclude-standard'])
   const extras = []

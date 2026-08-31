@@ -137,3 +137,27 @@ test('a waiver naming a protected concern cannot be expressed', () => {
   assert.equal(validateWaiver({ ...base, reason: 'temporary', scope: 'privacy-scan' }).ok, false)
   assert.equal(validateWaiver({ ...base, reason: 'sandbox unavailable, tracked in ISSUE-42', scope: 'lint' }).ok, true)
 })
+test('REQ-OPS-001 a staged change is part of the identity a receipt binds', () => {
+  const dir = tempDir('staged')
+  try {
+    const run = initRepo(dir)
+    fs.writeFileSync(path.join(dir, 'a.txt'), 'one\ntwo\n')
+    run(['add', '-A'])
+
+    const empty = dsb(['diff-hash'], { cwd: dir })
+    const clean = dsb(['diff-hash'], { cwd: dir })
+    assert.equal(empty.code, 0)
+
+    const payload = JSON.stringify({ taskId: 'T-2', reviewer: 'tester', verdict: 'ACCEPT', scope: 'a.txt' })
+    assert.equal(dsb(['receipt', 'write'], { cwd: dir, input: payload }).code, 0)
+    assert.equal(dsb(['receipt', 'verify'], { cwd: dir }).code, 0)
+
+    // A staged change must not hash as "nothing changed": unstaging it changes
+    // the identity, which proves the staged content was part of it.
+    run(['reset', '-q', 'HEAD', 'a.txt'])
+    fs.writeFileSync(path.join(dir, 'a.txt'), 'one\n')
+    const after = dsb(['receipt', 'verify'], { cwd: dir })
+    assert.equal(after.code, 4, 'reverting the reviewed content must stale the receipt')
+    assert.notEqual(clean.json.diffHash, after.json.currentDiffHash)
+  } finally { rmDir(dir) }
+})

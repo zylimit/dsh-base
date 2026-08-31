@@ -16,6 +16,7 @@ import {
   readJson, readText, writeJsonAtomic, writeAtomic, listFiles, rel, abs, exists,
   sha256, sha256Lf, nowIso, diffHash, headCommit, changedPaths, git, isGitRepo,
 } from './core.mjs'
+
 import { resolveVerification } from './graph.mjs'
 
 export const STATUS = Object.freeze({ PASS: 'PASS', FAIL: 'FAIL', BLOCKED: 'BLOCKED', SKIPPED: 'SKIPPED' })
@@ -394,9 +395,12 @@ export function verifyReceipts () {
 export function assessBudget (catalog, impact, { staged = false } = {}) {
   const b = catalog.budget || {}
   const changed = changedPaths({ staged }).paths
-  const diffStat = isGitRepo()
-    ? git(['diff', '--numstat', ...(staged ? ['--cached'] : [])]).stdout
-    : ''
+  // Same rule as the canonical diff: the default view is the whole working tree
+  // against HEAD, so a staged change is counted rather than reported as zero.
+  const statArgs = ['diff', '--numstat']
+  if (staged) statArgs.push('--cached')
+  else if (headCommit()) statArgs.push('HEAD')
+  const diffStat = isGitRepo() ? git(statArgs).stdout : ''
   let added = 0, removed = 0
   for (const line of diffStat.split('\n')) {
     const m = /^(\d+)\s+(\d+)\s+/.exec(line)
