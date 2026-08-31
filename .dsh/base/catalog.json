@@ -1,0 +1,574 @@
+{
+  "version": 1,
+  "project": {
+    "name": "deepseek-base",
+    "scaleTier": "M"
+  },
+  "maxTrackedPaths": 200000,
+  "layers": [
+    "doctrine",
+    "tooling",
+    "app",
+    "capability",
+    "platform"
+  ],
+  "global": [
+    "package.json",
+    ".gitignore",
+    ".gitattributes",
+    ".editorconfig",
+    ".dsh/base/catalog.json",
+    ".dsh/base/.gitignore",
+    "FRAMEWORK-MANIFEST.json",
+    "cordis.patch.yml"
+  ],
+  "ignored": [
+    {
+      "path": "README.md",
+      "reason": "human-facing entry point; changes no behaviour and is covered by manifest integrity"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "reason": "release narrative; not an input to any check"
+    },
+    {
+      "path": "LICENSE",
+      "reason": "legal text; changing it is a HIGH-tier human decision, not a code path"
+    },
+    {
+      "path": "progress.md",
+      "reason": "project memory ledger; mutated by every session and would fan out every gate"
+    },
+    {
+      "path": "progress.archive.md",
+      "reason": "archived project memory"
+    },
+    {
+      "path": ".dsh/base/catalog.example.json",
+      "reason": "adoption template, never loaded by the engine"
+    },
+    {
+      "path": ".dsh/base/adapters.json",
+      "reason": "external-tool reference table, read by humans"
+    },
+    {
+      "path": ".dsh/base/fitness-rules.json",
+      "reason": "optional project rule extension; absent by default"
+    },
+    {
+      "path": ".dsh/base/trend/**",
+      "reason": "architecture-debt ledger; append-only measurement, not source"
+    },
+    {
+      "path": ".dsh/base/README.md",
+      "reason": "engine directory guide"
+    }
+  ],
+  "riskChecks": {
+    "low": [
+      "syntax"
+    ],
+    "medium": [
+      "syntax",
+      "selftest"
+    ],
+    "high": [
+      "syntax",
+      "selftest",
+      "unit",
+      "fitness"
+    ],
+    "critical": [
+      "syntax",
+      "selftest",
+      "unit",
+      "fitness",
+      "secrets"
+    ]
+  },
+  "checks": {
+    "syntax": {
+      "command": "node scripts/check-syntax.mjs",
+      "class": "structure",
+      "attributes": [
+        "reliability"
+      ],
+      "allowFastSkip": false
+    },
+    "selftest": {
+      "command": "node .dsh/base/dsb.mjs selftest",
+      "class": "test",
+      "attributes": [
+        "reliability",
+        "maintainability"
+      ]
+    },
+    "unit": {
+      "command": "node --test \"tests/*.test.mjs\"",
+      "class": "test",
+      "attributes": [
+        "reliability"
+      ]
+    },
+    "catalog": {
+      "command": "node .dsh/base/dsb.mjs catalog-lint",
+      "class": "structure",
+      "attributes": [
+        "maintainability"
+      ]
+    },
+    "skills": {
+      "command": "node .dsh/base/dsb.mjs skills-lint",
+      "class": "structure",
+      "attributes": [
+        "maintainability"
+      ]
+    },
+    "agents": {
+      "command": "node .dsh/base/dsb.mjs agents-lint",
+      "class": "structure",
+      "attributes": [
+        "maintainability"
+      ]
+    },
+    "arch": {
+      "command": "node .dsh/base/dsb.mjs arch-check",
+      "class": "structure",
+      "attributes": [
+        "maintainability"
+      ]
+    },
+    "adr": {
+      "command": "node .dsh/base/dsb.mjs adr-check",
+      "class": "review",
+      "attributes": [
+        "maintainability"
+      ]
+    },
+    "spec": {
+      "command": "node .dsh/base/dsb.mjs spec-lint",
+      "class": "structure",
+      "attributes": [
+        "maintainability"
+      ]
+    },
+    "trace": {
+      "command": "node .dsh/base/dsb.mjs trace",
+      "class": "test",
+      "attributes": [
+        "reliability"
+      ]
+    },
+    "fitness": {
+      "command": "node .dsh/base/dsb.mjs fitness --all",
+      "class": "security",
+      "attributes": [
+        "security",
+        "privacy",
+        "safety",
+        "resilience",
+        "reliability"
+      ]
+    },
+    "secrets": {
+      "command": "node scripts/scan-secrets.mjs",
+      "class": "security",
+      "attributes": [
+        "security",
+        "privacy"
+      ]
+    },
+    "manifest": {
+      "command": "node scripts/manifest.mjs --check",
+      "class": "security",
+      "attributes": [
+        "security",
+        "maintainability"
+      ]
+    }
+  },
+  "contextPack": {
+    "maxTotalChars": 120000,
+    "maxFiles": 40,
+    "maxFileChars": 6000,
+    "maxDiffChars": 40000
+  },
+  "budget": {
+    "maxChangedFiles": 40,
+    "maxChangedLines": 2000,
+    "maxModulesTouched": 4,
+    "maxNewFiles": 30
+  },
+  "trace": {
+    "requirementDirs": [
+      "docs/requirements",
+      "docs/security",
+      "docs/safety"
+    ],
+    "testGlobs": [
+      "tests/**",
+      "**/*.test.mjs",
+      "**/*.test.js"
+    ],
+    "minCoverage": 1
+  },
+  "adr": {
+    "dir": "docs/adr"
+  },
+  "agentsMd": {
+    "requireForRiskTiers": [
+      "high",
+      "critical"
+    ],
+    "maxBytes": 12000
+  },
+  "modules": [
+    {
+      "id": "engine-core",
+      "paths": [
+        ".dsh/base/lib/core.mjs",
+        ".dsh/base/lib/AGENTS.md"
+      ],
+      "layer": "platform",
+      "owners": [
+        "@maintainers"
+      ],
+      "riskTier": "high",
+      "dependsOn": [],
+      "forbiddenDependencies": [
+        "engine-graph",
+        "engine-quality",
+        "engine-scan",
+        "engine-context",
+        "engine-selftest",
+        "engine-cli"
+      ],
+      "attributes": {
+        "reliability": "high",
+        "maintainability": "high"
+      },
+      "verification": [
+        "syntax",
+        "selftest",
+        "unit",
+        "arch"
+      ]
+    },
+    {
+      "id": "engine-graph",
+      "paths": [
+        ".dsh/base/lib/graph.mjs"
+      ],
+      "layer": "capability",
+      "owners": [
+        "@maintainers"
+      ],
+      "riskTier": "high",
+      "dependsOn": [
+        "engine-core"
+      ],
+      "forbiddenDependencies": [
+        "engine-quality",
+        "engine-scan",
+        "engine-context",
+        "engine-selftest",
+        "engine-cli"
+      ],
+      "attributes": {
+        "reliability": "high",
+        "maintainability": "high"
+      },
+      "verification": [
+        "syntax",
+        "selftest",
+        "unit",
+        "arch"
+      ]
+    },
+    {
+      "id": "engine-quality",
+      "paths": [
+        ".dsh/base/lib/quality.mjs"
+      ],
+      "layer": "capability",
+      "owners": [
+        "@maintainers"
+      ],
+      "riskTier": "high",
+      "dependsOn": [
+        "engine-core",
+        "engine-graph"
+      ],
+      "forbiddenDependencies": [
+        "engine-scan",
+        "engine-context",
+        "engine-selftest",
+        "engine-cli"
+      ],
+      "attributes": {
+        "security": "high",
+        "reliability": "high",
+        "maintainability": "high"
+      },
+      "verification": [
+        "syntax",
+        "selftest",
+        "unit",
+        "fitness",
+        "arch"
+      ]
+    },
+    {
+      "id": "engine-scan",
+      "paths": [
+        ".dsh/base/lib/scan.mjs"
+      ],
+      "layer": "capability",
+      "owners": [
+        "@maintainers"
+      ],
+      "riskTier": "high",
+      "dependsOn": [
+        "engine-core"
+      ],
+      "forbiddenDependencies": [
+        "engine-quality",
+        "engine-context",
+        "engine-selftest",
+        "engine-cli"
+      ],
+      "attributes": {
+        "security": "high",
+        "privacy": "high",
+        "reliability": "high"
+      },
+      "verification": [
+        "syntax",
+        "selftest",
+        "unit",
+        "fitness",
+        "secrets",
+        "arch"
+      ]
+    },
+    {
+      "id": "engine-context",
+      "paths": [
+        ".dsh/base/lib/context.mjs"
+      ],
+      "layer": "capability",
+      "owners": [
+        "@maintainers"
+      ],
+      "riskTier": "critical",
+      "dependsOn": [
+        "engine-core",
+        "engine-graph",
+        "engine-quality"
+      ],
+      "forbiddenDependencies": [
+        "engine-selftest",
+        "engine-cli"
+      ],
+      "attributes": {
+        "security": "critical",
+        "privacy": "high",
+        "reliability": "high"
+      },
+      "attributeReasons": {},
+      "verification": [
+        "syntax",
+        "selftest",
+        "unit",
+        "fitness",
+        "secrets",
+        "arch"
+      ]
+    },
+    {
+      "id": "engine-selftest",
+      "paths": [
+        ".dsh/base/lib/selftest.mjs"
+      ],
+      "layer": "app",
+      "owners": [
+        "@maintainers"
+      ],
+      "riskTier": "medium",
+      "dependsOn": [
+        "engine-core",
+        "engine-graph",
+        "engine-quality",
+        "engine-scan",
+        "engine-context"
+      ],
+      "forbiddenDependencies": [
+        "engine-cli"
+      ],
+      "attributes": {
+        "reliability": "critical"
+      },
+      "verification": [
+        "syntax",
+        "selftest"
+      ]
+    },
+    {
+      "id": "engine-cli",
+      "paths": [
+        ".dsh/base/dsb.mjs",
+        ".dsh/base/AGENTS.md"
+      ],
+      "layer": "app",
+      "owners": [
+        "@maintainers"
+      ],
+      "riskTier": "high",
+      "dependsOn": [
+        "engine-core",
+        "engine-graph",
+        "engine-quality",
+        "engine-scan",
+        "engine-context",
+        "engine-selftest"
+      ],
+      "attributes": {
+        "security": "high",
+        "reliability": "high"
+      },
+      "verification": [
+        "syntax",
+        "selftest",
+        "unit",
+        "fitness",
+        "arch"
+      ]
+    },
+    {
+      "id": "doctrine-skills",
+      "paths": [
+        ".dsh/skills/**"
+      ],
+      "layer": "doctrine",
+      "owners": [
+        "@maintainers"
+      ],
+      "riskTier": "medium",
+      "attributes": {
+        "maintainability": "high"
+      },
+      "verification": [
+        "skills",
+        "fitness"
+      ]
+    },
+    {
+      "id": "doctrine-workflows",
+      "paths": [
+        ".dsh/workflows/**"
+      ],
+      "layer": "doctrine",
+      "owners": [
+        "@maintainers"
+      ],
+      "riskTier": "low",
+      "attributes": {
+        "maintainability": "medium"
+      },
+      "verification": [
+        "syntax",
+        "fitness"
+      ]
+    },
+    {
+      "id": "doctrine-templates",
+      "paths": [
+        ".dsh/templates/**"
+      ],
+      "layer": "doctrine",
+      "owners": [
+        "@maintainers"
+      ],
+      "riskTier": "low",
+      "attributes": {
+        "maintainability": "medium"
+      },
+      "verification": [
+        "fitness"
+      ]
+    },
+    {
+      "id": "doctrine-docs",
+      "paths": [
+        "docs/**",
+        "AGENTS.md"
+      ],
+      "layer": "doctrine",
+      "owners": [
+        "@maintainers"
+      ],
+      "riskTier": "medium",
+      "attributes": {
+        "maintainability": "high"
+      },
+      "verification": [
+        "spec",
+        "adr",
+        "trace",
+        "agents",
+        "catalog"
+      ]
+    },
+    {
+      "id": "tooling",
+      "paths": [
+        "scripts/**",
+        "setup.ps1",
+        "setup.sh",
+        ".dsh/base/githooks/**",
+        ".github/**"
+      ],
+      "layer": "tooling",
+      "owners": [
+        "@maintainers"
+      ],
+      "riskTier": "high",
+      "attributes": {
+        "security": "high",
+        "maintainability": "medium"
+      },
+      "verification": [
+        "syntax",
+        "secrets",
+        "fitness",
+        "manifest"
+      ]
+    },
+    {
+      "id": "tests",
+      "paths": [
+        "tests/**"
+      ],
+      "layer": "tooling",
+      "owners": [
+        "@maintainers"
+      ],
+      "riskTier": "medium",
+      "dependsOn": [
+        "engine-core",
+        "engine-graph",
+        "engine-quality",
+        "engine-scan",
+        "engine-context"
+      ],
+      "attributes": {
+        "reliability": "high"
+      },
+      "verification": [
+        "syntax",
+        "unit",
+        "selftest"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+#!/bin/sh
+# deepseek-base :: pre-push
+#
+# Pushing is a HIGH-tier act: it publishes work others will build on.
+# This is the last automated place to refuse unproven work.
+#
+# It runs the static Definition of Done and then the impact-scoped behavioural
+# gate. A degraded result (exit 3) is reported and does not pass silently.
+
+ROOT=$(git rev-parse --show-toplevel) || exit 0
+cd "$ROOT" || exit 0
+
+[ -f .dsh/base/catalog.json ] || exit 0
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "deepseek-base: node was not found on PATH. The pre-push gate was SKIPPED, which is not a pass." >&2
+  exit 0
+fi
+
+echo "deepseek-base: running the Definition of Done ..." >&2
+node .dsh/base/dsb.mjs dod >/dev/null
+DOD=$?
+
+echo "deepseek-base: running the impact-scoped gate ..." >&2
+node .dsh/base/dsb.mjs gate >/dev/null
+GATE=$?
+
+if [ "$DOD" != "0" ] || [ "$GATE" != "0" ]; then
+  echo "" >&2
+  echo "deepseek-base: push blocked. dod exit=$DOD gate exit=$GATE" >&2
+  echo "Run these to see why:" >&2
+  echo "  node .dsh/base/dsb.mjs dod" >&2
+  echo "  node .dsh/base/dsb.mjs gate" >&2
+  echo "Exit 3 means a capability is not configured here - that is a gap, not a pass." >&2
+  exit 1
+fi
+
+echo "deepseek-base: dod and gate both passed." >&2
+exit 0

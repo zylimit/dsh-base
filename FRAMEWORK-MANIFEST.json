@@ -1,0 +1,408 @@
+{
+  "schema": "sha256-lf-v1",
+  "version": "1.0.0",
+  "managedFiles": 80,
+  "digest": "c89505c587f5c3b5fb59ad31babc594e736ea66b791e57b57f7d639cea7aa02d",
+  "files": [
+    {
+      "path": ".dsh/base/adapters.json",
+      "sha256": "764b4c917ff445bc4d27d80728d4b81ffd4669cb9018f21d1f48f25d6e7ccf76",
+      "bytes": 11266
+    },
+    {
+      "path": ".dsh/base/catalog.example.json",
+      "sha256": "4cf91b670840ac0a15edac037f823c3c73a88f492b58976a5ebd19eeabcf18ba",
+      "bytes": 4001
+    },
+    {
+      "path": ".dsh/base/dsb.mjs",
+      "sha256": "52a51a6389725e0a8f79baddb5c2c6e41c1d91b4cf933e2aec905e9f789a44f9",
+      "bytes": 23342
+    },
+    {
+      "path": ".dsh/base/githooks/commit-msg",
+      "sha256": "cdf2f8040f49ebd8379559ef7ee3ca837a09918658296e6a877a4de668b4a4ee",
+      "bytes": 930
+    },
+    {
+      "path": ".dsh/base/githooks/pre-commit",
+      "sha256": "8d8a5426c6506dc0365be29aa38f0fc379063ba476a6ec6cedd1e6a6a1d44dac",
+      "bytes": 1779
+    },
+    {
+      "path": ".dsh/base/githooks/pre-push",
+      "sha256": "b651be5cfe6ff8a855ef5ec30a535309c2c0a8bbb4f5790888cf7cc431c5f637",
+      "bytes": 1236
+    },
+    {
+      "path": ".dsh/base/lib/context.mjs",
+      "sha256": "d1ebddd0ce977a580266952021facfded804ef4ca2696dba4fbc4a65ca42c266",
+      "bytes": 13905
+    },
+    {
+      "path": ".dsh/base/lib/core.mjs",
+      "sha256": "d9de185601f333ed0f7e07d5316e8b14ec33ee39e000e93b11a320c2bd4a23b0",
+      "bytes": 15409
+    },
+    {
+      "path": ".dsh/base/lib/graph.mjs",
+      "sha256": "f91c1b2a5a8bd2d71fa36577b76eb1ad56bc36a88ec314b7568f4d2bf8c0b6a8",
+      "bytes": 19593
+    },
+    {
+      "path": ".dsh/base/lib/quality.mjs",
+      "sha256": "73bc0688787fa4f5c654a55da2978cb71c7bb635fefbdaea632ddfb4e84f8be4",
+      "bytes": 21735
+    },
+    {
+      "path": ".dsh/base/lib/scan.mjs",
+      "sha256": "c4256da9a760c22042f4257e9897e5aaf7a9a196da63879385e50e731aa64b00",
+      "bytes": 32316
+    },
+    {
+      "path": ".dsh/base/lib/selftest.mjs",
+      "sha256": "90ff9998ae63c102d6f3104e890c36d64681c1e9638cafe074f2cf119a22688b",
+      "bytes": 20639
+    },
+    {
+      "path": ".dsh/skills/adversarial-review/SKILL.md",
+      "sha256": "7538678898e598a60d45cb95c2c3d85d91d5142065ad4f522e0db0255638226f",
+      "bytes": 7860
+    },
+    {
+      "path": ".dsh/skills/architecture-design/SKILL.md",
+      "sha256": "8e6212a10916929ea1cbf65925ed55f2a709f478a63ff4103d099121e8b985b3",
+      "bytes": 8079
+    },
+    {
+      "path": ".dsh/skills/architecture-guard/SKILL.md",
+      "sha256": "dc779f27281ce86f645d7b244958a1389312defe048446a8ec68db16dc7c31d4",
+      "bytes": 8115
+    },
+    {
+      "path": ".dsh/skills/context-economy/SKILL.md",
+      "sha256": "d2927a7ace4bbce030ea7505160a732dc7fb6679903249b3ec3ecf1957083bf5",
+      "bytes": 7242
+    },
+    {
+      "path": ".dsh/skills/delegation-protocol/SKILL.md",
+      "sha256": "b3f0e46555e45acbab919da0fc47d48154a5b46d4ef7c229943040343fa1ee53",
+      "bytes": 8159
+    },
+    {
+      "path": ".dsh/skills/dsb-operating-loop/SKILL.md",
+      "sha256": "31484ebf1087fc616bb4f777232eea3dd24c189f69af6dd9c08ddcc87a5bd969",
+      "bytes": 8735
+    },
+    {
+      "path": ".dsh/skills/feedback-and-evolution/SKILL.md",
+      "sha256": "99e497990cc7c27fdbead3943fd8b447cd1cf259f52acf5ec288c419183096b6",
+      "bytes": 7604
+    },
+    {
+      "path": ".dsh/skills/incident-response/SKILL.md",
+      "sha256": "ce7f4ba20a8e3f2f788424561e810e732dcb2f08071f4e6d28df42bcdaf0cb68",
+      "bytes": 7852
+    },
+    {
+      "path": ".dsh/skills/large-repo-navigation/SKILL.md",
+      "sha256": "e6d058e34949a2550b637e60022b8463e66a39f121d2ca084e396b3735bb675c",
+      "bytes": 8741
+    },
+    {
+      "path": ".dsh/skills/privacy-by-design/SKILL.md",
+      "sha256": "2af646b71657299cd79ed45c8d7e76fe3bce45d1219d635b489442234e197f02",
+      "bytes": 8745
+    },
+    {
+      "path": ".dsh/skills/progress-ledger/SKILL.md",
+      "sha256": "c69b29d3c7d72c42a18d876f36ec8f0c962af34fdbca1b8b2adcc5c213889ec4",
+      "bytes": 6630
+    },
+    {
+      "path": ".dsh/skills/release-readiness/SKILL.md",
+      "sha256": "8f088041a3ca18dba5422bdf03c521dd6180d62b53368a2569027e4f0c2d4c4f",
+      "bytes": 6837
+    },
+    {
+      "path": ".dsh/skills/reliability-slo/SKILL.md",
+      "sha256": "a4eac7394a08c3b48c3febbe949af0cf6190c7c57be05817881397296e0993c1",
+      "bytes": 7649
+    },
+    {
+      "path": ".dsh/skills/requirements-elicitation/SKILL.md",
+      "sha256": "5a23f55d74896b90e49c0132e97e486aeaa66d67bcc25104a97f8db06a6b3baf",
+      "bytes": 7899
+    },
+    {
+      "path": ".dsh/skills/resilience-engineering/SKILL.md",
+      "sha256": "7644bc2213768135f63aa5a25dd6010f50db024e78e1077606cf8ad1bc5ce40c",
+      "bytes": 8564
+    },
+    {
+      "path": ".dsh/skills/root-cause-debugging/SKILL.md",
+      "sha256": "1e1b1ef5b1f037877bb2d51f12e01a60b4e81402f4ba10fa9494b9b58233dc54",
+      "bytes": 8563
+    },
+    {
+      "path": ".dsh/skills/safety-analysis/SKILL.md",
+      "sha256": "317fc9b930da6d8cb34b7935d43403e7cfb53ce95a9abb3f169c3d5628de8c35",
+      "bytes": 8444
+    },
+    {
+      "path": ".dsh/skills/scoped-implementation/SKILL.md",
+      "sha256": "e05e3f39ac063cfd1f1959a2d9efd31671819b8a1b611f08dd0b8539e4b3f0b0",
+      "bytes": 6827
+    },
+    {
+      "path": ".dsh/skills/skill-authoring/SKILL.md",
+      "sha256": "197f98a261767e2d51051f50ec05c84f13ad9d9271961e8acdb84be88ecd66fb",
+      "bytes": 7319
+    },
+    {
+      "path": ".dsh/skills/test-strategy/SKILL.md",
+      "sha256": "892fc3f3a118c0ca92c0e95986cd54619becf219a9d7f54d5632523e4d9f260b",
+      "bytes": 7667
+    },
+    {
+      "path": ".dsh/skills/threat-modeling/SKILL.md",
+      "sha256": "42fffec3864f9cb8efd985b150df56fae0b5c01d191545969eb81bec5cea9504",
+      "bytes": 9739
+    },
+    {
+      "path": ".dsh/skills/verification-gate/SKILL.md",
+      "sha256": "805c0753f146568d2e3239b5d32ad830f342cc97a732a2a97b0bd3d408144c98",
+      "bytes": 6579
+    },
+    {
+      "path": ".dsh/skills/work-planning/SKILL.md",
+      "sha256": "c495d06bc780d9f396846cc1288850fa34769098d7de4645c722474dbb89ae8b",
+      "bytes": 6257
+    },
+    {
+      "path": ".dsh/templates/ADR.md",
+      "sha256": "cffb8f6f3de94d0d8182c476de8b9909317c275513466b5fed8dc67bdbc73328",
+      "bytes": 4228
+    },
+    {
+      "path": ".dsh/templates/AGENTS.md",
+      "sha256": "9aa0e499e9a06d184df7f4918e8b596d0263ffe68a421130a7403e1f5df19e33",
+      "bytes": 1517
+    },
+    {
+      "path": ".dsh/templates/ARCHITECTURE.md",
+      "sha256": "3c1608ef4f8908ddaf7c6f6ae7bbc23d1b01d889db7331d13e6b07983b962ef2",
+      "bytes": 6144
+    },
+    {
+      "path": ".dsh/templates/DATA-INVENTORY.md",
+      "sha256": "607b9be268cda9d6ebf78cbc3fdc9124211f452c03a0938ecb1018dae624f1ac",
+      "bytes": 5930
+    },
+    {
+      "path": ".dsh/templates/DEV-PLAN.md",
+      "sha256": "357b14b3e908ee9e2e777a5ab4b17514b103a3513e53190140efa7c720e185b9",
+      "bytes": 5212
+    },
+    {
+      "path": ".dsh/templates/HAZARD-ANALYSIS.md",
+      "sha256": "7ffce7c9f0733b42abcc91b559bf3af4bb3731d53eefe5e0504514217de73170",
+      "bytes": 5784
+    },
+    {
+      "path": ".dsh/templates/MODULE-AGENTS.md",
+      "sha256": "1bfb5f4e9198ecdbcee83aa22481292a60d678892537c06e666ca9c5137d7732",
+      "bytes": 4178
+    },
+    {
+      "path": ".dsh/templates/POSTMORTEM.md",
+      "sha256": "060ad5a7aeb3ee8450acfc5cdd1e3cd720c6b4cf33bfcbf2180e3608a17256ea",
+      "bytes": 5569
+    },
+    {
+      "path": ".dsh/templates/PRODUCT-SPEC-CHANGELOG.md",
+      "sha256": "27241d713de83118381b0db7dd20c4f1f140bfd4e894f196308dc277856bc2f7",
+      "bytes": 2708
+    },
+    {
+      "path": ".dsh/templates/PRODUCT-SPEC.md",
+      "sha256": "23c066a3d7cb29732a64f11bdbc595395fbeb0743038cd516872db21386218ad",
+      "bytes": 6128
+    },
+    {
+      "path": ".dsh/templates/PROGRESS.md",
+      "sha256": "f063bf291194ae24bbe4fcb2e2fea4213bdb9c081ef538f80f902fe76a3ed683",
+      "bytes": 4508
+    },
+    {
+      "path": ".dsh/templates/THREAT-MODEL.md",
+      "sha256": "2f384a8d69b3df7e4f0b43cad1665a8850ebc293642254e876354cfb2a7e8d8b",
+      "bytes": 6056
+    },
+    {
+      "path": ".dsh/workflows/AGENTS.md",
+      "sha256": "96309158e4ffad140bfb7337a0cfdd6ddf9ba4834227c0073c562b51ec1d51be",
+      "bytes": 1825
+    },
+    {
+      "path": ".dsh/workflows/adversarial-review.js",
+      "sha256": "d53b7931e59a2309cb995a8397ba0acbe820918fe8010722fb5c843bca7db1c0",
+      "bytes": 11644
+    },
+    {
+      "path": ".dsh/workflows/module-audit.js",
+      "sha256": "18e6810e99d554933bb9de5a357e8f0a77f6a54f78aa5a917eac71fce6d501aa",
+      "bytes": 9379
+    },
+    {
+      "path": ".dsh/workflows/requirement-trace-audit.js",
+      "sha256": "931a38b68a11bfe7a82cc16a324cde8044a1d2ffdcff1ff3f4053e5a57f66281",
+      "bytes": 8459
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "f26a8197f29a11ba87f671a108246cce9f9997edb17c421c0218b4c290749367",
+      "bytes": 9408
+    },
+    {
+      "path": "docs/ADOPTION.md",
+      "sha256": "fdc04b29e04d0e5f9820ab19f7bd0249f045d5f2bb4ea44b263d79dd4f42e3f9",
+      "bytes": 8582
+    },
+    {
+      "path": "docs/CAPABILITY-MATRIX.md",
+      "sha256": "d3fbc8e7a19d7c98427d98f32e0be59a0a136a9692abd364092ef154f6745091",
+      "bytes": 15029
+    },
+    {
+      "path": "docs/LARGE-REPO-GUIDE.md",
+      "sha256": "3de653352648c5a287fb7415cf8e1da824b3c3d06efdf1cf7df695dce9b42813",
+      "bytes": 13397
+    },
+    {
+      "path": "docs/OPERATING-MODEL.md",
+      "sha256": "86baffc12f4a1e15fd71d8b5984fcf90b507b01e22b0d95bd4948289b689c791",
+      "bytes": 12596
+    },
+    {
+      "path": "docs/PROTOCOLS.md",
+      "sha256": "65c458e129d7b9332c06e684d2b612fce18cb5d7ced4e454df7583fb5c716fff",
+      "bytes": 12426
+    },
+    {
+      "path": "docs/QUALITY-ATTRIBUTES.md",
+      "sha256": "77a8529c4abca774385d10cac73bfeb0d343a04a207542c4f5ea6e9d79a69d44",
+      "bytes": 13215
+    },
+    {
+      "path": "docs/README.md",
+      "sha256": "b7367b838b501f491150dfd4acb8cf54ad108c237283a3569dcad628f94e571c",
+      "bytes": 5027
+    },
+    {
+      "path": "docs/adr/ADR-0001-zero-dependency-engine.md",
+      "sha256": "ffed423cf1eacb8a98ddd87d630f7a2ba67f477994d13dd17b33856dea82cb06",
+      "bytes": 1674
+    },
+    {
+      "path": "docs/adr/ADR-0002-enforcement-lives-in-git-and-ci.md",
+      "sha256": "9fbbf90b8ac5a391795df609b113ff8a7588debdadcf32c3f7c8db117b63120c",
+      "bytes": 1559
+    },
+    {
+      "path": "docs/adr/ADR-0003-catalog-is-the-architecture.md",
+      "sha256": "fce7c14e88fa96c304e2ac3291c3d24550a1c5e0acee85736a09089e81234ac3",
+      "bytes": 1590
+    },
+    {
+      "path": "docs/adr/ADR-0004-missing-evidence-blocks.md",
+      "sha256": "6e7927cdde1a88d90f9428393827e1c5592ce42309e12692aabeb8511c9fcead",
+      "bytes": 1398
+    },
+    {
+      "path": "docs/adr/ADR-0005-protected-attributes.md",
+      "sha256": "dde83ffaeae6880fb7fea5f8894bd14b1d95a03a1677a59f24a4af063a2b0c8f",
+      "bytes": 1494
+    },
+    {
+      "path": "docs/adr/ADR-0006-module-contracts-are-nested-agents-md.md",
+      "sha256": "e1408c7b8d18fd7b77d92310abba5f9ff894e38ca624a5785d6999e3b32c36b2",
+      "bytes": 1598
+    },
+    {
+      "path": "docs/adr/ADR-0007-debt-ratchets-one-way.md",
+      "sha256": "3d3b42bb69af87f84959497ddffa4d0f7b35a26838c4e3bfee690099f08d8a4e",
+      "bytes": 1307
+    },
+    {
+      "path": "docs/adr/ADR-0008-roles-and-commands-are-skills.md",
+      "sha256": "a97fad4b69fd83f29eadfa86976a6069eacbe8d75c5451f0bd9b66367e300e79",
+      "bytes": 1447
+    },
+    {
+      "path": "docs/adr/README.md",
+      "sha256": "4ebb41b118f38d93c5220d97df4fbabcf5e6b245f849eebfa919caae0cbc0357",
+      "bytes": 886
+    },
+    {
+      "path": "docs/nfr/PRIVACY.md",
+      "sha256": "7738fbf0ee55baf3c75db516f376224f11234ea8614b488927c3d589f41095cf",
+      "bytes": 12506
+    },
+    {
+      "path": "docs/nfr/RELIABILITY.md",
+      "sha256": "d8006420e9a2c65dc080cbe0b84839523530ebfdd49ffe901142d8e76d05df38",
+      "bytes": 11588
+    },
+    {
+      "path": "docs/nfr/RESILIENCE.md",
+      "sha256": "adb1f8e204a8aeeb30c2ffaf1cbe731ae2bf5c93c9f5841e6df2b0e2c7d36548",
+      "bytes": 14069
+    },
+    {
+      "path": "docs/nfr/SAFETY.md",
+      "sha256": "494d70c634c1214a52d73578c584074166927803e3fea76ea3f9ba7bb7b5a3c3",
+      "bytes": 11981
+    },
+    {
+      "path": "docs/nfr/SECURITY.md",
+      "sha256": "bf25afdaf8385dddde7c426e919023db89f321aea56881fd5bb1f710a55a22c6",
+      "bytes": 14467
+    },
+    {
+      "path": "docs/requirements/PRODUCT-SPEC-CHANGELOG.md",
+      "sha256": "7f6c0f2250f3506e70e524aa7964a4840a121037881308f1b872d2d2906a9f0a",
+      "bytes": 638
+    },
+    {
+      "path": "docs/requirements/PRODUCT-SPEC.md",
+      "sha256": "bd1f0bd67fa62557bbe0619ad440a4a9e6a5dc00a2ebaf3ed244bbb5b9fb91f9",
+      "bytes": 10937
+    },
+    {
+      "path": "scripts/check-syntax.mjs",
+      "sha256": "fcc18f1ef066a8bf336d0be1c8241ea3af6d1f11814ed420ea40d249f2a5a7ff",
+      "bytes": 1370
+    },
+    {
+      "path": "scripts/manifest.mjs",
+      "sha256": "f6b8865b78494c2071c8cd849c1a37213cadedd3785bb8256f962321217ffa20",
+      "bytes": 3674
+    },
+    {
+      "path": "scripts/scan-secrets.mjs",
+      "sha256": "0efda12a38993a7c0d499e8d2b6a5b2efd9c866bf4db6f56c2bec80172ad4f85",
+      "bytes": 4057
+    },
+    {
+      "path": "setup.ps1",
+      "sha256": "7027d37fda8c6b80d07f99147abbd1529c04f6ab9a9323c844df82b999d97532",
+      "bytes": 3291
+    },
+    {
+      "path": "setup.sh",
+      "sha256": "059c6d2adc77e4bee89048ffc65140c31fbaf517338dff6e0d27752589fed3e9",
+      "bytes": 2648
+    }
+  ]
+}

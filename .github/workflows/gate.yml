@@ -1,0 +1,59 @@
+name: deepseek-base gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [20, 22, 24]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      # The engine must prove itself before it is allowed to judge the repository.
+      - name: Engine self-test
+        run: node .dsh/base/dsb.mjs selftest
+
+      - name: Syntax
+        run: node scripts/check-syntax.mjs
+
+      - name: Secret and provenance audit
+        run: node scripts/scan-secrets.mjs
+
+      - name: Integrity manifest
+        run: node scripts/manifest.mjs --check
+
+      - name: Unit tests
+        run: node --test "tests/*.test.mjs"
+
+      # Static governance: catalog, skills, module contracts, spec, ADRs,
+      # attribute wiring, architecture edges, anti-patterns, traceability.
+      - name: Definition of Done
+        run: node .dsh/base/dsb.mjs dod
+
+      - name: Architecture drift ratchet
+        run: node .dsh/base/dsb.mjs arch-trend --gate
+
+      - name: Decay scan (advisory)
+        continue-on-error: true
+        run: node .dsh/base/dsb.mjs risk
+
+      - name: Doctor (diagnostic)
+        if: always()
+        run: node .dsh/base/dsb.mjs doctor

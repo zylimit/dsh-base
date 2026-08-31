@@ -1,0 +1,58 @@
+#!/bin/sh
+# deepseek-base :: pre-commit
+#
+# The DeepSeek Harness has no hook system, so git is the enforcement seam.
+# This hook runs only fast, static checks. Behavioural proof belongs to pre-push.
+#
+# Degradation is explicit: a missing catalog or a missing node is announced and
+# skipped, never reported as a pass. Bypass with --no-verify is a HIGH-tier act
+# and must be justified to a human.
+
+ROOT=$(git rev-parse --show-toplevel) || exit 0
+cd "$ROOT" || exit 0
+
+[ -f .dsh/base/catalog.json ] || exit 0
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "deepseek-base: node was not found on PATH. Governance checks were SKIPPED, which is not a pass." >&2
+  exit 0
+fi
+
+FAILED=""
+
+run () {
+  LABEL=$1
+  shift
+  if "$@" >/dev/null 2>/tmp/dsb-hook-err.$$; then
+    :
+  else
+    CODE=$?
+    if [ "$CODE" = "3" ]; then
+      echo "deepseek-base: $LABEL degraded (exit 3) - not configured here, not a pass" >&2
+    else
+      echo "deepseek-base: $LABEL FAILED (exit $CODE)" >&2
+      sed -n '1,25p' /tmp/dsb-hook-err.$$ >&2
+      FAILED="$FAILED $LABEL"
+    fi
+  fi
+  rm -f /tmp/dsb-hook-err.$$
+}
+
+run secrets      node scripts/scan-secrets.mjs --staged
+run syntax       node scripts/check-syntax.mjs
+run catalog-lint node .dsh/base/dsb.mjs catalog-lint
+run skills-lint  node .dsh/base/dsb.mjs skills-lint
+run agents-lint  node .dsh/base/dsb.mjs agents-lint
+run fitness      node .dsh/base/dsb.mjs fitness --staged
+
+node .dsh/base/dsb.mjs budget --staged >/dev/null 2>&1 || \
+  echo "deepseek-base: change budget exceeded. Split the change or record an explicit decision." >&2
+
+if [ -n "$FAILED" ]; then
+  echo "" >&2
+  echo "deepseek-base: commit blocked by:$FAILED" >&2
+  echo "Fix the findings, or justify a --no-verify bypass to a human (HIGH tier)." >&2
+  exit 1
+fi
+
+exit 0

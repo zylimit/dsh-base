@@ -1,0 +1,10 @@
+# Engine runtime state. These are local facts about one working tree:
+# evidence, verdicts and caches. They are never committed, never packed into a
+# context bundle, and never used as evidence on another machine.
+state/
+evidence/
+receipts/
+waivers/
+
+# trend/ is deliberately NOT ignored: the architecture-debt ledger is a shared
+# team fact, and the ratchet only works if everyone measures against the same best.

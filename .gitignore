@@ -1,0 +1,14 @@
+# deepseek-base runtime state — evidence and verdicts are local facts, never commits.
+.dsh/base/state/
+.dsh/base/evidence/
+.dsh/base/receipts/
+.dsh/base/waivers/
+
+# The architecture-drift ledger IS committed: it is the team's shared debt baseline.
+# .dsh/base/trend/  <- deliberately NOT ignored
+
+node_modules/
+*.log
+*.tmp
+.DS_Store
+Thumbs.db

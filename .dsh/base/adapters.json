@@ -1,0 +1,277 @@
+{
+  "version": 1,
+  "adapters": [
+    {
+      "id": "sec-semgrep",
+      "tool": "semgrep",
+      "attributes": [
+        "security"
+      ],
+      "class": "security",
+      "command": "semgrep --config p/ci --error",
+      "install": "pipx install semgrep",
+      "limitation": "Matches patterns a rule encodes; it does not prove the absence of the vulnerability class, and silent rule drift looks identical to a clean repository.",
+      "url": "https://semgrep.dev/docs/cli-reference"
+    },
+    {
+      "id": "sec-secrets-gitleaks",
+      "tool": "gitleaks",
+      "attributes": [
+        "security",
+        "privacy"
+      ],
+      "class": "security",
+      "command": "gitleaks detect --no-banner --redact",
+      "install": "download the release binary from GitHub, or 'brew install gitleaks'",
+      "limitation": "Detects credential shapes, not validity: it cannot tell a live secret from a revoked or fabricated one, and it says nothing about whether the processing is lawful.",
+      "url": "https://github.com/gitleaks/gitleaks"
+    },
+    {
+      "id": "sec-secrets-trufflehog",
+      "tool": "trufflehog",
+      "attributes": [
+        "security"
+      ],
+      "class": "security",
+      "command": "trufflehog filesystem . --only-verified --fail",
+      "install": "download the v3 release binary from GitHub",
+      "limitation": "Verification only covers providers with a verifier implemented; an unverifiable or internal credential is reported as unverified or not at all, and history rewriting hides nothing already leaked.",
+      "url": "https://github.com/trufflesecurity/trufflehog"
+    },
+    {
+      "id": "sec-deps-osv",
+      "tool": "osv-scanner",
+      "attributes": [
+        "security"
+      ],
+      "class": "security",
+      "command": "osv-scanner scan source --recursive .",
+      "install": "download the v2 release binary from GitHub, or 'go install github.com/google/osv-scanner/v2/cmd/osv-scanner@latest'",
+      "limitation": "Resolves declared dependencies against published advisories; it is blind to vendored or patched code, to private packages, and to any vulnerability that has no advisory yet.",
+      "url": "https://google.github.io/osv-scanner/"
+    },
+    {
+      "id": "sec-image-trivy",
+      "tool": "trivy",
+      "attributes": [
+        "security"
+      ],
+      "class": "security",
+      "command": "trivy fs --exit-code 1 --severity HIGH,CRITICAL .",
+      "install": "download the release binary from GitHub, or 'brew install trivy'",
+      "limitation": "Depends on feed freshness and on the package metadata inside the image; most base-image findings are not fixable in this repository, so an unfiltered run trains reviewers to ignore it.",
+      "url": "https://trivy.dev/"
+    },
+    {
+      "id": "sec-sbom-syft",
+      "tool": "syft",
+      "attributes": [
+        "security",
+        "maintainability"
+      ],
+      "class": "security",
+      "command": "syft dir:. -o cyclonedx-json=sbom.cdx.json",
+      "install": "download the release binary from GitHub, or 'brew install syft'",
+      "limitation": "Records composition only. An SBOM proves neither vulnerability status nor license compliance, and a component the cataloger cannot parse is simply absent from the list.",
+      "url": "https://github.com/anchore/syft"
+    },
+    {
+      "id": "sec-vuln-grype",
+      "tool": "grype",
+      "attributes": [
+        "security"
+      ],
+      "class": "security",
+      "command": "grype sbom:sbom.cdx.json --fail-on high",
+      "install": "download the release binary from GitHub, or 'brew install grype'",
+      "limitation": "Only as complete as the SBOM it reads and the vulnerability database it last downloaded; it does not decide whether the vulnerable path is reachable from your code.",
+      "url": "https://github.com/anchore/grype"
+    },
+    {
+      "id": "sec-iac-checkov",
+      "tool": "checkov",
+      "attributes": [
+        "security",
+        "resilience"
+      ],
+      "class": "security",
+      "command": "checkov -d . --compact --quiet",
+      "install": "pipx install checkov",
+      "limitation": "Checks declared infrastructure, never deployed state; drift applied after the last plan, and anything provisioned outside these files, is invisible.",
+      "url": "https://www.checkov.io/"
+    },
+    {
+      "id": "sec-python-bandit",
+      "tool": "bandit",
+      "attributes": [
+        "security"
+      ],
+      "class": "security",
+      "command": "bandit -r src -q -ll",
+      "install": "pipx install bandit",
+      "limitation": "Syntactic patterns over Python AST nodes; it has no data-flow model, so it misses tainted input reaching a sink and flags safe constructs that merely look dangerous.",
+      "url": "https://bandit.readthedocs.io/"
+    },
+    {
+      "id": "lint-eslint",
+      "tool": "eslint",
+      "attributes": [
+        "maintainability",
+        "reliability"
+      ],
+      "class": "structure",
+      "command": "eslint . --max-warnings 0",
+      "install": "npm install --save-dev eslint",
+      "limitation": "Enforces the configured rule set on parseable files. It proves style and a narrow class of defects, never that the behaviour is correct, and disabled rules leave no trace in a green run.",
+      "url": "https://eslint.org/docs/latest/use/command-line-interface"
+    },
+    {
+      "id": "lint-ruff",
+      "tool": "ruff",
+      "attributes": [
+        "maintainability"
+      ],
+      "class": "structure",
+      "command": "ruff check .",
+      "install": "pipx install ruff",
+      "limitation": "Fast lexical and AST linting only; it says nothing about runtime behaviour, and a per-file 'noqa' silences a rule where it mattered most.",
+      "url": "https://docs.astral.sh/ruff/"
+    },
+    {
+      "id": "types-mypy",
+      "tool": "mypy",
+      "attributes": [
+        "reliability",
+        "maintainability"
+      ],
+      "class": "structure",
+      "command": "mypy --strict src",
+      "install": "pipx install mypy",
+      "limitation": "Proves internal type consistency of annotated code. Untyped modules, 'Any' at a boundary and runtime data from the network are outside the proof.",
+      "url": "https://mypy.readthedocs.io/"
+    },
+    {
+      "id": "test-pytest",
+      "tool": "pytest",
+      "attributes": [
+        "reliability"
+      ],
+      "class": "test",
+      "command": "pytest -q --maxfail=1",
+      "install": "pipx install pytest",
+      "limitation": "Proves the assertions that were written. A green suite bounds nothing about untested paths, and coverage percentage measures execution, not assertion.",
+      "url": "https://docs.pytest.org/"
+    },
+    {
+      "id": "test-jest",
+      "tool": "jest",
+      "attributes": [
+        "reliability"
+      ],
+      "class": "test",
+      "command": "jest --ci --runInBand",
+      "install": "npm install --save-dev jest",
+      "limitation": "Proves the assertions that were written, under mocks that the same author chose; a mock that drifts from the real dependency keeps passing forever.",
+      "url": "https://jestjs.io/docs/cli"
+    },
+    {
+      "id": "test-vitest",
+      "tool": "vitest",
+      "attributes": [
+        "reliability"
+      ],
+      "class": "test",
+      "command": "vitest run --reporter=dot",
+      "install": "npm install --save-dev vitest",
+      "limitation": "Same bound as any unit runner: the suite proves the asserted behaviour of the code as loaded in the test environment, not the behaviour of the deployed artifact.",
+      "url": "https://vitest.dev/guide/cli.html"
+    },
+    {
+      "id": "mutation-stryker",
+      "tool": "stryker",
+      "attributes": [
+        "reliability"
+      ],
+      "class": "test",
+      "command": "npx stryker run",
+      "install": "npm install --save-dev @stryker-mutator/core",
+      "limitation": "A mutation score measures test strength, not correctness: surviving mutants need triage, equivalent mutants can never be killed, and the run costs orders of magnitude more than the suite it grades.",
+      "url": "https://stryker-mutator.io/docs/stryker-js/introduction/"
+    },
+    {
+      "id": "contract-schemathesis",
+      "tool": "schemathesis",
+      "attributes": [
+        "reliability",
+        "resilience"
+      ],
+      "class": "test",
+      "command": "schemathesis run openapi.json --checks all",
+      "install": "pipx install schemathesis",
+      "limitation": "Only as good as the schema: a wrong-but-well-formed response passes, and conformance to the contract is not business correctness.",
+      "url": "https://schemathesis.readthedocs.io/"
+    },
+    {
+      "id": "perf-k6",
+      "tool": "k6",
+      "attributes": [
+        "performance",
+        "availability"
+      ],
+      "class": "test",
+      "command": "k6 run --vus 50 --duration 10m perf/scenario.js",
+      "install": "download the release binary from GitHub, or 'brew install k6'",
+      "limitation": "Measures saturation in one environment with one dataset. It proves nothing about fault injection, dependency loss, recovery time, or production capacity with cold caches and noisy neighbours.",
+      "url": "https://grafana.com/docs/k6/latest/"
+    },
+    {
+      "id": "perf-locust",
+      "tool": "locust",
+      "attributes": [
+        "performance"
+      ],
+      "class": "test",
+      "command": "locust -f perf/locustfile.py --headless -u 50 -r 5 -t 10m",
+      "install": "pipx install locust",
+      "limitation": "The load shape is whatever the script models; a synthetic arrival pattern that never matches production traffic produces a number nobody can act on.",
+      "url": "https://docs.locust.io/"
+    },
+    {
+      "id": "privacy-presidio",
+      "tool": "presidio",
+      "attributes": [
+        "privacy"
+      ],
+      "class": "privacy",
+      "command": "python scripts/pii-scan.py --path .",
+      "install": "pip install presidio-analyzer presidio-anonymizer, then write the scan entry point; presidio ships as a library and a service, not as a repository scanner",
+      "limitation": "Recall depends on locale and on the entity recognisers enabled; it cannot see personal data assembled at runtime, and it never decides whether the processing has a lawful basis.",
+      "url": "https://microsoft.github.io/presidio/"
+    },
+    {
+      "id": "docs-lychee",
+      "tool": "lychee",
+      "attributes": [
+        "maintainability"
+      ],
+      "class": "structure",
+      "command": "lychee --no-progress docs",
+      "install": "download the release binary from GitHub, or 'cargo install lychee'",
+      "limitation": "Proves that a URL answered at scan time. It cannot see that the page now says something different, and rate limits or offline runs turn into false failures.",
+      "url": "https://lychee.cli.rs/"
+    },
+    {
+      "id": "docker-hadolint",
+      "tool": "hadolint",
+      "attributes": [
+        "security",
+        "maintainability"
+      ],
+      "class": "security",
+      "command": "hadolint Dockerfile",
+      "install": "download the release binary from GitHub, or 'brew install hadolint'",
+      "limitation": "Lints Dockerfile instructions against known rules; it does not inspect the resulting image, its packages, or what the entrypoint actually runs.",
+      "url": "https://github.com/hadolint/hadolint"
+    }
+  ]
+}

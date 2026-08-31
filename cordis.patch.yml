@@ -1,0 +1,43 @@
+# Optional DeepSeek Harness profile patch shipped with this repository.
+#
+# This file is NOT read automatically. A profile's own patch layer lives at
+# $DSH_HOME/profiles/<name>/cordis.patch.yml. To apply this one for a single run:
+#
+#     dsh --profile web --patch ./cordis.patch.yml
+#
+# Before relying on any entry here, confirm that the id it targets exists in the
+# composed tree for your profile:
+#
+#     dsh --profile web --dump-config
+#
+# An id that does not exist in your composition is a no-op or a boot error
+# depending on the loader; verify rather than assume. Every entry below is
+# commented out for exactly that reason: this file documents the seam, it does
+# not silently change your deployment.
+#
+# ---------------------------------------------------------------------------
+# Larger instruction budget for a repository with many nested AGENTS.md files.
+# The shipped code preset sets maxBytes: 65536.
+#
+# - id: agent-instructions
+#   config:
+#     maxBytes: 131072
+#
+# ---------------------------------------------------------------------------
+# Keep more of a long tool result before pruning. Useful when gate output and
+# diffs are routinely larger than the default threshold, at a token cost.
+# The shipped code preset sets thresholdChars 8192 / headChars 4096 / tailChars 1024.
+#
+# - id: tool-result-pruner
+#   config:
+#     thresholdChars: 16384
+#     headChars: 8192
+#     tailChars: 2048
+#
+# ---------------------------------------------------------------------------
+# Raise the fan-out ceiling for repository-wide audits driven by the ralph loop.
+#
+# - id: tool-ralph
+#   config:
+#     maxRounds: 32
+[]

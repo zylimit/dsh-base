@@ -1,0 +1,206 @@
+{
+  "version": 1,
+  "project": {
+    "name": "CHANGE-ME",
+    "scaleTier": "M"
+  },
+  "maxTrackedPaths": 200000,
+  "layers": [
+    "app",
+    "domain",
+    "infra",
+    "platform"
+  ],
+  "global": [
+    "package.json",
+    "tsconfig.json",
+    "go.mod",
+    "pyproject.toml",
+    "Cargo.toml",
+    "pom.xml",
+    ".dsh/base/catalog.json"
+  ],
+  "ignored": [
+    {
+      "path": "README.md",
+      "reason": "human-facing entry point; changes no behaviour"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "reason": "release narrative; not an input to any check"
+    },
+    {
+      "path": "LICENSE",
+      "reason": "legal text; changed only by an explicit human decision"
+    },
+    {
+      "path": "progress.md",
+      "reason": "project memory; mutated every session and would fan out every gate"
+    },
+    {
+      "path": "docs/**",
+      "reason": "prose; governed by spec-lint and adr-check rather than by impact"
+    }
+  ],
+  "riskChecks": {
+    "low": [
+      "lint"
+    ],
+    "medium": [
+      "lint",
+      "unit"
+    ],
+    "high": [
+      "lint",
+      "unit",
+      "sast"
+    ],
+    "critical": [
+      "lint",
+      "unit",
+      "sast",
+      "secrets"
+    ]
+  },
+  "checks": {
+    "lint": {
+      "command": "CHANGE-ME your linter, for example: npm run lint",
+      "class": "lint",
+      "attributes": [
+        "maintainability"
+      ],
+      "allowFastSkip": true
+    },
+    "unit": {
+      "command": "CHANGE-ME your unit tests, for example: npm test",
+      "class": "test",
+      "attributes": [
+        "reliability"
+      ]
+    },
+    "sast": {
+      "command": "CHANGE-ME a static analyser, for example: semgrep --error --config auto",
+      "class": "security",
+      "attributes": [
+        "security"
+      ]
+    },
+    "secrets": {
+      "command": "CHANGE-ME a secret scanner, for example: gitleaks detect --no-banner",
+      "class": "security",
+      "attributes": [
+        "security",
+        "privacy"
+      ]
+    }
+  },
+  "contextPack": {
+    "maxTotalChars": 120000,
+    "maxFiles": 40,
+    "maxFileChars": 6000,
+    "maxDiffChars": 40000
+  },
+  "budget": {
+    "maxChangedFiles": 40,
+    "maxChangedLines": 1500,
+    "maxModulesTouched": 3,
+    "maxNewFiles": 25
+  },
+  "trace": {
+    "requirementDirs": [
+      "docs/requirements"
+    ],
+    "testGlobs": [
+      "**/test/**",
+      "**/tests/**",
+      "**/*.test.*",
+      "**/*_test.*",
+      "**/*.spec.*"
+    ],
+    "minCoverage": 1
+  },
+  "adr": {
+    "dir": "docs/adr"
+  },
+  "agentsMd": {
+    "requireForRiskTiers": [
+      "high",
+      "critical"
+    ],
+    "maxBytes": 12000
+  },
+  "modules": [
+    {
+      "id": "example-api",
+      "paths": [
+        "src/api/**"
+      ],
+      "layer": "domain",
+      "owners": [
+        "@team-api"
+      ],
+      "riskTier": "high",
+      "dependsOn": [
+        "example-store"
+      ],
+      "forbiddenDependencies": [
+        "example-ui"
+      ],
+      "provides": [
+        "@acme/api"
+      ],
+      "attributes": {
+        "security": "critical",
+        "reliability": "high",
+        "privacy": "high"
+      },
+      "verification": [
+        "lint",
+        "unit",
+        "sast",
+        "secrets"
+      ]
+    },
+    {
+      "id": "example-store",
+      "paths": [
+        "src/store/**"
+      ],
+      "layer": "infra",
+      "owners": [
+        "@team-platform"
+      ],
+      "riskTier": "medium",
+      "attributes": {
+        "reliability": "high",
+        "privacy": "high",
+        "safety": "none"
+      },
+      "attributeReasons": {
+        "safety": "persistence layer; actuates nothing physical and dispatches no irreversible action"
+      },
+      "verification": [
+        "lint",
+        "unit",
+        "secrets"
+      ]
+    },
+    {
+      "id": "example-ui",
+      "paths": [
+        "src/ui/**"
+      ],
+      "layer": "app",
+      "owners": [
+        "@team-web"
+      ],
+      "riskTier": "low",
+      "dependsOn": [
+        "example-api"
+      ],
+      "attributes": {
+        "maintainability": "medium"
+      }
+    }
+  ]
+}
