@@ -67,19 +67,33 @@ Nothing. Version 1.0.0 is complete.
 - **Self-governing catalog: 13 modules, 5 layers, forbidden edges.** Evidence:
   `catalog-lint` exits 0 with 0 unmapped paths; `arch-check` exits 0 with 0
   forbidden, 0 layer violations and 0 undeclared edges over 23 real import edges.
-- **23 skills covering the full loop.** Evidence: `skills-lint` exits 0 and reports
-  23 discovered skills with 0 errors.
+- **23 skills, 12 document templates, 3 workflow scripts, 22 tool adapters.**
+  Evidence: `skills-lint` exits 0 with 23 discovered skills and 0 errors;
+  `check-syntax` exits 0 over every tracked JavaScript file including the workflows.
 - **27 requirements at 100 % test traceability.** Evidence: `spec-lint` exits 0
   with 27 requirements and 0 errors; `trace` exits 0 with coverage 1.
 - **8 ADRs, each naming a resolvable enforcement point.** Evidence: `adr-check`
   exits 0 with 8 live ADRs and 0 phantom references.
-- **Two engine defects found by the engine's own tests and fixed.** (1) Fitness
+- **The enforcement seam was proved by attacking it, not by reading it.** Three
+  probe commits were attempted and all three were refused: an unmapped tracked path
+  (`catalog-lint` UNMAPPED), a credential literal inside a mapped module
+  (`scan-secrets.mjs` `generic-assignment` **and** `fitness` `no-secret-literal`,
+  independently), and an unexplained commit subject. Evidence: the pre-commit and
+  commit-msg hooks each returned exit 1 with the finding named.
+- **Four engine defects found by the engine's own tests and fixed.** (1) Fitness
   patterns using an inline `(?m)` flag threw at compile time, so every scan silently
   degraded to exit 3; the compiler now translates leading inline flags and rejects an
   unsupported one loudly. (2) A receipt's own `contentHash` collided with the ledger
   envelope field of the same name, breaking the chain on the first receipt; the
-  receipt hash now travels as `receiptHash`. Evidence: `selftest` 58/58 and
-  `node --test "tests/*.test.mjs"` with the ledger and fitness cases passing.
+  receipt hash now travels as `receiptHash`. (3) `aggregate()` conflated "no
+  affected module" with "affected module resolved zero checks", so a clean tree
+  blocked the gate and `pre-push` could never pass after a commit; the two states
+  are now distinct and `--baseline <ref>` scopes a gate to the range being pushed.
+  (4) `canonicalDiff()` used a bare `git diff`, which sees only unstaged content,
+  so a fully staged change hashed as the empty diff and a receipt written then bound
+  nothing; the default identity is now the whole working tree against HEAD.
+  Evidence: `selftest` 62/62 and `node --test "tests/*.test.mjs"` 40/40, including
+  the ledger, fitness, staged-receipt and no-work cases.
 - **Nested module contracts auto-load.** Evidence: editing files under
   `.dsh/base/lib` during this build caused the harness to inject
   `.dsh/base/lib/AGENTS.md` without any explicit read.
