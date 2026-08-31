@@ -67,7 +67,10 @@ function needGit (command) {
 
 function changedFor (flags) {
   if (flags.paths) return list(flags.paths)
-  return changedPaths({ staged: !!flags.staged }).paths
+  // --baseline <ref> judges the range <ref>..HEAD instead of the working tree,
+  // which is what a push needs: the commits being published, not the desk state.
+  const baseline = typeof flags.baseline === 'string' ? flags.baseline : null
+  return changedPaths({ staged: !!flags.staged, baseline }).paths
 }
 
 // ── commands ────────────────────────────────────────────────────────────────

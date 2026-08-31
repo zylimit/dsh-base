@@ -164,20 +164,25 @@ export function selftest () {
   })
 
   // ── gate aggregation ──────────────────────────────────────────────────────
-  t('gate: an empty plan is BLOCKED, never PASS', () => {
-    eq(aggregate([], { empty: true }).gate, STATUS.BLOCKED)
+  t('gate: an affected module with zero resolved checks is BLOCKED, never PASS', () => {
+    eq(aggregate([], { empty: true, modules: ['api'] }).gate, STATUS.BLOCKED)
+  })
+  t('gate: no affected module means nothing to prove, not a blocked gate', () => {
+    const r = aggregate([], { empty: true, modules: [] })
+    eq(r.gate, STATUS.PASS)
+    ok(r.reason.startsWith('no-affected-modules'))
   })
   t('gate: any FAIL dominates', () => {
-    eq(aggregate([{ status: 'PASS' }, { status: 'FAIL' }, { status: 'BLOCKED' }], { empty: false }).gate, STATUS.FAIL)
+    eq(aggregate([{ status: 'PASS' }, { status: 'FAIL' }, { status: 'BLOCKED' }], { empty: false, modules: ['api'] }).gate, STATUS.FAIL)
   })
   t('gate: any BLOCKED dominates a green field', () => {
-    eq(aggregate([{ status: 'PASS' }, { status: 'BLOCKED' }], { empty: false }).gate, STATUS.BLOCKED)
+    eq(aggregate([{ status: 'PASS' }, { status: 'BLOCKED' }], { empty: false, modules: ['api'] }).gate, STATUS.BLOCKED)
   })
   t('gate: an all-skipped run is BLOCKED', () => {
-    eq(aggregate([{ status: 'SKIPPED' }, { status: 'SKIPPED' }], { empty: false }).gate, STATUS.BLOCKED)
+    eq(aggregate([{ status: 'SKIPPED' }, { status: 'SKIPPED' }], { empty: false, modules: ['api'] }).gate, STATUS.BLOCKED)
   })
   t('gate: a fully passing plan passes', () => {
-    eq(aggregate([{ status: 'PASS' }, { status: 'SKIPPED' }], { empty: false }).gate, STATUS.PASS)
+    eq(aggregate([{ status: 'PASS' }, { status: 'SKIPPED' }], { empty: false, modules: ['api'] }).gate, STATUS.PASS)
   })
   t('plan: hash is stable and order independent', () => {
     const a = buildPlan(fixture(), ['api', 'store'])

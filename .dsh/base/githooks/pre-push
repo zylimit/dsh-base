@@ -21,8 +21,21 @@ echo "deepseek-base: running the Definition of Done ..." >&2
 node .dsh/base/dsb.mjs dod >/dev/null
 DOD=$?
 
-echo "deepseek-base: running the impact-scoped gate ..." >&2
-node .dsh/base/dsb.mjs gate >/dev/null
+# Judge what is being published, not what happens to be on the desk. When an
+# upstream ref exists the gate is scoped to the range about to be pushed;
+# otherwise it falls back to the working tree.
+BASE=""
+if git rev-parse --verify --quiet '@{u}' >/dev/null 2>&1; then
+  BASE=$(git rev-parse --abbrev-ref '@{u}')
+fi
+
+if [ -n "$BASE" ]; then
+  echo "deepseek-base: running the gate scoped to $BASE..HEAD ..." >&2
+  node .dsh/base/dsb.mjs gate --baseline "$BASE" >/dev/null
+else
+  echo "deepseek-base: no upstream ref; running the gate over the working tree ..." >&2
+  node .dsh/base/dsb.mjs gate >/dev/null
+fi
 GATE=$?
 
 if [ "$DOD" != "0" ] || [ "$GATE" != "0" ]; then

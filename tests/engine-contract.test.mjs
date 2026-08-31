@@ -38,15 +38,22 @@ test('REQ-GOV-003 a check whose executable is absent is BLOCKED, never PASS', ()
   assert.match(r.reason, /^command-missing:/)
 })
 
-test('REQ-GOV-004 an empty verification plan is BLOCKED', () => {
-  assert.equal(aggregate([], { empty: true }).gate, STATUS.BLOCKED)
+test('REQ-GOV-004 an affected module with zero resolved checks is BLOCKED', () => {
+  assert.equal(aggregate([], { empty: true, modules: ['api'] }).gate, STATUS.BLOCKED)
+})
+
+test('REQ-GOV-004 no affected module means nothing to prove, not a blocked gate', () => {
+  const r = aggregate([], { empty: true, modules: [] })
+  assert.equal(r.gate, STATUS.PASS)
+  assert.match(r.reason, /^no-affected-modules/)
 })
 
 test('REQ-GOV-004 aggregation order is FAIL, then BLOCKED, then all-skipped', () => {
-  assert.equal(aggregate([{ status: 'PASS' }, { status: 'FAIL' }, { status: 'BLOCKED' }], { empty: false }).gate, 'FAIL')
-  assert.equal(aggregate([{ status: 'PASS' }, { status: 'BLOCKED' }], { empty: false }).gate, 'BLOCKED')
-  assert.equal(aggregate([{ status: 'SKIPPED' }], { empty: false }).gate, 'BLOCKED')
-  assert.equal(aggregate([{ status: 'PASS' }, { status: 'SKIPPED' }], { empty: false }).gate, 'PASS')
+  const m = { empty: false, modules: ['api'] }
+  assert.equal(aggregate([{ status: 'PASS' }, { status: 'FAIL' }, { status: 'BLOCKED' }], m).gate, 'FAIL')
+  assert.equal(aggregate([{ status: 'PASS' }, { status: 'BLOCKED' }], m).gate, 'BLOCKED')
+  assert.equal(aggregate([{ status: 'SKIPPED' }], m).gate, 'BLOCKED')
+  assert.equal(aggregate([{ status: 'PASS' }, { status: 'SKIPPED' }], m).gate, 'PASS')
 })
 
 test('NFR-RES-001 every degraded path answers quickly and marks itself degraded', () => {

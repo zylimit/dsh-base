@@ -213,7 +213,12 @@ export function assessAttributes (catalog, affectedModules, results) {
 // ── gate ────────────────────────────────────────────────────────────────────
 
 export function aggregate (results, plan) {
-  if (plan.empty) return { gate: STATUS.BLOCKED, reason: 'empty-plan: no check was resolved for the affected modules; nothing ran, so nothing is proven' }
+  // Nothing changed, so there is nothing to prove. This is not the same as an
+  // affected module whose verification plan resolved to zero checks.
+  if ((plan.modules || []).length === 0) {
+    return { gate: STATUS.PASS, reason: 'no-affected-modules: no change reaches a governed module' }
+  }
+  if (plan.empty) return { gate: STATUS.BLOCKED, reason: 'empty-plan: affected modules resolved zero checks; nothing ran, so nothing is proven' }
   if (results.some(r => r.status === STATUS.FAIL)) return { gate: STATUS.FAIL, reason: 'at-least-one-check-failed' }
   if (results.some(r => r.status === STATUS.BLOCKED)) return { gate: STATUS.BLOCKED, reason: 'at-least-one-check-blocked' }
   if (results.length > 0 && results.every(r => r.status === STATUS.SKIPPED)) return { gate: STATUS.BLOCKED, reason: 'every-check-skipped' }

@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 80,
-  "digest": "c89505c587f5c3b5fb59ad31babc594e736ea66b791e57b57f7d639cea7aa02d",
+  "digest": "202c295899326a8cf9f8eb483d08f48a4e124607c680866020a2a48cc417ef10",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -16,8 +16,8 @@
     },
     {
       "path": ".dsh/base/dsb.mjs",
-      "sha256": "52a51a6389725e0a8f79baddb5c2c6e41c1d91b4cf933e2aec905e9f789a44f9",
-      "bytes": 23342
+      "sha256": "cd2f470af00ffcac22c2803dba2ff2b9dffc51e7ff5910c756c88768a2b4a6ce",
+      "bytes": 23592
     },
     {
       "path": ".dsh/base/githooks/commit-msg",
@@ -31,8 +31,8 @@
     },
     {
       "path": ".dsh/base/githooks/pre-push",
-      "sha256": "b651be5cfe6ff8a855ef5ec30a535309c2c0a8bbb4f5790888cf7cc431c5f637",
-      "bytes": 1236
+      "sha256": "ebf2e2a5aacb1ef53d3786c2d6f184663f30f10b6ad662a40c1407a9fd69c35a",
+      "bytes": 1745
     },
     {
       "path": ".dsh/base/lib/context.mjs",
@@ -51,8 +51,8 @@
     },
     {
       "path": ".dsh/base/lib/quality.mjs",
-      "sha256": "73bc0688787fa4f5c654a55da2978cb71c7bb635fefbdaea632ddfb4e84f8be4",
-      "bytes": 21735
+      "sha256": "cc3fbfbdfbe1a658a97c8a56d38ac71beedf26e893ae9891389d7cba53514663",
+      "bytes": 22023
     },
     {
       "path": ".dsh/base/lib/scan.mjs",
@@ -61,8 +61,8 @@
     },
     {
       "path": ".dsh/base/lib/selftest.mjs",
-      "sha256": "90ff9998ae63c102d6f3104e890c36d64681c1e9638cafe074f2cf119a22688b",
-      "bytes": 20639
+      "sha256": "5813952a05892ecfac1d01e5287c812b2156afbb02c106c3fac1cb51f06d01c3",
+      "bytes": 20985
     },
     {
       "path": ".dsh/skills/adversarial-review/SKILL.md",
