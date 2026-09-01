@@ -1,8 +1,8 @@
 {
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
-  "managedFiles": 86,
-  "digest": "8c27765e4bdb2e2c098ace176543da0434520c800cf559e04cd2718f1f78e86a",
+  "managedFiles": 87,
+  "digest": "bb8b314047d85ac0ff613c12b741a0c3767f866b81df4a973133bf8532bd8bd8",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -423,6 +423,11 @@
       "path": "docs/requirements/PRODUCT-SPEC.md",
       "sha256": "32599ba77acd4c5f28da1ede89f1a29b31bd9c475b19c8a8fa237a41d438cc4b",
       "bytes": 10945
+    },
+    {
+      "path": "docs/research/ai-coding-agents-state-of-practice-2026.md",
+      "sha256": "e2743cd64f2bf4b86eadfa2b907f639c9bb7c7e6d60d3a5712c424b3bdbb9e94",
+      "bytes": 30478
     },
     {
       "path": "setup.ps1",

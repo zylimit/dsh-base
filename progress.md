@@ -30,10 +30,18 @@ and hedged language is demoted to `Notes` as `Needs-Confirmation`.
 - 2026-09-01 | chose a fleet layer with declared contracts over per-repository governance plus convention | splitting a system moves complexity from file dependencies to repo contracts, and no repository can see that surface; a convention holds until the first deadline and then fails silently inside a consumer | ADR-0009
 - 2026-09-01 | chose a generated draft over a blank template for the catalog | asking a human to transcribe module boundaries, import edges and build commands is asking them to copy facts the repository already contains; the job should be correcting a proposal, not authoring one | catalog discover
 - 2026-09-01 | chose to propose attributes from production source only, never from tests or prose | the first version proposed security:critical for a test module because a fixture said "billing"; a proposal system whose output is noise teaches its user to ignore every proposal, including the true ones | catalog discover, covered by tests/discover.test.mjs
+- 2026-09-01 | chose to record the research findings that contradict this design rather than filter them | a scaffold that only absorbs confirming evidence is the thing it was built to prevent; the AGENTS.md null result, the rule-count ceiling and the drift-under-compaction finding all argue against choices already made here | manual:maintainers, TODO #012
 - 2026-09-01 | chose a time-boxed repayable fast mode over refusing to have one | a gate that ignores real time pressure gets bypassed with --no-verify, which teaches the team the gate is optional; serving the pressure with an expiry, a protected floor, a pre-declared skip list and a recorded debt keeps the exception from becoming the rule | fast, covered by tests/fast.test.mjs
 - 2026-09-01 | chose co-change frequency over line count as the boundary criterion | size is a proxy, and two modules that always move together are one module with a wall through it whatever their size | cochange
 
 ## TODO
+
+- #009 P0 Make adversarial review a gate rather than prose. It is the single strongest MEASURED lever in the field: an agentic review loop took Qwen3-30B from 27.5 % to 56.9 % on SWE-bench Verified at 6.5x better token efficiency than resampling (arXiv 2607.06065), and 3 structured-disagreement agents beat 5-agent consensus (arXiv 2608.18167). The `adversarial-review` skill describes it; nothing runs it and no gate requires its verdict.
+- #010 P0 Scan our own instruction and skill files as untrusted input. Measured active threat: 1,230+ leaked API keys and attacker-controlled base-URL overrides found inside AI instruction files (Mitiga), README/instruction injection documented by CSA. `scan-secrets` treats `AGENTS.md` and `SKILL.md` as ordinary text.
+- #011 P0 Re-inject invariants mid-session. ContextEcho benchmarked 23 models and found compaction does NOT correct persona and instruction drift (arXiv 2605.24279); the constitution decays inside a session and nothing here notices. Needs a bounded `invariants` output plus a rule for when to re-read it.
+- #012 P1 Decide what to do about the AGENTS.md null result. Two studies (arXiv 2602.11988, 2607.27250) find context files do not reliably improve task resolution, and length hurts; a rule-count compliance ceiling means an unenforced rule degrades the enforced ones. Our root file is now 13151 bytes, over its own 12000 budget, and `agents-lint` only warns. Either shrink it to an index with the laws in skills, or record why we reject the finding.
+- #013 P1 Audit every rule in the constitution and the skills: each must name its enforcing check or be explicitly marked prompt-only, and the ratio must be reported. Unenforced rules are not free (arXiv 2604.11088).
+- #014 P2 Wire consumer-driven contract tests (Pact) as a fleet check. `fleet lint` proves the manifest is self-consistent; only a contract test proves the manifest matches reality.
 
 - #001 P1 Wire a real SAST tool and a real secret scanner as checks claiming `security`, replacing the lexical `scan-secrets.mjs` as the sole evidence for high-risk modules; candidates in `.dsh/base/adapters.json`.
 - #002 P1 Measure the performance budgets in `.dsh/docs/LARGE-REPO-GUIDE.md` against a repository above 1,000,000 lines and replace the labelled targets with measurements.
@@ -79,6 +87,11 @@ Nothing.
 - ASSUMPTION the seeded `.gitattributes` keeps managed files LF in every target | falsified by: `node .dsh/base/install.mjs <target>` reporting a non-empty `staged` list immediately after a fresh install
 
 ## Notes
+
+- The research brief is at `docs/research/ai-coding-agents-state-of-practice-2026.md`. It was built from search-snippet mining only, so every effect size is reported rather than reproduced; the delegate flagged the `Guardrails Beat Guidance` magnitudes as unread at source.
+- Where this scaffold is ahead of the published field: `Enforced-by:` on ADRs, co-change for boundary placement, and contract sunset dates are all prescribed in the literature and shipped by almost nobody.
+- Known false-positive mode for `cochange`, published by Repowise: a large monorepo refactor inflates co-change and produces spurious boundary suspicion. Our sweeping-commit exclusion (more than 8 modules in one commit) addresses part of it; it is not proven sufficient.
+- Needs-Confirmation: whether this governance layer helps at all. The research finds governance prescriptions almost entirely unmeasured, while METR measured experienced developers 19 % SLOWER with AI tools and LinearB measured AI-authored PRs merging at half the rate. | settle with: instrument it — `gate-audit` for controls that never fire, plus a deliberate before/after on a real project.
 
 - `node --test tests/` does not work on this platform; the working invocation is `node --test "tests/*.test.mjs"`, recorded in `package.json`, CI and the module contracts.
 - `arch-check` reports 3 unresolved specifiers, all from fixture strings inside `selftest.mjs`. They are counted and sampled rather than dropped, which is the intended honest behaviour.
