@@ -40,7 +40,7 @@ jobs:
         run: node .dsh/base/audit/manifest.mjs --check
 
       - name: Unit tests
-        run: node --test "tests/*.test.mjs"
+        run: node .dsh/base/audit/run-tests.mjs
 
       # Static governance: catalog, skills, module contracts, spec, ADRs,
       # attribute wiring, architecture edges, anti-patterns, traceability.

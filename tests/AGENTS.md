@@ -33,6 +33,6 @@ temporary fixture repositories.
 ## Verification
 
 ```sh
-node --test "tests/*.test.mjs"
+node .dsh/base/audit/run-tests.mjs
 node .dsh/base/dsb.mjs trace
 ```

@@ -11,7 +11,7 @@
   "scripts": {
     "doctor": "node .dsh/base/dsb.mjs doctor",
     "selftest": "node .dsh/base/dsb.mjs selftest",
-    "test": "node --test \"tests/*.test.mjs\"",
+    "test": "node .dsh/base/audit/run-tests.mjs",
     "dod": "node .dsh/base/dsb.mjs dod",
     "gate": "node .dsh/base/dsb.mjs gate",
     "impact": "node .dsh/base/dsb.mjs impact",
