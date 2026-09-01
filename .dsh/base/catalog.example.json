@@ -40,6 +40,86 @@
     {
       "path": "docs/**",
       "reason": "prose; governed by spec-lint and adr-check rather than by impact"
+    },
+    {
+      "path": "AGENTS.md",
+      "reason": "project constitution; the harness injects it, it changes no product behaviour"
+    },
+    {
+      "path": ".editorconfig",
+      "reason": "editor settings"
+    },
+    {
+      "path": ".gitattributes",
+      "reason": "line-ending policy"
+    },
+    {
+      "path": ".gitignore",
+      "reason": "ignore policy"
+    },
+    {
+      "path": "cordis.patch.yml",
+      "reason": "optional dsh profile patch; not read unless passed to dsh --patch"
+    },
+    {
+      "path": ".dsh/skills/**",
+      "reason": "vendored scaffold doctrine; governed by skills-lint, not by product impact"
+    },
+    {
+      "path": ".dsh/templates/**",
+      "reason": "vendored document skeletons; never evidence for any gate"
+    },
+    {
+      "path": ".dsh/workflows/**",
+      "reason": "vendored fan-out scripts for the harness workflow tool"
+    },
+    {
+      "path": ".dsh/base/lib/**",
+      "reason": "vendored governance engine; governed in its own repository"
+    },
+    {
+      "path": ".dsh/base/dsb.mjs",
+      "reason": "vendored governance engine entry point"
+    },
+    {
+      "path": ".dsh/base/githooks/**",
+      "reason": "vendored enforcement hooks"
+    },
+    {
+      "path": ".dsh/base/AGENTS.md",
+      "reason": "vendored engine directory contract"
+    },
+    {
+      "path": ".dsh/base/.gitignore",
+      "reason": "vendored runtime-state ignore policy"
+    },
+    {
+      "path": ".dsh/base/adapters.json",
+      "reason": "external-tool reference table read by humans"
+    },
+    {
+      "path": ".dsh/base/catalog.example.json",
+      "reason": "adoption template, never loaded by the engine"
+    },
+    {
+      "path": ".dsh/base/trend/**",
+      "reason": "architecture-debt ledger; an append-only measurement, not source"
+    },
+    {
+      "path": "scripts/check-syntax.mjs",
+      "reason": "vendored audit script"
+    },
+    {
+      "path": "scripts/scan-secrets.mjs",
+      "reason": "vendored audit script"
+    },
+    {
+      "path": "scripts/manifest.mjs",
+      "reason": "vendored audit script"
+    },
+    {
+      "path": "scripts/AGENTS.md",
+      "reason": "vendored script directory contract"
     }
   ],
   "riskChecks": {

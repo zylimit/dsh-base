@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 80,
-  "digest": "7f59ea7368cd05f48444e3ee0ea19ba22c2c6dab32df26789f8bbebd29acb3c5",
+  "digest": "d2cbe48df7c3b27b442296240fd2c188604e7f7ca406ffa5a970b9563ab70dc8",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -11,8 +11,8 @@
     },
     {
       "path": ".dsh/base/catalog.example.json",
-      "sha256": "4cf91b670840ac0a15edac037f823c3c73a88f492b58976a5ebd19eeabcf18ba",
-      "bytes": 4001
+      "sha256": "d70ae43ab739cd4a521f0a68fd9e8b5e54bcf7fae38f7fc004adec18cb190ef0",
+      "bytes": 6174
     },
     {
       "path": ".dsh/base/dsb.mjs",
@@ -396,8 +396,8 @@
     },
     {
       "path": "setup.ps1",
-      "sha256": "7027d37fda8c6b80d07f99147abbd1529c04f6ab9a9323c844df82b999d97532",
-      "bytes": 3291
+      "sha256": "61cf9cb07e5f887277389e3f3a16cfdca4a421f45873d70514ec0b3f5f7dbf88",
+      "bytes": 3409
     },
     {
       "path": "setup.sh",

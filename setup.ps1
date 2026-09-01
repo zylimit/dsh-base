@@ -81,7 +81,9 @@ if (-not (Test-Path -LiteralPath (Join-Path $dst '.dsh/base/catalog.json'))) {
 }
 
 Write-Host ''
-Write-Host ('copied ' + $copied + ', unchanged ' + $unchanged + ', staged for review ' + $staged + ', kept ' + $kept)
+$verb = if ($DryRun) { 'would copy' } else { 'copied' }
+Write-Host ($verb + ' ' + $copied + ', unchanged ' + $unchanged + ', staged for review ' + $staged + ', kept ' + $kept)
+if ($DryRun) { Write-Host 'DRY RUN: nothing was written.' }
 Write-Host ''
 Write-Host 'Next:'
 Write-Host ('  cd ' + $dst)
