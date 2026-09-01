@@ -58,6 +58,21 @@ function Copy-Once([string]$rel) {
   Copy-Managed $rel
 }
 
+# Seed a project-owned file from a template rather than from the scaffold's own
+# instance of it: project memory is the adopter's, not a copy of ours.
+function Copy-Seed([string]$rel, [string]$fromRel) {
+  if (Test-Path -LiteralPath (Join-Path $dst $rel)) {
+    Write-Host ('  kept project file: ' + $rel)
+    $script:kept++
+    return
+  }
+  $from = Join-Path $src $fromRel
+  if (-not (Test-Path -LiteralPath $from -PathType Leaf)) { return }
+  if (-not $DryRun) { Copy-Item -LiteralPath $from -Destination (Join-Path $dst $rel) -Force }
+  Write-Host ('  seeded from template: ' + $rel)
+  $script:copied++
+}
+
 Write-Host ('deepseek-base: installing into ' + $dst)
 
 $skip = @('.dsh/base/state/', '.dsh/base/evidence/', '.dsh/base/receipts/', '.dsh/base/waivers/')
@@ -67,14 +82,18 @@ foreach ($rootDir in @('.dsh', 'docs', 'scripts')) {
   Get-ChildItem -LiteralPath $full -Recurse -File | ForEach-Object {
     $rel = $_.FullName.Substring($src.Length + 1).Replace('\', '/')
     if ($rel -eq '.dsh/base/catalog.json') { return }
+    # Instance data belongs to the scaffold, not to the adopting project.
+    if ($rel.StartsWith('docs/requirements/')) { return }
+    if ($rel.StartsWith('docs/adr/ADR-')) { return }
     foreach ($s in $skip) { if ($rel.StartsWith($s)) { return } }
     Copy-Managed $rel
   }
 }
 
-foreach ($rel in @('AGENTS.md', 'progress.md', '.editorconfig', '.gitattributes', 'cordis.patch.yml')) {
+foreach ($rel in @('AGENTS.md', '.editorconfig', '.gitattributes', 'cordis.patch.yml')) {
   Copy-Once $rel
 }
+Copy-Seed 'progress.md' '.dsh/templates/PROGRESS.md'
 
 if (-not (Test-Path -LiteralPath (Join-Path $dst '.dsh/base/catalog.json'))) {
   Write-Host '  governance stays OFF until you copy catalog.example.json to catalog.json'

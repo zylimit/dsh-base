@@ -62,6 +62,23 @@ copy_once () {
   copy_managed "$rel"
 }
 
+# Seed a project-owned file from a template rather than from the scaffold's own
+# instance of it: project memory is the adopter's, not a copy of ours.
+seed_from () {
+  rel="$1"
+  from_rel="$2"
+  if [ -f "$DST/$rel" ]; then
+    echo "  kept project file: $rel" >&2
+    KEPT=$((KEPT + 1))
+    return 0
+  fi
+  [ -f "$SRC/$from_rel" ] || return 0
+  mkdir -p "$(dirname "$DST/$rel")"
+  cp "$SRC/$from_rel" "$DST/$rel"
+  echo "  seeded from template: $rel" >&2
+  COPIED=$((COPIED + 1))
+}
+
 echo "deepseek-base: installing into $DST" >&2
 
 LIST=$(cd "$SRC" && find .dsh docs scripts -type f 2>/dev/null | sed 's|^\./||' | sort)
@@ -73,13 +90,18 @@ for rel in $LIST; do
     .dsh/base/receipts/*) continue ;;
     .dsh/base/waivers/*) continue ;;
     .dsh/base/catalog.json) continue ;;
+    # Instance data belongs to the scaffold, not to the adopting project.
+    # Installing it would seed another project's requirements and decisions,
+    # and spec-lint would then pass on a specification nobody here wrote.
+    docs/requirements/*) continue ;;
+    docs/adr/ADR-*) continue ;;
   esac
   copy_managed "$rel"
 done
 
 # Project-owned files: seeded once, never replaced.
 copy_once AGENTS.md
-copy_once progress.md
+seed_from progress.md .dsh/templates/PROGRESS.md
 copy_once .editorconfig
 copy_once .gitattributes
 copy_once cordis.patch.yml
