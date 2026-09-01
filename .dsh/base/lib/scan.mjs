@@ -235,6 +235,9 @@ const ENGINE_CAPABILITIES = new Set([
   'spec-lint', 'adr-check', 'context-pack', 'layers', 'forbiddenDependencies',
   'sync-check', 'recap', 'archive', 'init', 'ledger', 'risk', 'gate-audit',
   'fleet', 'cochange', 'review-pack', 'dod',
+  // Added the moment they existed: a rule that names a real command must not be
+  // counted as unenforced, or the audit measures the audit's own blind spot.
+  'review', 'invariants', 'fast', 'rules-audit', 'spec', 'catalog', 'selftest', 'doctor',
 ])
 const BACKTICK = String.fromCharCode(96)
 const STRIP_FENCE = new RegExp('^[' + BACKTICK + ']+|[' + BACKTICK + ']+$', 'g')

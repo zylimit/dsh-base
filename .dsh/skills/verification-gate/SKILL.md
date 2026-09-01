@@ -31,6 +31,18 @@ Produces a ledger entry bound to the current diff, and a receipt that stales the
 5. Handle waivers narrowly. A waiver may only downgrade a `FAIL` or `BLOCKED` on a non-protected check, to `SKIPPED`. It may never touch a check classed protected or claiming `security`, `safety`, or `privacy`. Every waiver needs owner, reason, expiry, and compensating control; `node .dsh/base/dsb.mjs waiver create` writes it, `waiver check` validates it, and an edited waiver fails its content hash. Expiry is enforced by `node .dsh/base/dsb.mjs risk` - an expired waiver stops protecting anything.
 6. Bind the result to the diff: `node .dsh/base/dsb.mjs receipt write` records the verdict against the current diff hash. Any byte change to the working tree stales it; `receipt verify` then exits `4` and the claim must be re-earned. Never quote a receipt written before the last edit.
 7. Confirm the ledger is intact: `node .dsh/base/dsb.mjs ledger verify` (exit `0`). A broken hash chain fails closed - every prior verification is treated as unproven. Use `gate-audit` to inspect the recorded history rather than re-deriving it from memory.
+8. A green gate does not close a task by itself. `node .dsh/base/dsb.mjs task complete` additionally demands a fresh `ACCEPT` from `node .dsh/base/dsb.mjs review verdict` bound to this same diff, and that accepting receipt must record lens coverage: a verdict reached without structured disagreement is consensus, and the blocker says so unless `catalog.review.requireStructured` is `false`. The verdict is computed, never asserted - `review verdict` refuses while Blue is silent or any required lens never reported (exit `1`), returns `FIX_REQUIRED` on any `error` finding and `NEEDS_MORE_EVIDENCE` on any lens that reported itself `unable` (both exit `2`), and writes the receipt only on `ACCEPT` (exit `0`). The procedure for running it is `structured-review`.
+
+### Fast mode - a dated loan against evidence
+
+`node .dsh/base/dsb.mjs fast on --minutes 90 --reason "<why>"` opens a relaxation window, `fast status` reports whether one is open and exactly what it would defer, `fast off` closes it. Four conditions are engine behaviour, not etiquette:
+
+1. **It expires by itself.** A reason is mandatory - `fast on` without `--reason` is refused (exit `3`) - and `--minutes` is clamped to a maximum of 8 hours (480). A window with no end is not a window.
+2. **The protected floor still runs.** Every check claiming `security`, `safety` or `privacy` executes regardless, and `catalog-lint` rejects a protected check that declares `allowFastSkip` (`PROTECTED_FAST_SKIP`).
+3. **Only pre-marked checks are deferred.** Exactly those carrying `allowFastSkip` in `catalog.json`, decided in advance while there was time to think about which evidence is cheap to defer. Deciding it during the emergency is how everything becomes deferrable.
+4. **It is a loan, not a discount.** Each deferred check is recorded `SKIPPED` with reason `fast-mode`, the gate record is stamped `fastMode`, and `risk` raises `FAST_MODE_DEBT`.
+
+A gate record stamped `fastMode` cannot close a task or a release: `task complete` names the blocker and lists what was deferred. Repay it with `node .dsh/base/dsb.mjs fast off` followed by a full `node .dsh/base/dsb.mjs gate`; only that unstamped record closes the task. Read `fast status` before quoting any gate result, because a `PASS` earned inside an open window is a narrower claim than it looks.
 
 ### Normal verification round
 ```
@@ -64,8 +76,10 @@ Plan: <n> checks over modules <ids>
 States: PASS <n> / FAIL <n> / BLOCKED <n> / SKIPPED <n>  (skipped because: fast-skip | dry-run | waiver:<id>)
 Attribute gaps: <module:attribute:tier - why>, or none
 Waivers applied: <check id -> waiver path, expiry>, or none
+Fast mode: closed | OPEN until <iso> (reason: <why>) - deferred: <check ids>
+Review: ACCEPT | FIX_REQUIRED | NEEDS_MORE_EVIDENCE | none, lenses <list>
 Receipt: <diff hash> written | stale
-Exit codes: impact <n>, fitness <n>, budget <n>, gate <n>
+Exit codes: impact <n>, fitness <n>, budget <n>, gate <n>, review verdict <n>
 ```
 
 ## Stop conditions
@@ -75,6 +89,8 @@ Exit codes: impact <n>, fitness <n>, budget <n>, gate <n>
 - A waiver would be needed on a protected attribute: refuse and escalate; this is not waivable at any tier.
 - `risk` reports an expired waiver covering the current change: stop until it is renewed with a fresh owner decision or the underlying failure is fixed.
 - The only remaining path to green is editing `catalog.json` checks, budgets, or attribute tiers as part of this change: HIGH tier, human decision.
+- The newest gate is stamped `fastMode` and the task or release must close now: it cannot. Close the window and run the full gate, or escalate the deadline to a human with `risk` output showing `FAST_MODE_DEBT`.
+- Marking a check `allowFastSkip` mid-incident so it can be deferred: that is a HIGH-tier `catalog.json` edit and defeats condition 3.
 
 ## Anti-patterns
 | Failure mode | Correction |
@@ -87,3 +103,6 @@ Exit codes: impact <n>, fitness <n>, budget <n>, gate <n>
 | Quoting yesterday's green receipt after new edits | Any byte change stales the receipt; re-run and re-record |
 | Declaring victory on `PASS` while attribute gaps are listed | `BLOCKED_BY_ATTRIBUTES` is not a pass; wire a claiming check |
 | Deleting or renaming a failing check id from `catalog.json` | That is evidence destruction; fix the code, or record an ADR with the rejected alternative |
+| Quoting a `fastMode` gate record as if the task were provable | It is a dated loan; `fast off` then a full `gate` repays it, and only the repaid record closes anything |
+| Opening a fast window with a vague reason to make it pass | The reason is recorded and read later; an unreadable reason is how a temporary window becomes permanent |
+| Closing a task on a green gate alone | `task complete` also needs an `ACCEPT` verdict with lens coverage bound to the same diff |

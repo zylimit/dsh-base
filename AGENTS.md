@@ -83,6 +83,20 @@ four conditions that stop it becoming permanent.
 Fast mode does not make the code correct faster. It defers evidence, dates the
 debt, and refuses to let you forget it.
 
+## 5b. Review law
+
+An agentic review loop is the strongest measured lever in this field: it moved one
+model from 27.5 % to 56.9 % on SWE-bench Verified at 6.5x the token efficiency of
+resampling, and three agents in structured disagreement beat five in consensus.
+Consensus is the failure mode, so review here is an engine gate, not a habit.
+
+1. **Structured disagreement, not consensus.** Every required lens reports on its own, from its own prompt, through `node .dsh/base/dsb.mjs review lens <name>` reading `{"findings":[...]}` on stdin (exit 1 when the report is refused). Default lenses: security, privacy, resilience, reliability, correctness; the set is `catalog.review.lenses`. Lenses that agree cheaply have not reviewed anything.
+2. **A finding needs a `file:line` or a reproduction.** `review lens` rejects the whole report otherwise (exit 1): an impression nobody can locate cannot be acted on. Blue is held to the same bar — `review blue` rejects a claim carrying no evidence (exit 1).
+3. **The verdict is computed, never asserted.** `review verdict` refuses while blue is silent or a required lens never reported (exit 1). One `error` finding gives `FIX_REQUIRED`; one lens reporting itself `unable` gives `NEEDS_MORE_EVIDENCE`; otherwise `ACCEPT` (exit 0, any other verdict exit 2) and only then is a `receipt` written, recording which lenses covered the diff. A receipt with no lens coverage cannot close a task unless `catalog.review.requireStructured` is `false`.
+4. **One lens finding an error is not outvoted.** Rule 5.2 applies here unchanged: counter-evidence outranks confirming evidence, so four clean lenses never cancel one located error.
+5. **A review binds the diff it judged.** `review start` opens the session against the current `diffHash`, and the session goes stale the instant the tree changes (exit 4). Re-open and re-run the lenses; never carry a verdict across an edit. Assemble the evidence with `node .dsh/base/dsb.mjs review-pack` first — a self-selected diff view is where files go unread.
+6. **The reviewer is never the author.** Delegate each lens to a separate agent that did not write the change; when no independent reviewer exists, say so in `review verdict --notes`. Prompt-only: the engine counts lenses, it cannot tell who wrote the code.
+
 ## 6. Verification law
 
 1. Verification is impact-scoped, never "run everything" and never "run what feels related". `impact` decides.
@@ -106,6 +120,7 @@ debt, and refuses to let you forget it.
 3. A `Done` entry without an evidence pointer is not written. A `Decisions` entry without the rejected alternative is a status update and belongs under `Done`. Hedged language is demoted to `Notes` tagged `Needs-Confirmation`.
 4. **Recovery is one bounded command**: `node .dsh/base/dsb.mjs recap`. It derives the live state — position, pinned, in progress, P0/P1, recent decisions and Done, risks, decay signals — inside a character budget, so resuming costs the same whether the project is a week or two years old. A compaction summary is a claim, not a fact; recap reads artifacts.
 5. **Memory is archived, never deleted.** When the ledger exceeds its budget, `node .dsh/base/dsb.mjs archive --apply` moves the oldest `Done` and `Notes` entries into `progress.archive.md` and leaves a pointer. An archived entry is never rewritten; a correction is a new entry in the live ledger.
+6. **Re-read the invariants after any compaction and at every phase boundary.** Compaction does not correct instruction drift — measured across 23 models, the summary carries the drift forward instead of repairing it — so this constitution decays inside a long session and nothing reports it. `node .dsh/base/dsb.mjs invariants` re-derives the non-negotiable set plus the live state (open task, open fast-mode window, last gate, broken ledger) inside ~1200 characters: `recap` says where the work is, `invariants` says what may not be traded away.
 
 ## 8a. Fleet law — when the system is many repositories
 
@@ -140,17 +155,22 @@ debt, and refuses to let you forget it.
 | Is the architecture map valid? | `node .dsh/base/dsb.mjs catalog-lint` |
 | What does my change affect? | `node .dsh/base/dsb.mjs impact` |
 | Prove the change | `node .dsh/base/dsb.mjs gate` |
+| Is a fast-mode window open, and what would it defer? | `node .dsh/base/dsb.mjs fast status` |
 | Has architecture drifted? | `node .dsh/base/dsb.mjs arch-check` / `arch-trend --gate` |
 | Are decisions still enforced? | `node .dsh/base/dsb.mjs adr-check` |
 | Are requirements decidable and traced? | `node .dsh/base/dsb.mjs spec-lint` / `trace` |
+| Which requirements does this change touch? | `node .dsh/base/dsb.mjs spec` (`--all`, `--paths a,b`, `--budget N`) |
 | Anti-pattern scan | `node .dsh/base/dsb.mjs fitness --all` |
 | Pack context for a delegate | `node .dsh/base/dsb.mjs context-pack --focus "src/x/**"` |
 | Evidence pack for review | `node .dsh/base/dsb.mjs review-pack` |
+| Review as structured disagreement | `node .dsh/base/dsb.mjs review start` → `review blue` → `review lens <name>` → `review verdict` |
 | Where are we, in one budget | `node .dsh/base/dsb.mjs recap` |
+| What may never be forgotten, plus live state | `node .dsh/base/dsb.mjs invariants` |
 | Is memory in step with the code? | `node .dsh/base/dsb.mjs sync-check` |
 | Are the boundaries drawn where the code changes? | `node .dsh/base/dsb.mjs cochange` |
 | What does a contract change cost? | `node .dsh/base/dsb.mjs fleet impact <contract>` |
 | Is the whole project group healthy? | `node .dsh/base/dsb.mjs fleet status --deep` |
+| How many rules name a real enforcement point? | `node .dsh/base/dsb.mjs rules-audit` |
 | Everything static, one command | `node .dsh/base/dsb.mjs dod` |
 
 ## 12. Skills
