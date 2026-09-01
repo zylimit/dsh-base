@@ -390,6 +390,37 @@
       ]
     },
     {
+      "id": "engine-fleet",
+      "paths": [
+        ".dsh/base/lib/fleet.mjs"
+      ],
+      "layer": "capability",
+      "owners": [
+        "@maintainers"
+      ],
+      "riskTier": "high",
+      "dependsOn": [
+        "engine-core"
+      ],
+      "forbiddenDependencies": [
+        "engine-quality",
+        "engine-scan",
+        "engine-context",
+        "engine-selftest",
+        "engine-cli"
+      ],
+      "attributes": {
+        "reliability": "high",
+        "maintainability": "high"
+      },
+      "verification": [
+        "syntax",
+        "selftest",
+        "unit",
+        "arch"
+      ]
+    },
+    {
       "id": "engine-selftest",
       "paths": [
         ".dsh/base/lib/selftest.mjs"
@@ -404,7 +435,8 @@
         "engine-graph",
         "engine-quality",
         "engine-scan",
-        "engine-context"
+        "engine-context",
+        "engine-fleet"
       ],
       "forbiddenDependencies": [
         "engine-cli"
@@ -435,7 +467,8 @@
         "engine-quality",
         "engine-scan",
         "engine-context",
-        "engine-selftest"
+        "engine-selftest",
+        "engine-fleet"
       ],
       "attributes": {
         "security": "high",
@@ -584,5 +617,15 @@
     "keepDone": 40,
     "keepNotes": 30,
     "recapBudget": 6000
+  },
+  "cochange": {
+    "minSample": 30,
+    "accepted": [
+      [
+        "engine-selftest",
+        "tests",
+        "two halves of one concern: the engine's own verification. selftest covers pure functions, tests cover the process surface; a new capability necessarily touches both. Splitting them further would not reduce coupling, only hide it."
+      ]
+    ]
   }
 }

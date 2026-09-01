@@ -1,8 +1,8 @@
 {
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
-  "managedFiles": 82,
-  "digest": "6c19e64f7f3b814f7dbb65666ae0eb7b83ffe0fcb50dcb5baa8cce9dcb8c99a0",
+  "managedFiles": 86,
+  "digest": "28bb50b44debd9bcd0a4d96a8ea33735e172f08d91bd281aeff7168cfead5a5a",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -31,8 +31,8 @@
     },
     {
       "path": ".dsh/base/dsb.mjs",
-      "sha256": "ff0a919c32877c6fc39c42829eba2cafb450c2af84584d57f3853196efcc8a98",
-      "bytes": 29979
+      "sha256": "bbface579ed48d9c4b314ea6f0d083a7e134b4f9b7451cd2dd6e8045169e8528",
+      "bytes": 34194
     },
     {
       "path": ".dsh/base/githooks/commit-msg",
@@ -65,9 +65,14 @@
       "bytes": 16872
     },
     {
+      "path": ".dsh/base/lib/fleet.mjs",
+      "sha256": "fc109063d77532e34a74a26b9354ce4816e2a4e3d77358b778559feaac7b99c9",
+      "bytes": 15848
+    },
+    {
       "path": ".dsh/base/lib/graph.mjs",
-      "sha256": "3eaa017601bad531d8ace5c2c28a6a02cfd4ef4547e4eb40d8f9ecccfed2812a",
-      "bytes": 19776
+      "sha256": "24c5cf5fd9dc308e9ffeb1b9d9334f774b3e59405b42c4ef26a33d3780398836",
+      "bytes": 25535
     },
     {
       "path": ".dsh/base/lib/quality.mjs",
@@ -76,13 +81,13 @@
     },
     {
       "path": ".dsh/base/lib/scan.mjs",
-      "sha256": "f947da3b57d621b50d3056194584e4bd3961ddca0de030ab0b263f88be62d71d",
-      "bytes": 33178
+      "sha256": "076907fe8d5907b4bf74b309fcdcc753fb1dfd75865c15e1d62c18c25e3e94da",
+      "bytes": 33299
     },
     {
       "path": ".dsh/base/lib/selftest.mjs",
-      "sha256": "5b6030ec2a4ba1af655326855e8f7d5ca1aea4e47de3ffde144c97bbee4f8759",
-      "bytes": 23587
+      "sha256": "1049eb5054a198220d944cdc19c866d514c63fe6eca406c52261cee58d9cb578",
+      "bytes": 27149
     },
     {
       "path": ".dsh/docs/ADOPTION.md",
@@ -295,6 +300,11 @@
       "bytes": 5212
     },
     {
+      "path": ".dsh/templates/FLEET.md",
+      "sha256": "6951165cc00c0882332439f983e1eb5664bff48bfab13911ef8acd14e1fa713f",
+      "bytes": 3509
+    },
+    {
       "path": ".dsh/templates/HAZARD-ANALYSIS.md",
       "sha256": "7ffce7c9f0733b42abcc91b559bf3af4bb3731d53eefe5e0504514217de73170",
       "bytes": 5784
@@ -330,6 +340,11 @@
       "bytes": 6056
     },
     {
+      "path": ".dsh/templates/fleet.example.json",
+      "sha256": "67e5945d97ffd3ff9d62520441f0c3148b60bbdf11bde175fe338faddab53a21",
+      "bytes": 1520
+    },
+    {
       "path": ".dsh/workflows/AGENTS.md",
       "sha256": "73e9b2e981e462740a96626b7b14fe64da62c4fe41afd48b83cfeaaf449723b2",
       "bytes": 1833
@@ -351,8 +366,8 @@
     },
     {
       "path": "AGENTS.md",
-      "sha256": "ca4fe76d5161cb9c8f90a4e66383a985e4e9ca7f82c9a23366e9750d3fc62e8e",
-      "bytes": 10166
+      "sha256": "82635f1affcf3d25e9968c6447b94338e0f32fcbce677c69d8f5f32121c0ad54",
+      "bytes": 11916
     },
     {
       "path": "docs/adr/ADR-0001-zero-dependency-engine.md",
@@ -393,6 +408,11 @@
       "path": "docs/adr/ADR-0008-roles-and-commands-are-skills.md",
       "sha256": "a97fad4b69fd83f29eadfa86976a6069eacbe8d75c5451f0bd9b66367e300e79",
       "bytes": 1447
+    },
+    {
+      "path": "docs/adr/ADR-0009-fleet-layer-governs-the-contract-surface.md",
+      "sha256": "a7f5721df777c88c6671b123b2b50fb36c916f93cfc1f17827f016ccb5e82ab0",
+      "bytes": 3769
     },
     {
       "path": "docs/requirements/PRODUCT-SPEC-CHANGELOG.md",

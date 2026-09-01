@@ -15,7 +15,8 @@ import {
   changedPaths, diffHash, writeJsonAtomic, writeAtomic, readJson, readText,
   rel, exists, nowIso, listFiles, git,
 } from './lib/core.mjs'
-import { lintCatalog, computeImpact, archCheck, recordTrend, trendGate, readTrend } from './lib/graph.mjs'
+import { lintCatalog, computeImpact, archCheck, recordTrend, trendGate, readTrend, coChange } from './lib/graph.mjs'
+import { loadFleet, fleetLint, fleetImpact, fleetStatus, fleetRecap, FLEET_FILE } from './lib/fleet.mjs'
 import {
   runGate, verifyLedger, readLedger, gateAudit, writeReceipt, verifyReceipts,
   listWaivers, validateWaiver, waiverContentHash, assessBudget, startTask, readTask, completeTask,
@@ -563,6 +564,82 @@ COMMANDS.init = (args) => {
   note('  On a new machine: copy .dsh/ back in and run init again. It is idempotent.')
 
   return emit({ command: 'init', ok: true, mode, isolation, hooks, catalog, notes, doctorFailing: health.failing }, EXIT.OK)
+}
+
+
+COMMANDS.cochange = (args) => {
+  const catalog = needCatalog('cochange'); if (!catalog) return EXIT.DEGRADED
+  if (!needGit('cochange')) return EXIT.DEGRADED
+  const r = coChange(catalog, {
+    limit: args.flags.limit ? Number(args.flags.limit) : 500,
+    minPairs: args.flags['min-pairs'] ? Number(args.flags['min-pairs']) : 3,
+    ratio: args.flags.ratio ? Number(args.flags.ratio) : 0.5,
+  })
+  if (r.degraded) return degraded('cochange', r.reason)
+  for (const f of r.findings) note((f.severity === 'error' ? ' ERR  ' : ' warn ') + f.code + ' :: ' + f.message)
+  note('analysed ' + r.analysed + ' of ' + r.commits + ' commits (' + r.sweeping + ' sweeping commits excluded), ' + r.modules + ' module(s) with history')
+  note(r.advice)
+  return emit({ command: 'cochange', ...r }, r.ok ? EXIT.OK : EXIT.VIOLATION)
+}
+
+function needFleet (command, args) {
+  const state = loadFleet(process.cwd(), args.flags.fleet === true ? null : args.flags.fleet)
+  if (!state.present) {
+    degraded(command, 'no ' + FLEET_FILE + ' found in this directory or any ancestor. A fleet manifest declares the repositories and the contracts between them; without it only single-repository governance applies.')
+    return null
+  }
+  if (!state.fleet) { degraded(command, state.parseError || 'fleet.json could not be parsed'); return null }
+  return state
+}
+
+COMMANDS.fleet = (args) => {
+  const sub = args.positional[1] || 'status'
+  const state = needFleet('fleet', args)
+  if (!state) return EXIT.DEGRADED
+
+  if (sub === 'lint') {
+    const r = fleetLint(state)
+    for (const f of r.findings) note((f.severity === 'error' ? ' ERR  ' : ' warn ') + f.code + ' :: ' + f.message)
+    note(r.counts.repos + ' repositor(y|ies), ' + r.counts.contracts + ' contract(s), ' +
+      r.counts.error + ' error(s), ' + r.counts.warning + ' warning(s)')
+    return emit({ command: 'fleet', sub, fleetFile: state.file, ...r }, r.ok ? EXIT.OK : EXIT.VIOLATION)
+  }
+
+  if (sub === 'impact') {
+    const contract = args.positional[2]
+    if (!contract) return emit({ command: 'fleet', sub, ok: false, reason: 'usage: fleet impact <contract-id>' }, EXIT.DEGRADED)
+    const r = fleetImpact(state, contract)
+    if (r.degraded) { note(r.reason); note('known contracts: ' + (r.known || []).join(', ')); return emit({ command: 'fleet', sub, ...r }, EXIT.DEGRADED) }
+    note('contract ' + r.contract + ' owned by ' + r.provider)
+    note('  versions            : ' + r.versions.map(v => v.version + ' (' + v.status + ')').join(', '))
+    note('  direct consumers    : ' + (r.directConsumers.join(', ') || 'none'))
+    note('  reached transitively: ' + (r.transitiveConsumers.join(', ') || 'none'))
+    note('  coordination cost   : ' + r.coordinationCost + ' repositor(y|ies)')
+    note('  ' + r.advice)
+    return emit({ command: 'fleet', sub, ...r }, EXIT.OK)
+  }
+
+  if (sub === 'recap') {
+    const r = fleetRecap(state, { budget: args.flags.budget ? Number(args.flags.budget) : 8000 })
+    note(r.text)
+    note('fleet recap: ' + r.chars + '/' + r.budget + ' chars over ' + r.repos + ' repositor(y|ies)' + (r.truncated ? ' (truncated)' : ''))
+    return emit({ command: 'fleet', sub, ...r }, EXIT.OK)
+  }
+
+  if (sub === 'status') {
+    const r = fleetStatus(state, { deep: !!args.flags.deep })
+    for (const row of r.rows) {
+      note('  ' + (row.exists ? (row.installed ? (row.governanceEnabled ? ' ok  ' : ' off ') : ' bare') : ' MISS') + ' ' +
+        row.id.padEnd(18) +
+        (row.installed ? 'modules=' + row.modules + ' skills=' + row.skills : 'scaffold not installed') +
+        (row.doctorFailing && row.doctorFailing.length ? ' failing=[' + row.doctorFailing.join(',') + ']' : '') +
+        (r.deep ? ' dod=' + row.dod + ' sync=' + row.syncCheck : ''))
+    }
+    note(r.ok ? 'every repository is installed, governed and healthy' : 'needs attention: ' + r.problems.join(', '))
+    return emit({ command: 'fleet', sub, fleetFile: state.file, ...r }, r.ok ? EXIT.OK : EXIT.VIOLATION)
+  }
+
+  return emit({ command: 'fleet', ok: false, reason: 'usage: fleet lint|impact <contract>|recap|status [--deep]' }, EXIT.DEGRADED)
 }
 
 COMMANDS.help = () => {

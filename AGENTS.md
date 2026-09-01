@@ -93,6 +93,15 @@ Six tiers: `critical` `high` `medium` `low` `minimal` `none`.
 4. **Recovery is one bounded command**: `node .dsh/base/dsb.mjs recap`. It derives the live state — position, pinned, in progress, P0/P1, recent decisions and Done, risks, decay signals — inside a character budget, so resuming costs the same whether the project is a week or two years old. A compaction summary is a claim, not a fact; recap reads artifacts.
 5. **Memory is archived, never deleted.** When the ledger exceeds its budget, `node .dsh/base/dsb.mjs archive --apply` moves the oldest `Done` and `Notes` entries into `progress.archive.md` and leaves a pointer. An archived entry is never rewritten; a correction is a new entry in the live ledger.
 
+## 8a. Fleet law — when the system is many repositories
+
+1. One repository per service, each small enough that one agent holds its whole model, is the right answer to context. It moves complexity from file dependencies to **contracts between repositories**, and nothing inside a repository can see that surface.
+2. `fleet.json` at the group root declares every repository and every contract it `provides` and `consumes`. Enforced by `fleet lint`.
+3. **Never change a published contract version in place.** Publish the new version beside the old, declare a `sunset` date, migrate every consumer, then retire. A deprecation with no sunset date is an error, not a label.
+4. Before a breaking contract change, run `fleet impact <contract>`. Its `coordinationCost` is the number of repositories that must be released together; that number is the decision, not an afterthought.
+5. A contract cycle between repositories means they cannot be released independently. That is the distributed-monolith signature: report it, do not normalise it.
+6. **Boundaries are judged by co-change, not by line count.** `cochange` measures which modules actually move together. High coupling with no declared edge means the boundary is wrong; accepting it requires a written reason in `catalog.cochange.accepted`, exactly like opting an attribute out of governance.
+
 ## 9. Delegation law
 
 1. Delegate evidence-gathering. Retain judgement. A delegate's claim is accepted only with an evidence pointer.
@@ -123,6 +132,11 @@ Six tiers: `critical` `high` `medium` `low` `minimal` `none`.
 | Anti-pattern scan | `node .dsh/base/dsb.mjs fitness --all` |
 | Pack context for a delegate | `node .dsh/base/dsb.mjs context-pack --focus "src/x/**"` |
 | Evidence pack for review | `node .dsh/base/dsb.mjs review-pack` |
+| Where are we, in one budget | `node .dsh/base/dsb.mjs recap` |
+| Is memory in step with the code? | `node .dsh/base/dsb.mjs sync-check` |
+| Are the boundaries drawn where the code changes? | `node .dsh/base/dsb.mjs cochange` |
+| What does a contract change cost? | `node .dsh/base/dsb.mjs fleet impact <contract>` |
+| Is the whole project group healthy? | `node .dsh/base/dsb.mjs fleet status --deep` |
 | Everything static, one command | `node .dsh/base/dsb.mjs dod` |
 
 ## 12. Skills

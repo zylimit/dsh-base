@@ -10,7 +10,7 @@ import fs from 'node:fs'
 import {
   BASE_DIR, ATTRIBUTES, TIERS, RISK_TIERS, REASON_REQUIRED_TIERS,
   CATCH_ALL_GLOBS, classifyPath, globToRegExp, globSpecificity,
-  trackedFiles, readText, rel, abs, writeJsonAtomic, readJson, nowIso,
+  trackedFiles, readText, rel, abs, writeJsonAtomic, readJson, nowIso, git,
 } from './core.mjs'
 
 // ── catalog lint ────────────────────────────────────────────────────────────
@@ -468,4 +468,138 @@ export function trendGate (current, history = readTrend()) {
     if (now > best[k]) regressions.push({ metric: k, best: best[k], now })
   }
   return { ok: regressions.length === 0, best, current: current.metrics, regressions, samples: history.length }
+}
+// ── co-change analysis ──────────────────────────────────────────────────────
+//
+// The measurement that decides whether a boundary is drawn in the right place.
+// Size is a proxy; what actually matters is which parts tend to change together.
+// Two modules that move in the same commit most of the time are one module with
+// a wall through it, and splitting them into separate services turns every
+// ordinary change into a coordinated release.
+
+const SENTINEL = '@@@'
+
+export function coChange (catalog, { limit = 500, minPairs = 3, ratio = 0.5, maxModulesPerCommit = 8 } = {}) {
+  const r = git(['-c', 'core.quotePath=false', 'log', '-n', String(limit), '--no-merges',
+    '--name-only', '--pretty=format:' + SENTINEL + '%H'])
+  if (!r.ok) return { ok: false, degraded: true, reason: 'git log unavailable; a history is required to measure coupling' }
+
+  const commits = []
+  let current = null
+  for (const line of r.stdout.split('\n')) {
+    if (line.startsWith(SENTINEL)) { current = { sha: line.slice(SENTINEL.length), paths: [] }; commits.push(current); continue }
+    const p = line.trim()
+    if (p && current) current.paths.push(p)
+  }
+
+  const byId = new Map((catalog.modules || []).map(m => [m.id, m]))
+  const solo = new Map()
+  const pairs = new Map()
+  let analysed = 0
+  let sweeping = 0
+
+  for (const c of commits) {
+    const mods = [...new Set(c.paths.map(p => classifyPath(catalog, p)).filter(x => x.kind === 'module').map(x => x.moduleId))].sort()
+    if (mods.length === 0) continue
+    // A release or a repository-wide reformat touches everything and says nothing
+    // about coupling. Excluding it is reported, never silent.
+    if (mods.length > maxModulesPerCommit) { sweeping++; continue }
+    analysed++
+    for (const m of mods) solo.set(m, (solo.get(m) || 0) + 1)
+    for (let i = 0; i < mods.length; i++) {
+      for (let j = i + 1; j < mods.length; j++) {
+        const key = mods[i] + '|' + mods[j]
+        pairs.set(key, (pairs.get(key) || 0) + 1)
+      }
+    }
+  }
+
+  const declared = (a, b) => {
+    const ma = byId.get(a), mb = byId.get(b)
+    return !!((ma && (ma.dependsOn || []).includes(b)) || (mb && (mb.dependsOn || []).includes(a)))
+  }
+
+  const rows = []
+  for (const [key, count] of pairs) {
+    const [a, b] = key.split('|')
+    const denom = Math.min(solo.get(a) || 1, solo.get(b) || 1)
+    const coupling = denom ? count / denom : 0
+    rows.push({
+      a, b, coChanges: count,
+      commitsA: solo.get(a) || 0,
+      commitsB: solo.get(b) || 0,
+      coupling: Number(coupling.toFixed(3)),
+      declaredEdge: declared(a, b),
+      layerA: (byId.get(a) || {}).layer || null,
+      layerB: (byId.get(b) || {}).layer || null,
+    })
+  }
+  rows.sort((x, y) => y.coupling - x.coupling || y.coChanges - x.coChanges)
+
+  // Accepting a coupling is a recorded decision, exactly like opting an attribute
+  // out of governance: it carries a written reason and stays visible as a warning.
+  const accepted = new Map()
+  for (const entry of (catalog.cochange && catalog.cochange.accepted) || []) {
+    if (!entry || entry.length < 2) continue
+    accepted.set([entry[0], entry[1]].sort().join('|'), entry[2] || '(no reason recorded)')
+  }
+
+  const findings = []
+  const minSample = (catalog.cochange && catalog.cochange.minSample) || 30
+  if (analysed < minSample) {
+    findings.push({
+      severity: 'warning',
+      code: 'LOW_CONFIDENCE',
+      message: 'only ' + analysed + ' commit(s) carried module changes, below the ' + minSample +
+        ' needed to conclude anything about coupling; treat every result below as a hint, not a measurement',
+    })
+  }
+  for (const row of rows) {
+    if (row.coChanges < minPairs || row.coupling < ratio) continue
+    const key = [row.a, row.b].sort().join('|')
+    if (accepted.has(key)) {
+      findings.push({
+        severity: 'warning',
+        code: 'ACCEPTED_COUPLING',
+        pair: [row.a, row.b],
+        coupling: row.coupling,
+        coChanges: row.coChanges,
+        message: row.a + ' and ' + row.b + ' are ' + Math.round(row.coupling * 100) + ' % coupled, accepted: ' + accepted.get(key),
+      })
+      continue
+    }
+    findings.push({
+      severity: row.declaredEdge ? 'warning' : 'error',
+      code: row.declaredEdge ? 'HIGH_COUPLING' : 'BOUNDARY_SUSPECT',
+      pair: [row.a, row.b],
+      coupling: row.coupling,
+      coChanges: row.coChanges,
+      message: row.a + ' and ' + row.b + ' changed together in ' + row.coChanges + ' of ' + Math.min(row.commitsA, row.commitsB) +
+        ' commits (' + Math.round(row.coupling * 100) + ' %)' +
+        (row.declaredEdge
+          ? '; the dependency is declared, but this level of coupling means they cannot be released independently'
+          : '; there is no declared dependency between them, so the boundary is either wrong or the graph is incomplete'),
+    })
+  }
+
+  const isolated = (catalog.modules || [])
+    .filter(m => (solo.get(m.id) || 0) >= minPairs)
+    .filter(m => ![...pairs.keys()].some(k => k.split('|').includes(m.id)))
+    .map(m => m.id)
+
+  const errors = findings.filter(f => f.severity === 'error')
+  return {
+    ok: errors.length === 0,
+    commits: commits.length,
+    analysed,
+    sweeping,
+    modules: solo.size,
+    top: rows.slice(0, 20),
+    findings,
+    isolatedModules: isolated,
+    counts: { error: errors.length, warning: findings.length - errors.length },
+    advice: isolated.length
+      ? 'Modules that never co-change with anything are the safest candidates to extract into their own repository: ' + isolated.join(', ')
+      : 'No module is fully independent in this window; extracting any of them costs a coordinated release.',
+  }
 }

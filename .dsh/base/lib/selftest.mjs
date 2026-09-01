@@ -13,6 +13,7 @@ import { lintCatalog, computeImpact, resolveVerification, extractImports, resolv
 import { aggregate, buildPlan, assessAttributes, validateWaiver, waiverContentHash, syncCheck, STATUS } from './quality.mjs'
 import { parseFrontmatter, FITNESS_RULE_IDS, fitness as fitnessScan, skillsLint as skillsLintFn } from './scan.mjs'
 import { denied, parseLedger, memoryConfig } from './context.mjs'
+import { fleetLint, fleetImpact, contractCycles } from './fleet.mjs'
 
 function fixture () {
   return {
@@ -414,6 +415,79 @@ export function selftest () {
   t('matchesAny: an empty pattern list matches nothing', () => {
     ok(!matchesAny('a.ts', []))
     ok(!matchesAny('a.ts', undefined))
+  })
+
+  // ── fleet ─────────────────────────────────────────────────────────────────
+  const fleetFixture = () => ({
+    root: '/nonexistent-fleet-root',
+    fleet: {
+      version: 1,
+      name: 'fixture',
+      repos: [
+        { id: 'orders', path: 'orders', owners: ['@a'],
+          provides: [{ contract: 'orders.api', version: '2.0', kind: 'http', status: 'active', adr: 'ADR-0001' }],
+          consumes: [{ contract: 'billing.events', version: '1.x' }] },
+        { id: 'billing', path: 'billing', owners: ['@b'],
+          provides: [{ contract: 'billing.events', version: '1.3', kind: 'event', status: 'active', adr: 'ADR-0002' }],
+          consumes: [] },
+        { id: 'web', path: 'web', owners: ['@c'],
+          provides: [], consumes: [{ contract: 'orders.api', version: '2.0' }] },
+      ],
+    },
+  })
+  const codesOf = (r) => r.findings.filter(f => f.code !== 'REPO_MISSING' && f.code !== 'REPO_NOT_GIT').map(f => f.code)
+
+  t('fleet: a consistent manifest raises no contract finding', () => {
+    eq(codesOf(fleetLint(fleetFixture())), [])
+  })
+  t('fleet: consuming a contract nobody provides is an error', () => {
+    const s = fleetFixture()
+    s.fleet.repos[2].consumes.push({ contract: 'ghost.api', version: '1.0' })
+    ok(codesOf(fleetLint(s)).includes('DANGLING_CONSUME'))
+  })
+  t('fleet: an external consumption is allowed to have no provider here', () => {
+    const s = fleetFixture()
+    s.fleet.repos[2].consumes.push({ contract: 'stripe.api', version: '1.0', external: true })
+    ok(!codesOf(fleetLint(s)).includes('DANGLING_CONSUME'))
+  })
+  t('fleet: consuming a version nobody offers is an error', () => {
+    const s = fleetFixture()
+    s.fleet.repos[2].consumes[0].version = '3.0'
+    ok(codesOf(fleetLint(s)).includes('UNPROVIDED_VERSION'))
+  })
+  t('fleet: a deprecation without a sunset date is an error', () => {
+    const s = fleetFixture()
+    s.fleet.repos[0].provides[0].status = 'deprecated'
+    ok(codesOf(fleetLint(s)).includes('DEPRECATED_WITHOUT_SUNSET'))
+  })
+  t('fleet: a passed sunset that still has consumers is an error', () => {
+    const s = fleetFixture()
+    s.fleet.repos[0].provides[0].status = 'deprecated'
+    s.fleet.repos[0].provides[0].sunset = '2000-01-01'
+    ok(codesOf(fleetLint(s)).includes('SUNSET_PASSED'))
+  })
+  t('fleet: two owners for one contract is an error', () => {
+    const s = fleetFixture()
+    s.fleet.repos[1].provides.push({ contract: 'orders.api', version: '2.0', adr: 'ADR-0003' })
+    ok(codesOf(fleetLint(s)).includes('CONTRACT_MULTIPLE_OWNERS'))
+  })
+  t('fleet: a contract cycle is reported as a release-coupling smell', () => {
+    const s = fleetFixture()
+    s.fleet.repos[1].consumes.push({ contract: 'orders.api', version: '2.0' })
+    ok(contractCycles(s.fleet).length > 0)
+    ok(codesOf(fleetLint(s)).includes('CONTRACT_CYCLE'))
+  })
+  t('fleet: impact reaches direct and transitive consumers', () => {
+    const r = fleetImpact(fleetFixture(), 'billing.events')
+    eq(r.provider, 'billing')
+    eq(r.directConsumers, ['orders'])
+    eq(r.transitiveConsumers, ['web'], 'a change reaches whoever consumes the consumer')
+    eq(r.coordinationCost, 3)
+  })
+  t('fleet: impact on an unknown contract degrades and names what exists', () => {
+    const r = fleetImpact(fleetFixture(), 'nope')
+    ok(r.degraded)
+    ok(r.known.includes('orders.api'))
   })
 
   // ── scale smoke ───────────────────────────────────────────────────────────

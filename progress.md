@@ -24,6 +24,11 @@ and hedged language is demoted to `Notes` as `Needs-Confirmation`.
 - 2026-08-31 | chose to commit .dsh/base/trend/ over git-ignoring it | a per-machine baseline lets each developer measure against a different best value, which disables the ratchet | ADR-0007
 - 2026-09-01 | chose one Node installer over parallel sh and PowerShell implementations | two implementations of one policy drift, and the drift is silent until a batch install corrupts a repository | manual:maintainers, reviewed at each release
 - 2026-09-01 | chose to exclude the scaffold's own requirements and ADRs from installation over shipping them as examples | an adopter inherited 27 foreign requirements and spec-lint vouched for a specification nobody in that project wrote | manual:maintainers, covered by tests/installer.test.mjs
+- 2026-09-01 | chose one hidden directory plus AGENTS.md over claiming the project's docs/ and scripts/ | those directories belong to the adopting project, and a scaffold that colonises them is noticed and resented; AGENTS.md cannot move because the harness reads a constitution per directory and follows no pointer | manual:maintainers, covered by tests/installer.test.mjs
+- 2026-09-01 | chose to isolate the tool in .gitignore while keeping progress.md tracked over ignoring both | the tool is replaceable and machine-local, project memory is project state and is exactly what a new machine resumes from | init, covered by tests/memory.test.mjs
+- 2026-09-01 | chose a derived budgeted recap over reading the three memory files | reading them costs more every month, so recovery would get slower precisely as the project became more valuable to recover | recap
+- 2026-09-01 | chose a fleet layer with declared contracts over per-repository governance plus convention | splitting a system moves complexity from file dependencies to repo contracts, and no repository can see that surface; a convention holds until the first deadline and then fails silently inside a consumer | ADR-0009
+- 2026-09-01 | chose co-change frequency over line count as the boundary criterion | size is a proxy, and two modules that always move together are one module with a wall through it whatever their size | cochange
 
 ## TODO
 
@@ -32,6 +37,8 @@ and hedged language is demoted to `Notes` as `Needs-Confirmation`.
 - #003 P2 Add a behaviour regression for the skill catalog: a trigger phrase per skill and the expected observable behaviour, so a skill that never fires is detectable. Raise to P1 when the catalog exceeds 30 skills.
 - #004 P2 Extend `arch-check` specifier resolution for polyglot trees; unresolved specifiers are counted and sampled today, not attributed. Raise to P1 when a target repository is not predominantly JavaScript.
 - #005 P2 Render the traceability matrix as a reviewable markdown table rather than JSON only.
+- #007 P1 Measure `cochange` against a repository with real history. The current window is 6 analysed commits and the command correctly reports `LOW_CONFIDENCE`; the thresholds (ratio 0.5, minPairs 3) are guesses until calibrated on a tree with hundreds of commits.
+- #008 P2 `fleet lint` proves the manifest is internally consistent; it cannot prove the manifest lists every contract that actually exists. Investigate a per-repository declaration the engine can cross-check, so an undeclared contract is detectable rather than merely undeclared. Raise to P1 once a real fleet is onboarded.
 - #006 P2 Teach the installer an `--upgrade` mode that shows a diff for each staged `.deepseek-base-new` file instead of leaving the reader to find them. Raise to P1 once more than ten repositories are on the scaffold.
 
 ## In progress
@@ -40,6 +47,10 @@ Nothing.
 
 ## Done
 
+- 2026-09-01 | #— Fleet layer: the contract surface between repositories is governed | evidence: `fleet lint` enforces DANGLING_CONSUME, UNPROVIDED_VERSION, CONTRACT_MULTIPLE_OWNERS, DEPRECATED_WITHOUT_SUNSET, SUNSET_PASSED, CONSUMING_RETIRED and reports CONTRACT_CYCLE; `fleet impact` returns the coordination cost of a breaking change; `fleet status`/`fleet recap` aggregate the group; 9 fleet tests pass; ADR-0009
+- 2026-09-01 | #— Boundaries are measured, not asserted | evidence: `cochange` reads git history, excludes sweeping commits, reports BOUNDARY_SUSPECT for high coupling with no declared edge and LOW_CONFIDENCE below the configured sample. It found a real 100 % coupling between `engine-selftest` and `tests` here, now accepted with a written reason in `catalog.cochange.accepted`
+- 2026-09-01 | #— Memory made bounded and enforceable | evidence: `sync-check` blocks a commit that moves governed code without `progress.md` or edits a spec without its changelog, wired into pre-commit; `recap` produced 4667/6000 chars here and stayed inside budget against a 400-entry fixture; `archive --apply` moved 50 of 60 entries with none lost; `selftest` 81/81
+- 2026-09-01 | #— Copy surface collapsed to one directory plus one file | evidence: `tests/installer.test.mjs` asserts nothing is installed outside `.dsh/` except `AGENTS.md` and `progress.md`; audit scripts moved to `.dsh/base/audit/`, the manual to `.dsh/docs/`, the profile patch to `.dsh/base/`
 - 2026-09-01 | #— Batch-ready installation | evidence: five scenario installs (empty, existing source, project-owned files, non-git, CRLF) each run twice; second pass `copied 0, unchanged 74, staged 0`; 429 CRLF endings forced into `core.mjs` still read as unchanged; `node --test "tests/*.test.mjs"` 53/53 including 10 installer policy tests; commit 0c32f81
 - 2026-09-01 | #— Five batch-scale installer defects found and fixed | evidence: dual sh/PowerShell implementations collapsed into `.dsh/base/install.mjs`; byte comparison replaced by LF-normalised identity; hook mode recorded via `git add --chmod=+x` (verified `100755` in a target index); `--verify` now stages before linting and `catalog-lint` warns `NO_TRACKED_PATHS`; per-target isolation with exit 1 on any failure; commit 0c32f81
 - 2026-09-01 | #— Adoption defects found by installing into an empty repository | evidence: `catalog.example.json` left 64 UNMAPPED on first enablement, now 0; the installer shipped our own `docs/requirements/**` and `docs/adr/ADR-*.md` so `spec-lint` passed on a foreign specification, now excluded and covered by a test; `progress.md` seeded from the template; commits 0b3c159, 1c15a8a

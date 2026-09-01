@@ -233,6 +233,8 @@ const ENGINE_CAPABILITIES = new Set([
   'arch-check', 'arch-trend', 'catalog-lint', 'impact', 'verify', 'gate', 'fitness',
   'attributes', 'receipt', 'waiver', 'budget', 'trace', 'agents-lint', 'skills-lint',
   'spec-lint', 'adr-check', 'context-pack', 'layers', 'forbiddenDependencies',
+  'sync-check', 'recap', 'archive', 'init', 'ledger', 'risk', 'gate-audit',
+  'fleet', 'cochange', 'review-pack', 'dod',
 ])
 const BACKTICK = String.fromCharCode(96)
 const STRIP_FENCE = new RegExp('^[' + BACKTICK + ']+|[' + BACKTICK + ']+$', 'g')
