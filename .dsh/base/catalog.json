@@ -672,6 +672,11 @@
         "doctrine-docs",
         "engine-selftest",
         "the selftest count is cited in the manual, so a new assertion moves both. Delivery-unit coupling, not a boundary."
+      ],
+      [
+        "doctrine-docs",
+        "engine-scan",
+        "the manual documents every command, and the capability registry these commands resolve through lives in scan.mjs. Delivery-unit coupling, not a boundary."
       ]
     ]
   },

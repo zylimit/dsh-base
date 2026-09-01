@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 89,
-  "digest": "a22d65e77a14e318062633ccc5e91bc422ea990d98fd9b24efcd4ca6b486c644",
+  "digest": "6edb42284574a1c387c2d62eb6e9a91b9e09b76abc43265af84452c91d561f0d",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -36,8 +36,8 @@
     },
     {
       "path": ".dsh/base/dsb.mjs",
-      "sha256": "dfc8fc204a2e312a06440a8e0d97db7fd2ef01fbfb58e283b2a76e9ecf54a7d8",
-      "bytes": 50292
+      "sha256": "1d06e4c1107484f66c093a8a62c429381940d5fef46fc8e332970f8016259037",
+      "bytes": 50453
     },
     {
       "path": ".dsh/base/githooks/commit-msg",
@@ -81,8 +81,8 @@
     },
     {
       "path": ".dsh/base/lib/quality.mjs",
-      "sha256": "33d2e5de575cd77bef551b126ed722eda37deac9f85a395c2b61794699ea049f",
-      "bytes": 48017
+      "sha256": "e14df0c2ff6be2fdb005fc75c5d35cb4e8bf1a39be1b8135fa30596242d1d778",
+      "bytes": 50508
     },
     {
       "path": ".dsh/base/lib/scan.mjs",

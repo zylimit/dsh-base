@@ -251,8 +251,11 @@ COMMANDS.receipt = async (args) => {
     let payload
     try { payload = JSON.parse(raw) } catch { return emit({ command: 'receipt', ok: false, reason: 'stdin is not valid JSON' }, EXIT.DEGRADED) }
     try {
-      const r = writeReceipt(payload)
-      note('receipt written for task ' + r.taskId + ' bound to diff ' + String(r.diffHash).slice(0, 12))
+      const base = typeof args.flags.base === 'string' ? args.flags.base : null
+      const r = writeReceipt(payload, { base })
+      note('receipt written for task ' + r.taskId + (r.range
+        ? ' over range ' + r.range.base + '..HEAD'
+        : ' bound to diff ' + String(r.diffHash).slice(0, 12)))
       return emit({ command: 'receipt', ok: true, receipt: r }, EXIT.OK)
     } catch (e) {
       return emit({ command: 'receipt', ok: false, reason: e.message }, EXIT.DEGRADED)

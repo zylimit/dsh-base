@@ -349,15 +349,27 @@ export function safeTaskId (id) {
   return String(id).replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 120) || 'task'
 }
 
-export function writeReceipt (payload) {
+/**
+ * A receipt binds EITHER the working tree (a review in progress), or a commit
+ * range `base..HEAD` (a release review of what this tag carries). The range
+ * form is what a release needs: on a clean tree there is no working diff to bind,
+ * but the commits that will be tagged are exactly what the lenses judged.
+ */
+export function rangeDiffHash (base) {
+  const r = git(['-c', 'core.quotePath=false', 'diff', '--no-color', '--no-ext-diff', String(base)])
+  if (!r.ok) return null
+  // The identity must agree with canonicalDiff's shape, including the case where
+  // the range is empty: that hash is a named constant, not a coincidence.
+  return r.stdout.trim() === '' ? EMPTY_DIFF_HASH : sha256Lf(r.stdout)
+}
+
+export function writeReceipt (payload, opts = {}) {
   const required = ['taskId', 'reviewer', 'verdict', 'scope']
   for (const f of required) if (!payload[f]) throw new Error('receipt requires field: ' + f)
   if (!['ACCEPT', 'FIX_REQUIRED', 'NEEDS_MORE_EVIDENCE'].includes(payload.verdict)) {
     throw new Error('verdict must be ACCEPT | FIX_REQUIRED | NEEDS_MORE_EVIDENCE')
   }
-  if (diffIsEmpty()) {
-    throw new Error('refusing to write a receipt for an empty diff: the working tree matches HEAD, so there is nothing to review')
-  }
+  const head = headCommit()
   const record = {
     version: 1,
     taskId: safeTaskId(payload.taskId),
@@ -366,9 +378,19 @@ export function writeReceipt (payload) {
     scope: payload.scope,
     notes: payload.notes || '',
     lenses: Array.isArray(payload.lenses) ? payload.lenses : null,
-    baseCommit: headCommit(),
+    baseCommit: head,
     diffHash: diffHash(),
     createdAt: nowIso(),
+  }
+  if (opts.base) {
+    if (!head) throw new Error('a range receipt needs a HEAD commit; this branch has none')
+    const hash = rangeDiffHash(opts.base)
+    if (hash === null) throw new Error('refusing to write a range receipt: ref "' + opts.base + '" does not resolve')
+    if (hash === EMPTY_DIFF_HASH) throw new Error('refusing to write a range receipt for an empty range: ' + opts.base + '..HEAD changes nothing')
+    record.range = { base: String(opts.base), head, hash }
+    record.diffHash = hash
+  } else if (diffIsEmpty()) {
+    throw new Error('refusing to write a receipt for an empty diff: the working tree matches HEAD, so there is nothing to review. For a release, pass --base <tag> to bind the commits being released.')
   }
   record.contentHash = sha256Lf(JSON.stringify(record))
   const p = path.join(RECEIPT_DIR(), record.taskId + '.json')
@@ -385,17 +407,10 @@ export function verifyReceipts () {
   const current = diffHash()
   const head = headCommit()
 
-  // Nothing to bind is not the same as evidence gone stale. An empty tree has no
-  // change under review, so the engine renders no verdict rather than a green one:
-  // otherwise a receipt written against one empty tree would satisfy every later
-  // empty tree, and a commit would silently restore its own review.
-  if (diffIsEmpty()) {
-    return { ok: false, degraded: true, reason: 'no-change: the working tree matches HEAD, so no receipt can bind it', currentDiffHash: current, baseCommit: head }
-  }
-
   const dir = RECEIPT_DIR()
-  if (!fs.existsSync(dir)) return { ok: false, stale: true, reason: 'no-receipt-recorded', currentDiffHash: current }
-  const receipts = listFiles(rel(dir)).filter(p => p.endsWith('.json')).map(p => readJson(p, null)).filter(Boolean)
+  const receipts = fs.existsSync(dir)
+    ? listFiles(rel(dir)).filter(p => p.endsWith('.json')).map(p => readJson(p, null)).filter(Boolean)
+    : []
   const tampered = receipts.filter(r => {
     const { contentHash, ...rest } = r
     return sha256Lf(JSON.stringify(rest)) !== contentHash
@@ -403,20 +418,48 @@ export function verifyReceipts () {
   // A receipt recorded against the empty-diff identity reviewed nothing and can
   // never be evidence, whatever the tree looks like later.
   const vacuous = receipts.filter(r => r.diffHash === EMPTY_DIFF_HASH)
+
+  // Range receipts certify a release: `base..head` commits were reviewed. They
+  // stay valid exactly while HEAD still points at the reviewed commit - the one
+  // place where a clean working tree is not a reason to refuse a verdict.
+  const rangeValid = receipts.filter(r =>
+    r.range && r.range.head === head &&
+    r.verdict === 'ACCEPT' && !tampered.includes(r) && !vacuous.includes(r))
+
+  // Nothing to bind is not the same as evidence gone stale. An empty tree has no
+  // change under review, so the engine renders no verdict rather than a green one:
+  // otherwise a receipt written against one empty tree would satisfy every later
+  // empty tree, and a commit would silently restore its own review. The exception
+  // is a range receipt for THIS head - that is a reviewed release.
+  if (diffIsEmpty()) {
+    if (rangeValid.length > 0) {
+      return {
+        ok: true, stale: false, tampered: [], vacuous: vacuous.map(r => r.taskId),
+        currentDiffHash: current, baseCommit: head,
+        matching: [],
+        rangeMatching: rangeValid.map(r => ({ taskId: r.taskId, reviewer: r.reviewer, createdAt: r.createdAt, lenses: r.lenses || null, kind: 'range', range: r.range })),
+        receipts: receipts.length,
+      }
+    }
+    return { ok: false, degraded: true, rangeMatching: [], reason: 'no-change: the working tree matches HEAD, so no receipt can bind it', currentDiffHash: current, baseCommit: head }
+  }
+
   const matching = receipts.filter(r =>
     r.diffHash === current &&
     r.baseCommit === head &&
     r.verdict === 'ACCEPT' &&
     !tampered.includes(r) &&
     !vacuous.includes(r))
+  const rangeMatching = rangeValid.filter(r => r.range.head === head)
   return {
-    ok: matching.length > 0 && tampered.length === 0,
-    stale: matching.length === 0,
+    ok: (matching.length > 0 || rangeMatching.length > 0) && tampered.length === 0,
+    stale: matching.length === 0 && rangeMatching.length === 0,
     tampered: tampered.map(r => r.taskId),
     vacuous: vacuous.map(r => r.taskId),
     currentDiffHash: current,
     baseCommit: head,
-    matching: matching.map(r => ({ taskId: r.taskId, reviewer: r.reviewer, createdAt: r.createdAt, lenses: r.lenses || null })),
+    matching: matching.map(r => ({ taskId: r.taskId, reviewer: r.reviewer, createdAt: r.createdAt, lenses: r.lenses || null, kind: 'working-tree' })),
+    rangeMatching: rangeMatching.map(r => ({ taskId: r.taskId, reviewer: r.reviewer, createdAt: r.createdAt, lenses: r.lenses || null, kind: 'range', range: r.range })),
     receipts: receipts.length,
   }
 }
