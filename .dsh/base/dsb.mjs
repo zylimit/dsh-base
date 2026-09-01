@@ -32,6 +32,7 @@ import { fitness, adrCheck, specLint, skillsLint, agentsLint, trace, rulesAudit 
 import {
   contextPack, doctor, retention, riskScan, attributeAudit,
   recap, archiveLedger, ledgerHealth, invariants, specView, archiveChangelog,
+  releaseReadiness,
 } from './lib/context.mjs'
 import { selftest } from './lib/selftest.mjs'
 
@@ -934,6 +935,19 @@ COMMANDS.spec = (args) => {
   note(r.text)
   note('spec view: ' + r.chars + '/' + r.budget + ' chars, ' + r.selected.length + ' of ' + r.total + ' requirement(s) in scope')
   return emit({ command: 'spec', ...r }, EXIT.OK)
+}
+
+COMMANDS.release = (args) => {
+  const catalog = needCatalog('release'); if (!catalog) return EXIT.DEGRADED
+  const r = releaseReadiness(catalog, { budget: args.flags.budget ? Number(args.flags.budget) : 3000 })
+  note(r.text)
+  note('')
+  if (r.ready) {
+    note('A human may now tag and publish. This command does neither - tagging is HIGH tier.')
+  } else {
+    note('blockers: ' + r.blockers.join(', '))
+  }
+  return emit({ command: 'release', ...r }, r.ready ? EXIT.OK : EXIT.GATE)
 }
 
 COMMANDS.help = () => {

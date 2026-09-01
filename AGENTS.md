@@ -174,6 +174,7 @@ Consensus is the failure mode, so review here is an engine gate, not a habit.
 | What does a contract change cost? | `node .dsh/base/dsb.mjs fleet impact <contract>` |
 | Is the whole project group healthy? | `node .dsh/base/dsb.mjs fleet status --deep` |
 | How many rules name a real enforcement point? | `node .dsh/base/dsb.mjs rules-audit` |
+| Is every release condition proven? (never tags) | `node .dsh/base/dsb.mjs release` |
 | Everything static, one command | `node .dsh/base/dsb.mjs dod` |
 
 ## 12. Skills

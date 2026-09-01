@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 89,
-  "digest": "803bf352fc455660259823ecd2fe9bc9082cfcb9b0da9cfe3a02fefc97e736f7",
+  "digest": "a22d65e77a14e318062633ccc5e91bc422ea990d98fd9b24efcd4ca6b486c644",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -36,8 +36,8 @@
     },
     {
       "path": ".dsh/base/dsb.mjs",
-      "sha256": "bfc27f789fa69e0a3415fa8e63c987639dfa7ff5af49ad53a8ccdea3b74ffa3c",
-      "bytes": 49782
+      "sha256": "dfc8fc204a2e312a06440a8e0d97db7fd2ef01fbfb58e283b2a76e9ecf54a7d8",
+      "bytes": 50292
     },
     {
       "path": ".dsh/base/githooks/commit-msg",
@@ -61,8 +61,8 @@
     },
     {
       "path": ".dsh/base/lib/context.mjs",
-      "sha256": "d70e68658c2748d945b0594935d81c781319aec4f4dc419457edd68c3f892cb2",
-      "bytes": 31193
+      "sha256": "233cd78964c5e407e4a059bb551729fe9a27d2fb36b941e6de93e0c9da5de04b",
+      "bytes": 35638
     },
     {
       "path": ".dsh/base/lib/core.mjs",
@@ -81,13 +81,13 @@
     },
     {
       "path": ".dsh/base/lib/quality.mjs",
-      "sha256": "4507edb398708c3da5ec00a8c9dc96728afe11145c05382213c8bc117f4d5eda",
-      "bytes": 48005
+      "sha256": "33d2e5de575cd77bef551b126ed722eda37deac9f85a395c2b61794699ea049f",
+      "bytes": 48017
     },
     {
       "path": ".dsh/base/lib/scan.mjs",
-      "sha256": "d10b4f8ae730033fbc251076fae458715f7cc682b89365041c098f0b87db97c8",
-      "bytes": 37704
+      "sha256": "33053871fe49f6fa64c5ec4431c98f568844042ca30597eb2500cd1ef7a7cff2",
+      "bytes": 37717
     },
     {
       "path": ".dsh/base/lib/selftest.mjs",
@@ -376,8 +376,8 @@
     },
     {
       "path": "AGENTS.md",
-      "sha256": "277887851ee76e5c0acec679b47ab16bc83e77f3d29809ec2fcddd743c0e1678",
-      "bytes": 17889
+      "sha256": "4f33f64251139c3d522064ba3ac67b9a8f7de5eca170423380a25c62fa6dbdbf",
+      "bytes": 17976
     },
     {
       "path": "docs/adr/ADR-0001-zero-dependency-engine.md",

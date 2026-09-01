@@ -662,6 +662,16 @@
         "engine-selftest",
         "tooling",
         "no code edge exists and none should: the audit scripts deliberately do not import the engine. They move together because a new capability arrives as engine assertion plus hook wiring in one change - a delivery unit, not a boundary."
+      ],
+      [
+        "doctrine-docs",
+        "engine-cli",
+        "the command reference lives in the constitution and the manual, so adding a subcommand moves them with the CLI. There is no code edge and none should exist: the router must not import its own documentation."
+      ],
+      [
+        "doctrine-docs",
+        "engine-selftest",
+        "the selftest count is cited in the manual, so a new assertion moves both. Delivery-unit coupling, not a boundary."
       ]
     ]
   },

@@ -69,6 +69,7 @@ Nothing.
 
 ## Done
 
+- 2026-09-01 | #— `dsb release` assembles release evidence and never tags | evidence: nine conditions (dod-static, trace-coverage, ledger-intact, receipt-fresh, fast-mode-closed, fast-debt-repaid, review-backlog, decay-signals, sync-clean) evaluated in one command; a fixture without a fresh receipt is blocked, a fixture with one is ready, and `git tag --list` stays empty afterwards - tagging is a HIGH-tier human act. 3 tests in tests/release.test.mjs. Three fixture defects and one engine defect (missing imports, backlogList lacking `expired`) were found by the tests and fixed
 - 2026-09-01 | #— The review team became a nine-lens, stage-gated, finite pipeline | evidence: lenses now carry stages (1 code / 2 functional / 3 trust); `review lens` refuses an early report (stageGated exit 1); profiles personal/team/production/regulated convene 1/3/6/9 lenses and attributes may only shrink the team; `maxRounds` 3 escalates instead of looping; `review backlog add|list` carries non-protected findings with owner and expiry and refuses security/safety/privacy. 20 review tests pass; a scoping bug the tests caught (`stageLenses is not defined`) is fixed with a regression
 - 2026-09-01 | #— Co-change found two more undeclared realities | evidence: `tests -> tooling` is a real subprocess dependency (the test helper runs the audit scripts) that import analysis cannot see, now declared; `engine-selftest <-> tooling` has no code edge and should not - the audit scripts deliberately do not import the engine - so it is accepted with a written reason as a delivery-unit coupling. `cochange` exit 0
 - 2026-09-01 | #— The new capabilities were documented and the audit's own blind spot closed | evidence: `AGENTS.md` gained section 5b (Review law, rule 6 marked prompt-only) and rule 8.6 (re-read invariants after any compaction); `.dsh/skills/structured-review/SKILL.md` is new and four skills were updated; `skills-lint` 0 over 24 skills, `agents-lint` 0, `scan-instructions` 0, `adr-check` 0. Registering `review`, `invariants`, `fast`, `rules-audit`, `spec`, `catalog`, `selftest` and `doctor` in `ENGINE_CAPABILITIES` moved the enforcement ratio from 0.44 to 0.529 (46 of 87 rules) - the audit had been measuring its own blind spot
@@ -106,6 +107,8 @@ Nothing.
 - ASSUMPTION the seeded `.gitattributes` keeps managed files LF in every target | falsified by: `node .dsh/base/install.mjs <target>` reporting a non-empty `staged` list immediately after a fresh install
 
 ## Notes
+
+- cochange accepted two more delivery-unit couplings (doctrine-docs with engine-cli and engine-selftest): documentation moves with the commands it describes, and no code edge exists or should exist.
 
 - The research brief is at `docs/research/ai-coding-agents-state-of-practice-2026.md`. It was built from search-snippet mining only, so every effect size is reported rather than reproduced; the delegate flagged the `Guardrails Beat Guidance` magnitudes as unread at source.
 - Where this scaffold is ahead of the published field: `Enforced-by:` on ADRs, co-change for boundary placement, and contract sunset dates are all prescribed in the literature and shipped by almost nobody.

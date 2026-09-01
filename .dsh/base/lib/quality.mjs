@@ -995,7 +995,7 @@ export function backlogAdd (payload) {
 
 export function backlogList () {
   const s = readReview()
-  if (!s) return { ok: true, count: 0, entries: [] }
+  if (!s) return { ok: true, count: 0, entries: [], expired: 0 }
   const now = new Date()
   const entries = (s.backlog || []).map(e => ({ ...e, expired: !(new Date(e.expiry) > now) }))
   return { ok: true, count: entries.length, entries, expired: entries.filter(e => e.expired).length }

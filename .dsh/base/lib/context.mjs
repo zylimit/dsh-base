@@ -11,9 +11,9 @@ import {
   matchesAny, trackedFiles, canonicalDiff, diffHash, headCommit, isGitRepo, sha256Lf,
   nowIso, git,
 } from './core.mjs'
-import { computeImpact, resolveVerification } from './graph.mjs'
-import { readTask, verifyLedger, verifyReceipts, readLedger, fastState } from './quality.mjs'
-import { specLint, trace } from './scan.mjs'
+import { computeImpact, resolveVerification, lintCatalog, archCheck } from './graph.mjs'
+import { readTask, verifyLedger, verifyReceipts, readLedger, fastState, syncCheck, backlogList } from './quality.mjs'
+import { specLint, trace, skillsLint, agentsLint, adrCheck, fitness } from './scan.mjs'
 
 const FENCE = '\u0060\u0060\u0060'
 const TICK = '\u0060'
@@ -637,4 +637,73 @@ export function archiveChangelog (catalog, { apply = false, keep = 10 } = {}) {
   writeAtomic(file, head.join('\n').trimEnd() + '\n\n- Older versions are in [' +
     archiveFile.split('/').pop() + '](' + archiveFile.split('/').pop() + ').\n')
   return { ok: true, applied: true, moved, versions: starts.length, keep, file, archive: archiveFile }
+}
+// ── release readiness ───────────────────────────────────────────────────────
+//
+// A release is a HIGH-tier act and the engine never performs one: no tag, no
+// push, no deploy. What it does is assemble the evidence a human signs on, so
+// the decision is made on the same facts the gate used - not on a recollection.
+// This is the other half of release-readiness: the skill tells you the
+// conditions, this command evaluates them.
+
+export function releaseReadiness (catalog, { budget = 3000 } = {}) {
+  const run = (fn) => { try { return fn() } catch (e) { return { degraded: true, reason: 'engine error: ' + e.message } } }
+  const cond = (id, result, blocking, detail) => ({ id, ok: result && result.ok !== false && !result.degraded, blocking, detail: detail || (result && result.reason) || null })
+
+  const items = [
+    cond('dod-static', run(() => {
+      const failures = []
+      const steps = [
+        ['catalog', () => lintCatalog(catalog)], ['skills', () => skillsLint()], ['agents', () => agentsLint(catalog)],
+        ['spec', () => specLint(catalog)], ['adr', () => adrCheck(catalog)], ['attributes', () => attributeAudit(catalog)],
+        ['arch', () => archCheck(catalog, {})], ['fitness', () => fitness(catalog, { all: true })],
+      ]
+      for (const [id, fn] of steps) { const r = fn(); if (r.ok === false || r.degraded) failures.push(id) }
+      return { ok: failures.length === 0, reason: failures.length ? 'failing: ' + failures.join(', ') : null }
+    }), true),
+    cond('trace-coverage', run(() => { const r = trace(catalog); return { ok: r.ok, reason: r.degraded ? r.reason : 'coverage ' + (r.coverage * 100).toFixed(0) + ' %' } }), true),
+    cond('ledger-intact', run(() => { const r = verifyLedger(); return { ok: r.ok, reason: r.entries + ' entries' } }), true),
+    cond('receipt-fresh', run(() => {
+      const r = verifyReceipts()
+      if (r.degraded) return { ok: false, reason: r.reason }
+      return { ok: r.ok, reason: r.matching ? r.matching.length + ' fresh ACCEPT receipt(s)' : 'stale' }
+    }), true),
+    cond('fast-mode-closed', run(() => { const s = fastState(); return { ok: !s.active, reason: s.active ? 'open until ' + s.until : 'closed' } }), true),
+    cond('fast-debt-repaid', run(() => {
+      const last = readLedger().filter(e => e.gate).slice(-1)[0]
+      if (last && last.fastMode) return { ok: false, reason: 'last gate was fast mode; a full gate is required' }
+      return { ok: true, reason: 'last gate was a full run' }
+    }), true),
+    cond('review-backlog', run(() => {
+      const b = backlogList()
+      if (b.expired) return { ok: false, reason: b.expired + ' expired backlog entr(y|ies)' }
+      return { ok: true, reason: b.count + ' open entry(ies), ' + b.expired + ' expired' }
+    }), false),
+    cond('decay-signals', run(() => { const r = riskScan(catalog); return { ok: r.ok, reason: r.counts.error + ' error(s), ' + r.counts.warning + ' warning(s)' } }), false),
+    cond('sync-clean', run(() => { const r = syncCheck(catalog, { staged: false }); return { ok: r.ok, reason: r.codeChanged + ' governed file(s) changed this commit-window' } }), true),
+  ]
+
+  const blockers = items.filter(i => i.blocking && !i.ok)
+  const warnings = items.filter(i => !i.blocking && !i.ok)
+  const ready = blockers.length === 0
+
+  const lines = [
+    '# Release readiness - ' + nowIso(),
+    '',
+    'Tagging, pushing and deploying are HIGH-tier human acts. This command never performs them.',
+    'It assembles the evidence; the human makes the decision on these facts.',
+    '',
+    '## Conditions',
+  ]
+  for (const i of items) {
+    lines.push('- [' + (i.ok ? 'x' : ' ') + '] ' + i.id + (i.blocking ? ' (blocking)' : '') + (i.detail ? ' - ' + i.detail : ''))
+  }
+  lines.push('')
+  lines.push(ready ? '## READY - every blocking condition holds. A human may now tag and publish.' : '## NOT READY - blocking conditions above must be repaired first.')
+
+  let body = lines.join('\n')
+  let truncated = false
+  if (body.length > budget) { body = body.slice(0, budget) + '\n...[truncated]\n'; truncated = true }
+
+  return { ok: ready, ready, blockers: blockers.map(b => b.id), warnings: warnings.map(w => w.id), items, chars: body.length, budget, truncated, text: body }
 }
