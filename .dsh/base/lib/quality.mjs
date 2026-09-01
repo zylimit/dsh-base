@@ -229,7 +229,12 @@ export function aggregate (results, plan) {
 
 export function runGate (catalog, impact, opts = {}) {
   const plan = buildPlan(catalog, impact.affected)
-  const raw = plan.entries.map(e => runCheck(e.checkId, (catalog.checks || {})[e.checkId], opts))
+  // An open fast-mode window applies without being asked for: a developer under
+  // pressure should not have to remember a flag, and the record must show the
+  // window was open whether or not they did.
+  const fast = fastState()
+  const fastMode = opts.fastMode || fast.active
+  const raw = plan.entries.map(e => runCheck(e.checkId, (catalog.checks || {})[e.checkId], { ...opts, fastMode }))
   const waived = applyWaivers(raw, catalog)
   const results = waived.results
   const agg = aggregate(results, plan)
@@ -242,10 +247,15 @@ export function runGate (catalog, impact, opts = {}) {
     reason = attrs.gaps.length + ' blocking quality-attribute gap(s): green checks that prove nothing about a critical/high attribute do not close the gate'
   }
 
+  const skippedByFastMode = results.filter(r => r.reason === 'fast-mode').map(r => r.id)
   const record = {
     at: nowIso(),
     gate,
     reason,
+    fastMode,
+    fastReason: fastMode ? (fast.reason || opts.fastReason || 'one-off --fast') : null,
+    fastUntil: fast.active ? fast.until : null,
+    skippedByFastMode,
     baseCommit: headCommit(),
     diffHash: diffHash(),
     planHash: plan.hash,
@@ -485,6 +495,10 @@ export function completeTask (catalog, impact) {
   const current = diffHash()
   const gateFresh = latest && latest.diffHash === current && latest.gate === STATUS.PASS
   const blockers = []
+  if (latest && latest.fastMode && latest.diffHash === current) {
+    blockers.push('the newest gate ran in fast mode and skipped [' + (latest.skippedByFastMode || []).join(', ') +
+      ']; a loan against evidence cannot close a task. Run "dsb fast off" then "dsb gate".')
+  }
   if (!gateFresh) blockers.push('no PASSING gate bound to the current diff (run: dsb gate)')
   if (!receipts.ok) blockers.push('no fresh ACCEPT review receipt bound to the current diff (run: dsb receipt write)')
   if (!ledger.ok) blockers.push('verification ledger chain is broken; prior evidence cannot be trusted')
@@ -555,4 +569,60 @@ export function syncCheck (catalog, { staged = false, paths = null } = {}) {
     findings,
     counts: { error: errors.length, warning: findings.length - errors.length },
   }
+}
+// ── fast mode ───────────────────────────────────────────────────────────────
+//
+// Shipping under time pressure is a real requirement, and a governance system
+// that pretends otherwise gets bypassed with --no-verify, which teaches the team
+// that the gate is optional. So the pressure is served, on four conditions that
+// keep it from becoming permanent:
+//
+//   1. It expires by itself. A window with no end is not a window.
+//   2. It cannot touch security, safety or privacy. Those are not slow, they are
+//      the reason the software is allowed to exist.
+//   3. It skips only what the project marked skippable BEFORE the emergency,
+//      when there was time to think about which evidence is cheap to defer.
+//   4. It is a loan. Every skipped check is recorded as SKIPPED with its reason,
+//      the gate record is stamped fastMode, and that record cannot close a task
+//      or a release. The debt is dated and visible until a full gate repays it.
+
+const FAST_PATH = () => path.join(BASE_DIR, 'state', 'fast-mode.json')
+
+export function fastState () {
+  const raw = readJson(rel(FAST_PATH()), null)
+  if (!raw || !raw.until) return { active: false, expired: false, record: null }
+  const until = new Date(raw.until)
+  const expired = !(until > new Date())
+  return { active: !expired, expired, record: raw, until: raw.until, reason: raw.reason, minutes: raw.minutes }
+}
+
+export function setFast ({ on, minutes = 60, reason = '', by = '' }) {
+  if (!on) {
+    try { fs.unlinkSync(abs(rel(FAST_PATH()))) } catch { /* already off */ }
+    return { active: false, record: null }
+  }
+  const m = Math.max(1, Math.min(Number(minutes) || 60, 8 * 60))
+  if (!String(reason).trim()) throw new Error('fast mode requires a reason: it is a dated loan against evidence, and an undated loan is never repaid')
+  const record = {
+    version: 1,
+    reason: String(reason).trim(),
+    by: String(by || process.env.USERNAME || process.env.USER || 'unknown'),
+    minutes: m,
+    createdAt: nowIso(),
+    until: new Date(Date.now() + m * 60000).toISOString(),
+  }
+  writeJsonAtomic(rel(FAST_PATH()), record)
+  return { active: true, record }
+}
+
+/** Checks this project marked skippable, minus everything protected. */
+export function fastSkippable (catalog) {
+  const out = []
+  for (const [id, def] of Object.entries(catalog.checks || {})) {
+    if (!def || !def.allowFastSkip) continue
+    const isProtected = PROTECTED_CLASSES.has(def.class) || (def.attributes || []).some(a => PROTECTED_ATTRIBUTES.has(a))
+    if (isProtected) continue
+    out.push(id)
+  }
+  return out
 }

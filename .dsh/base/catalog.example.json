@@ -160,7 +160,8 @@
       "class": "test",
       "attributes": [
         "reliability"
-      ]
+      ],
+      "allowFastSkip": true
     },
     "sast": {
       "command": "CHANGE-ME a static analyser, for example: semgrep --error --config auto",
@@ -287,5 +288,6 @@
         "maintainability": "medium"
       }
     }
-  ]
+  ],
+  "//fast": "allowFastSkip marks a check as deferrable under a time-boxed fast-mode window. Decide this calmly, in advance. A check claiming security, safety or privacy may never set it: catalog-lint rejects that with PROTECTED_FAST_SKIP."
 }

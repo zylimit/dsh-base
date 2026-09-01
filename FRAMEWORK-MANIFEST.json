@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 86,
-  "digest": "28bb50b44debd9bcd0a4d96a8ea33735e172f08d91bd281aeff7168cfead5a5a",
+  "digest": "8c27765e4bdb2e2c098ace176543da0434520c800cf559e04cd2718f1f78e86a",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -26,13 +26,13 @@
     },
     {
       "path": ".dsh/base/catalog.example.json",
-      "sha256": "b4ed8b8414c1c66ef72eb6076a76f7ecc92893db83c46d46187d0344f3d0ea7c",
-      "bytes": 6560
+      "sha256": "0da0599ada87bf31eb13a1bf612aef9d53ccf8935be9d1b24bd103877a14f13f",
+      "bytes": 6830
     },
     {
       "path": ".dsh/base/dsb.mjs",
-      "sha256": "bbface579ed48d9c4b314ea6f0d083a7e134b4f9b7451cd2dd6e8045169e8528",
-      "bytes": 34194
+      "sha256": "7be845c4782b735b7c3084bd505a416c844a9d96509ae7ca20d0f77e29c5212c",
+      "bytes": 39770
     },
     {
       "path": ".dsh/base/githooks/commit-msg",
@@ -56,8 +56,8 @@
     },
     {
       "path": ".dsh/base/lib/context.mjs",
-      "sha256": "7b41ae3c6e8eb52b4cde34566ff85caee5613b8f28a404945617ecb96b8b1c74",
-      "bytes": 22009
+      "sha256": "9cce5d8b5be2ec11f6cfe1d744c4cb2fc958c9910b97c903ca4bc8979792c27a",
+      "bytes": 22824
     },
     {
       "path": ".dsh/base/lib/core.mjs",
@@ -71,13 +71,13 @@
     },
     {
       "path": ".dsh/base/lib/graph.mjs",
-      "sha256": "24c5cf5fd9dc308e9ffeb1b9d9334f774b3e59405b42c4ef26a33d3780398836",
-      "bytes": 25535
+      "sha256": "a7af0c4b621a51e8247cc6a30a0112665ed75b430473e555c3c1efaa8279867f",
+      "bytes": 44201
     },
     {
       "path": ".dsh/base/lib/quality.mjs",
-      "sha256": "92b6f4cfacf4ead65848195be1948f9118595fea5999b2280b23d15f217f2085",
-      "bytes": 26066
+      "sha256": "cd9d55b277cbfb2cd667c7569de29cd3442b5243f0c260b97213e2a28bb4a65f",
+      "bytes": 29610
     },
     {
       "path": ".dsh/base/lib/scan.mjs",
@@ -366,8 +366,8 @@
     },
     {
       "path": "AGENTS.md",
-      "sha256": "82635f1affcf3d25e9968c6447b94338e0f32fcbce677c69d8f5f32121c0ad54",
-      "bytes": 11916
+      "sha256": "abc5eb7a7e287824addea1a2ec9cc15ed676f63227f2045eeb51c9cf0bc589d3",
+      "bytes": 13151
     },
     {
       "path": "docs/adr/ADR-0001-zero-dependency-engine.md",

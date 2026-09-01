@@ -15,12 +15,15 @@ import {
   changedPaths, diffHash, writeJsonAtomic, writeAtomic, readJson, readText,
   rel, exists, nowIso, listFiles, git,
 } from './lib/core.mjs'
-import { lintCatalog, computeImpact, archCheck, recordTrend, trendGate, readTrend, coChange } from './lib/graph.mjs'
+import {
+  lintCatalog, computeImpact, archCheck, recordTrend, trendGate, readTrend,
+  coChange, discoverCatalog, detectCommands,
+} from './lib/graph.mjs'
 import { loadFleet, fleetLint, fleetImpact, fleetStatus, fleetRecap, FLEET_FILE } from './lib/fleet.mjs'
 import {
   runGate, verifyLedger, readLedger, gateAudit, writeReceipt, verifyReceipts,
   listWaivers, validateWaiver, waiverContentHash, assessBudget, startTask, readTask, completeTask,
-  syncCheck,
+  syncCheck, fastState, setFast, fastSkippable,
 } from './lib/quality.mjs'
 import { fitness, adrCheck, specLint, skillsLint, agentsLint, trace } from './lib/scan.mjs'
 import {
@@ -538,11 +541,28 @@ COMMANDS.init = (args) => {
   // 3. The switch. Governance stays off until a catalog exists.
   const catalogPath = path.join(BASE_DIR, 'catalog.json')
   const examplePath = path.join(BASE_DIR, 'catalog.example.json')
-  const catalog = { path: rel(catalogPath), existed: fs.existsSync(catalogPath), created: false }
-  if (!catalog.existed && !args.flags['no-enable'] && !args.flags['dry-run'] && fs.existsSync(examplePath)) {
-    fs.copyFileSync(examplePath, catalogPath)
-    catalog.created = true
-    notes.push('catalog seeded from catalog.example.json; it still describes placeholder modules and must be edited')
+  const catalog = { path: rel(catalogPath), existed: fs.existsSync(catalogPath), created: false, source: null }
+  if (!catalog.existed && !args.flags['no-enable'] && !args.flags['dry-run']) {
+    // Transcribing a module map by hand is asking a human to copy facts the
+    // repository already contains. Propose from the real tree when there is one,
+    // and fall back to the template only when there is nothing to read.
+    let discovered = null
+    try { discovered = discoverCatalog({ depth: args.flags.depth ? Number(args.flags.depth) : 2 }) } catch { discovered = null }
+    if (discovered && discovered.ok) {
+      writeJsonAtomic(rel(catalogPath), discovered.draft)
+      catalog.created = true
+      catalog.source = 'discovered'
+      catalog.proposedModules = discovered.proposedModules
+      catalog.detectedCommands = discovered.detectedCommands.map(c => c.id)
+      catalog.needsDecision = discovered.needsDecision.map(d => d.field)
+      notes.push('catalog proposed from ' + discovered.proposedModules + ' real module(s) and ' +
+        discovered.realEdges + ' real import edge(s); riskTier, attributes and forbidden edges are left for a human to decide')
+    } else if (fs.existsSync(examplePath)) {
+      fs.copyFileSync(examplePath, catalogPath)
+      catalog.created = true
+      catalog.source = 'template'
+      notes.push('nothing to read yet, so the catalog was seeded from the template; run "catalog discover --write" once there is source')
+    }
   }
 
   const health = doctor(loadCatalog())
@@ -640,6 +660,100 @@ COMMANDS.fleet = (args) => {
   }
 
   return emit({ command: 'fleet', ok: false, reason: 'usage: fleet lint|impact <contract>|recap|status [--deep]' }, EXIT.DEGRADED)
+}
+
+
+COMMANDS.catalog = (args) => {
+  const sub = args.positional[1] || 'discover'
+  if (sub !== 'discover') {
+    return emit({ command: 'catalog', ok: false, reason: 'usage: catalog discover [--write] [--depth N]' }, EXIT.DEGRADED)
+  }
+  if (!needGit('catalog')) return EXIT.DEGRADED
+
+  const r = discoverCatalog({ depth: args.flags.depth ? Number(args.flags.depth) : 2 })
+  if (r.degraded) return degraded('catalog', r.reason)
+
+  const catalogPath = '.dsh/base/catalog.json'
+  const draftPath = '.dsh/base/catalog.draft.json'
+  const target = exists(catalogPath) ? draftPath : catalogPath
+
+  note('')
+  note('Proposed from what the repository already contains:')
+  note('  ' + r.proposedModules + ' module(s) over ' + r.trackedPaths + ' tracked path(s)')
+  note('  ' + r.realEdges + ' real import edge(s) became dependsOn declarations')
+  if (r.unresolvedSpecifiers) note('  ' + r.unresolvedSpecifiers + ' import specifier(s) could not be attributed; the graph may be incomplete')
+  note('  checks detected: ' + (r.detectedCommands.length
+    ? r.detectedCommands.map(c => c.id + ' -> ' + c.command).join(' | ')
+    : 'none (every gate will report BLOCKED until a check exists, which is correct)'))
+  for (const c of r.detectedCommands) note('      ' + c.id.padEnd(6) + ' from ' + c.source)
+  if (r.stillUnmappedCount) {
+    note('  ' + r.stillUnmappedCount + ' path(s) still unmapped; catalog-lint will name them:')
+    for (const p of r.stillUnmapped.slice(0, 8)) note('      ' + p)
+  }
+  note('')
+  note('The engine refuses to decide these for you:')
+  for (const d of r.needsDecision) note('  - ' + d.field + ': ' + d.why)
+  note('')
+
+  if (args.flags.write) {
+    writeJsonAtomic(target, r.draft)
+    note('draft written to ' + target + (target === draftPath ? ' (a catalog already exists; review and merge)' : ''))
+    note('next: node .dsh/base/dsb.mjs catalog-lint')
+  } else {
+    note('re-run with --write to save it to ' + target)
+  }
+
+  return emit({ command: 'catalog', sub, ok: true, wrote: args.flags.write ? target : null, ...r }, EXIT.OK)
+}
+
+
+COMMANDS.fast = (args) => {
+  const catalog = loadCatalog().catalog
+  const sub = args.positional[1] || 'status'
+
+  if (sub === 'status') {
+    const s = fastState()
+    const skippable = catalog ? fastSkippable(catalog) : []
+    note(s.active
+      ? 'fast mode is OPEN until ' + s.until + ' - reason: ' + s.reason
+      : (s.expired ? 'fast mode expired at ' + s.record.until + ' and is no longer applied' : 'fast mode is closed'))
+    note('  skippable in this project: ' + (skippable.join(', ') || 'nothing is marked allowFastSkip, so fast mode would change nothing'))
+    note('  never skippable: every check claiming security, safety or privacy')
+    return emit({ command: 'fast', sub, ...s, skippable }, EXIT.OK)
+  }
+
+  if (sub === 'on') {
+    if (!catalog) return degraded('fast', 'no catalog; there is nothing to relax')
+    try {
+      const r = setFast({
+        on: true,
+        minutes: args.flags.minutes ? Number(args.flags.minutes) : 60,
+        reason: typeof args.flags.reason === 'string' ? args.flags.reason : '',
+      })
+      const skippable = fastSkippable(catalog)
+      note('fast mode OPEN for ' + r.record.minutes + ' minutes, until ' + r.record.until)
+      note('  reason recorded: ' + r.record.reason)
+      note('  will skip: ' + (skippable.join(', ') || 'nothing - no check is marked allowFastSkip'))
+      note('  will still run: everything else, and every protected check without exception')
+      note('')
+      note('  This is a loan. Each skipped check is recorded as SKIPPED with its reason,')
+      note('  the gate record is stamped fastMode, and that record cannot close a task or')
+      note('  a release until a full gate repays it. It expires by itself.')
+      return emit({ command: 'fast', sub, ok: true, ...r, skippable }, EXIT.OK)
+    } catch (e) {
+      note('fast: ' + e.message)
+      return emit({ command: 'fast', sub, ok: false, reason: e.message }, EXIT.DEGRADED)
+    }
+  }
+
+  if (sub === 'off') {
+    const before = fastState()
+    setFast({ on: false })
+    note(before.record ? 'fast mode closed; run "dsb gate" to repay the skipped evidence' : 'fast mode was not open')
+    return emit({ command: 'fast', sub, ok: true, wasOpen: !!before.record }, EXIT.OK)
+  }
+
+  return emit({ command: 'fast', ok: false, reason: 'usage: fast on --minutes N --reason "..." | fast off | fast status' }, EXIT.DEGRADED)
 }
 
 COMMANDS.help = () => {

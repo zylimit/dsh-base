@@ -11,6 +11,7 @@ import {
   BASE_DIR, ATTRIBUTES, TIERS, RISK_TIERS, REASON_REQUIRED_TIERS,
   CATCH_ALL_GLOBS, classifyPath, globToRegExp, globSpecificity,
   trackedFiles, readText, rel, abs, writeJsonAtomic, readJson, nowIso, git,
+  ROOT, exists,
 } from './core.mjs'
 
 // ── catalog lint ────────────────────────────────────────────────────────────
@@ -601,5 +602,345 @@ export function coChange (catalog, { limit = 500, minPairs = 3, ratio = 0.5, max
     advice: isolated.length
       ? 'Modules that never co-change with anything are the safest candidates to extract into their own repository: ' + isolated.join(', ')
       : 'No module is fully independent in this window; extracting any of them costs a coordinated release.',
+  }
+}
+// ── catalog discovery ───────────────────────────────────────────────────────
+//
+// Asking a human to hand-write a module map is asking them to transcribe facts
+// the repository already contains. Directory structure, real import edges and
+// build manifests are readable; so the engine reads them and proposes a complete
+// draft, and the human's job becomes correcting a proposal rather than authoring
+// a blank one.
+//
+// What it must NOT do is decide consequences. A guessed riskTier or a guessed
+// security attribute is worse than an absent one: too high and the gate blocks
+// arbitrarily, too low and the gate is theatre. Those fields are emitted as
+// explicit proposals that catalog-lint refuses until a human confirms them.
+
+const SOURCE_ROOTS = ['src', 'lib', 'app', 'apps', 'packages', 'services', 'internal', 'cmd', 'pkg', 'modules', 'components']
+const NON_SOURCE = new Set(['node_modules', 'dist', 'build', 'out', 'target', 'vendor', 'coverage', '.git', '.dsh', '.github', '.venv', 'venv', '__pycache__'])
+
+const GLOBAL_CANDIDATES = [
+  'package.json', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'tsconfig.json',
+  'go.mod', 'go.sum', 'Cargo.toml', 'Cargo.lock', 'pyproject.toml', 'poetry.lock',
+  'requirements.txt', 'pom.xml', 'build.gradle', 'build.gradle.kts', 'Makefile',
+  'Dockerfile', 'docker-compose.yml', '.gitignore', '.gitattributes', '.editorconfig',
+]
+// Entries marked `always` are emitted whether or not the path exists yet: the
+// scaffold's own footprint appears the moment governance is enabled, and a draft
+// that does not classify it leaves the very file it just wrote unmapped.
+const IGNORE_CANDIDATES = [
+  // Listed as subtrees, never as a blanket .dsh/**: `ignored` outranks `global`,
+  // so a blanket entry would shadow the catalog's own global classification and a
+  // change to the rules would stop fanning out to every module.
+  { path: '.dsh/skills/**', reason: 'vendored doctrine; governed by skills-lint', always: true },
+  { path: '.dsh/docs/**', reason: 'vendored reference manual', always: true },
+  { path: '.dsh/templates/**', reason: 'vendored document skeletons', always: true },
+  { path: '.dsh/workflows/**', reason: 'vendored fan-out scripts', always: true },
+  { path: '.dsh/base/lib/**', reason: 'vendored governance engine', always: true },
+  { path: '.dsh/base/audit/**', reason: 'vendored audit scripts', always: true },
+  { path: '.dsh/base/githooks/**', reason: 'vendored enforcement hooks', always: true },
+  { path: '.dsh/base/dsb.mjs', reason: 'vendored engine entry point', always: true },
+  { path: '.dsh/base/install.mjs', reason: 'vendored installer', always: true },
+  { path: '.dsh/base/AGENTS.md', reason: 'vendored engine directory contract', always: true },
+  { path: '.dsh/base/.gitignore', reason: 'vendored runtime-state ignore policy', always: true },
+  { path: '.dsh/base/adapters.json', reason: 'vendored external-tool reference table', always: true },
+  { path: '.dsh/base/catalog.example.json', reason: 'vendored adoption template', always: true },
+  { path: '.dsh/base/cordis.patch.yml', reason: 'vendored optional profile patch', always: true },
+  { path: '.dsh/base/trend/**', reason: 'architecture-debt ledger; an append-only measurement, not source', always: true },
+  { path: 'progress.md', reason: 'project memory; mutated every session and would fan out every gate', always: true },
+  { path: 'progress.archive.md', reason: 'archived project memory', always: true },
+  { path: 'AGENTS.md', reason: 'project constitution; the harness injects it, it changes no product behaviour', always: true },
+  { path: 'README.md', reason: 'human-facing entry point; changes no behaviour' },
+  { path: 'CHANGELOG.md', reason: 'release narrative; not an input to any check' },
+  { path: 'LICENSE', reason: 'legal text; changed only by an explicit human decision' },
+  { path: 'docs/**', reason: 'prose; governed by spec-lint and adr-check rather than by impact' },
+  { path: '.github/**', reason: 'CI definitions; reviewed as configuration' },
+]
+
+/** Read the build manifests and report the commands this project actually has. */
+export function detectCommands () {
+  const found = []
+  const pkgRaw = readText('package.json', null)
+  if (pkgRaw) {
+    let pkg = null
+    try { pkg = JSON.parse(pkgRaw) } catch { pkg = null }
+    const scripts = (pkg && pkg.scripts) || {}
+    const runner = exists('pnpm-lock.yaml') ? 'pnpm' : exists('yarn.lock') ? 'yarn' : 'npm run'
+    for (const [id, names] of [['unit', ['test', 'tests', 'jest', 'vitest']], ['lint', ['lint', 'eslint']], ['types', ['typecheck', 'tsc', 'types']], ['build', ['build', 'compile']]]) {
+      const hit = names.find(n => scripts[n])
+      if (hit) found.push({ id, command: runner + ' ' + hit, source: 'package.json scripts.' + hit })
+    }
+    if (found.length === 0) found.push({ id: 'unit', command: 'node --test', source: 'package.json with no test script; node built-in runner assumed' })
+  }
+  if (exists('pyproject.toml') || exists('pytest.ini') || exists('setup.cfg')) {
+    found.push({ id: 'unit', command: 'pytest -q', source: 'python project layout' })
+    found.push({ id: 'lint', command: 'ruff check .', source: 'python project layout (ruff is a common choice; replace if you use another)' })
+  }
+  if (exists('go.mod')) {
+    found.push({ id: 'unit', command: 'go test ./...', source: 'go.mod' })
+    found.push({ id: 'lint', command: 'go vet ./...', source: 'go.mod' })
+  }
+  if (exists('Cargo.toml')) {
+    found.push({ id: 'unit', command: 'cargo test', source: 'Cargo.toml' })
+    found.push({ id: 'lint', command: 'cargo clippy -- -D warnings', source: 'Cargo.toml' })
+  }
+  if (exists('Makefile')) {
+    const mk = readText('Makefile', '')
+    for (const t of ['test', 'lint', 'build']) {
+      if (new RegExp('^' + t + ':', 'm').test(mk)) found.push({ id: t === 'test' ? 'unit' : t, command: 'make ' + t, source: 'Makefile target ' + t })
+    }
+  }
+  const seen = new Set()
+  return found.filter(c => (seen.has(c.id) ? false : (seen.add(c.id), true)))
+}
+
+/** Group tracked paths into candidate modules by their source directory. */
+function proposeModules (paths, depth) {
+  const groups = new Map()
+  for (const p of paths) {
+    const parts = p.split('/')
+    if (NON_SOURCE.has(parts[0])) continue
+    if (parts.length < 2) continue
+    let prefix = null
+    if (SOURCE_ROOTS.includes(parts[0]) && parts.length > 2) {
+      prefix = parts.slice(0, Math.min(depth + 1, parts.length - 1)).join('/')
+    } else if (SOURCE_ROOTS.includes(parts[0])) {
+      prefix = parts[0]
+    } else if (parts.length > 2 && !parts[0].startsWith('.')) {
+      prefix = parts.slice(0, Math.min(depth, parts.length - 1)).join('/')
+    }
+    if (!prefix) continue
+    if (!groups.has(prefix)) groups.set(prefix, [])
+    groups.get(prefix).push(p)
+  }
+  // A group with a single file is not a module; it is a file.
+  const grouped = [...groups.entries()]
+    .filter(([, files]) => files.length >= 2)
+    .map(([prefix, files]) => ({
+      id: prefix.split('/').filter(s => !SOURCE_ROOTS.includes(s)).join('-') || prefix.replace(/\//g, '-'),
+      paths: [prefix + '/**'],
+      files,
+    }))
+
+  // Fallback: any remaining top-level directory holding real files is a module
+  // too. Without this the draft leaves paths unmapped, and an unmapped path
+  // escapes every targeted gate - the exact failure catalog-lint exists to catch.
+  const covered = new Set(grouped.flatMap(g => g.files))
+  const rest = new Map()
+  for (const p of paths) {
+    if (covered.has(p)) continue
+    const parts = p.split('/')
+    if (parts.length < 2) continue
+    if (NON_SOURCE.has(parts[0])) continue
+    if (!rest.has(parts[0])) rest.set(parts[0], [])
+    rest.get(parts[0]).push(p)
+  }
+  for (const [dir, files] of rest) {
+    grouped.push({ id: dir.replace(/^\./, '').replace(/\//g, '-'), paths: [dir + '/**'], files })
+  }
+  return grouped
+}
+
+// Signals that a module handles something whose failure has consequences. These
+// are PROPOSALS with evidence, never decisions: a guessed tier is worse than an
+// absent one, because it is believed.
+const ATTRIBUTE_SIGNALS = [
+  { attribute: 'security', tier: 'high', re: /\b(auth|authn|authz|jwt|oauth|token|password|passwd|credential|secret|crypto|cipher|permission|rbac|acl|session|signin|login)\b/i },
+  { attribute: 'privacy', tier: 'high', re: /\b(email|phone|mobile|address|birthday|birthdate|ssn|passport|id_card|idcard|personal|gdpr|consent|pii|subject_?rights)\b/i },
+  { attribute: 'safety', tier: 'high', re: /\b(actuator|motor|valve|relay|dispense|dose|throttle|brake|servo|emergency_?stop|interlock|watchdog)\b/i },
+  { attribute: 'reliability', tier: 'high', re: /\b(transaction|idempoten|exactly_?once|consistency|reconcil|ledger|balance)\b/i },
+  { attribute: 'resilience', tier: 'high', re: /\b(circuit_?break|backoff|jitter|bulkhead|fallback|degrade|rate_?limit|throttl)\b/i },
+  { attribute: 'security', tier: 'critical', re: /\b(payment|invoice|charge|refund|billing|payout|settlement)\b/i },
+]
+
+// Attributes describe what PRODUCTION code does. A specification that discusses
+// personal data and a test fixture that mentions billing are talking about the
+// subject, not doing it. Matching them produced proposals like "tests is
+// security-critical because a fixture says billing", and a proposal system whose
+// output is noise teaches its user to ignore every proposal, including the true
+// ones. So: source files only, and never a blocking tier from one keyword.
+const CODE_EXT = new Set(['.js', '.mjs', '.cjs', '.ts', '.tsx', '.jsx', '.mts', '.cts', '.py', '.go',
+  '.rs', '.java', '.kt', '.cs', '.rb', '.php', '.swift', '.scala', '.c', '.h', '.cc', '.cpp', '.sql'])
+const NON_PRODUCTION = /(^|\/)(tests?|__tests__|spec|fixtures?|mocks?|examples?|docs?)(\/|$)|\.(test|spec)\.[a-z]+$/i
+
+/**
+ * Propose attributes from observable signals in production source, each carrying
+ * its evidence. A proposal is never a decision: the tier is capped at "high" and
+ * a single weak signal is reported with its confidence rather than asserted.
+ */
+export function proposeAttributes (modules, { maxFilesPerModule = 300, maxBytes = 200000 } = {}) {
+  const proposals = {}
+  for (const m of modules) {
+    const hits = {}
+    for (const f of m.files.slice(0, maxFilesPerModule)) {
+      if (!CODE_EXT.has(path.extname(f).toLowerCase())) continue
+      if (NON_PRODUCTION.test(f)) continue
+      if (SCAN_SKIP_DISCOVERY.has(path.extname(f).toLowerCase())) continue
+      let text
+      try {
+        const st = fs.statSync(abs(f))
+        if (st.size > maxBytes) continue
+        text = fs.readFileSync(abs(f), 'utf8')
+      } catch { continue }
+      if (text.indexOf('\u0000') >= 0) continue
+      const haystack = f + '\n' + text.slice(0, 20000)
+      for (const sig of ATTRIBUTE_SIGNALS) {
+        const match = sig.re.exec(haystack)
+        if (!match) continue
+        const key = sig.attribute
+        if (!hits[key]) hits[key] = { files: new Set(), terms: new Set(), evidence: [] }
+        hits[key].files.add(f)
+        hits[key].terms.add(match[0].toLowerCase())
+        if (hits[key].evidence.length < 3) hits[key].evidence.push(f + ': ' + match[0])
+      }
+    }
+    const kept = {}
+    for (const [attr, h] of Object.entries(hits)) {
+      // One term in one file is a hint, not a signal. Two independent files or
+      // two distinct terms make it worth a human's attention.
+      const strong = h.files.size >= 2 || h.terms.size >= 2
+      if (!strong) continue
+      kept[attr] = {
+        proposedTier: 'high',
+        confidence: h.files.size >= 3 && h.terms.size >= 2 ? 'medium' : 'low',
+        files: h.files.size,
+        terms: [...h.terms],
+        evidence: h.evidence,
+        note: 'a keyword match is a reason to look, never a decision. Confirm the tier from what a failure here would cost.',
+      }
+    }
+    if (Object.keys(kept).length) proposals[m.id] = kept
+  }
+  return proposals
+}
+
+const SCAN_SKIP_DISCOVERY = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico', '.pdf', '.zip', '.gz',
+  '.woff', '.woff2', '.ttf', '.mp4', '.bin', '.exe', '.dll', '.lock', '.map', '.snap'])
+
+/**
+ * Propose a complete catalog from what the repository already contains.
+ * Every field the engine cannot honestly derive is emitted under
+ * \`needsDecision\` rather than guessed.
+ */
+export function discoverCatalog ({ depth = 2 } = {}) {
+  const t = trackedFiles(200000)
+  if (!t.available) return { ok: false, degraded: true, reason: 'not a git repository; the file set cannot be established' }
+  if (t.paths.length === 0) return { ok: false, degraded: true, reason: 'no tracked files; commit the project before discovering its structure' }
+
+  const modules = proposeModules(t.paths, depth)
+  if (modules.length === 0) {
+    return {
+      ok: false, degraded: true,
+      reason: 'no directory holds two or more tracked source files, so no module can be proposed. Write some code first, or pass --depth 1.',
+    }
+  }
+
+  // Real import edges between the proposed modules decide dependsOn, so the draft
+  // graph matches the code from the first run rather than after the first drift.
+  const probe = { modules: modules.map(m => ({ id: m.id, paths: m.paths })), maxTrackedPaths: 200000, layers: [], global: [], ignored: [] }
+  const arch = archCheck(probe, { paths: t.paths, useCache: false })
+  const deps = new Map(modules.map(m => [m.id, new Set()]))
+  for (const e of arch.undeclared) deps.get(e.from) && deps.get(e.from).add(e.to)
+
+  // Layers follow the longest path through the proposed graph. The names are
+  // positional on purpose: inventing "domain" or "infra" would read as a finding
+  // rather than as the guess it is.
+  const level = new Map()
+  const depthOf = (id, seen = new Set()) => {
+    if (level.has(id)) return level.get(id)
+    if (seen.has(id)) return 0
+    seen.add(id)
+    const d = [...(deps.get(id) || [])].reduce((mx, n) => Math.max(mx, depthOf(n, seen) + 1), 0)
+    level.set(id, d)
+    return d
+  }
+  for (const m of modules) depthOf(m.id)
+  const maxLevel = Math.max(0, ...[...level.values()])
+  const layers = []
+  for (let i = maxLevel; i >= 0; i--) layers.push('tier-' + (maxLevel - i + 1))
+
+  const commands = detectCommands()
+  const checks = {}
+  for (const c of commands) {
+    checks[c.id] = {
+      command: c.command,
+      class: c.id === 'unit' ? 'test' : c.id === 'lint' ? 'lint' : 'build',
+      attributes: c.id === 'unit' ? ['reliability'] : ['maintainability'],
+    }
+  }
+
+  const covered = new Set()
+  for (const m of modules) for (const f of m.files) covered.add(f)
+  // A catalog change rewrites the rules, so it must fan out to every module. It
+  // is listed even before it exists, because it exists the moment this is saved.
+  const globals = GLOBAL_CANDIDATES.filter(g => t.paths.includes(g))
+  if (!globals.includes('.dsh/base/catalog.json')) globals.push('.dsh/base/catalog.json')
+  const ignored = IGNORE_CANDIDATES
+    .filter(e => e.always || (e.path.includes('*') ? t.paths.some(p => p.startsWith(e.path.split('*')[0])) : t.paths.includes(e.path)))
+    .map(e => ({ path: e.path, reason: e.reason }))
+  let stillUnmapped = t.paths.filter(p =>
+    !covered.has(p) && !globals.includes(p) &&
+    !ignored.some(e => (e.path.includes('*') ? p.startsWith(e.path.split('*')[0]) : p === e.path)))
+
+  // A root-level file nothing claimed becomes global: a change to it fans out to
+  // every module. Over-testing is cheap; an unmapped path escapes every gate.
+  for (const p of stillUnmapped.filter(x => !x.includes('/'))) {
+    if (!globals.includes(p)) globals.push(p)
+  }
+  stillUnmapped = stillUnmapped.filter(p => p.includes('/'))
+
+  const draft = {
+    version: 1,
+    project: { name: path.basename(ROOT), scaleTier: modules.length > 40 ? 'L' : modules.length > 10 ? 'M' : 'S' },
+    maxTrackedPaths: 200000,
+    layers,
+    global: globals,
+    ignored,
+    riskChecks: {
+      low: commands.filter(c => c.id === 'lint').map(c => c.id),
+      medium: commands.map(c => c.id).filter(id => id === 'lint' || id === 'unit'),
+      high: commands.map(c => c.id),
+      critical: commands.map(c => c.id),
+    },
+    checks,
+    contextPack: { maxTotalChars: 120000, maxFiles: 40, maxFileChars: 6000, maxDiffChars: 40000 },
+    budget: { maxChangedFiles: 40, maxChangedLines: 1500, maxModulesTouched: 3, maxNewFiles: 25 },
+    trace: { requirementDirs: ['docs/requirements'], testGlobs: ['**/test/**', '**/tests/**', '**/*.test.*', '**/*_test.*', '**/*.spec.*'], minCoverage: 1 },
+    adr: { dir: 'docs/adr' },
+    agentsMd: { requireForRiskTiers: ['high', 'critical'], maxBytes: 12000 },
+    memory: { ledger: 'progress.md', archive: 'progress.archive.md', maxLedgerBytes: 24000, keepDone: 40, keepNotes: 30, recapBudget: 6000 },
+    modules: modules.map(m => ({
+      id: m.id,
+      paths: m.paths,
+      layer: 'tier-' + (maxLevel - (level.get(m.id) || 0) + 1),
+      riskTier: 'medium',
+      dependsOn: [...(deps.get(m.id) || [])].sort(),
+    })),
+  }
+
+  const needsDecision = [
+    { field: 'modules[].riskTier', why: 'every module was proposed as "medium". A tier is a statement about what a failure here costs, which cannot be read from the code.' },
+    { field: 'modules[].attributes', why: 'no quality attribute was assigned. Guessing "security: critical" would block the gate arbitrarily; guessing "low" would make it theatre. Declare them where they matter, starting with the modules that handle credentials, personal data, money or physical actuation.' },
+    { field: 'modules[].forbiddenDependencies', why: 'no edge was forbidden. A prohibition is a commitment about what must never happen, not an observation about what has not happened yet.' },
+    { field: 'layers', why: 'layers were named positionally (tier-1 outermost). Rename them to your own vocabulary and confirm the direction is the one you intend.' },
+    { field: 'project.name', why: 'taken from the directory name.' },
+  ]
+  if (commands.length === 0) {
+    needsDecision.unshift({ field: 'checks', why: 'no build manifest was recognised, so no check command could be detected. Until a check exists, every gate reports BLOCKED, which is correct: nothing ran.' })
+  }
+
+  return {
+    ok: true,
+    draft,
+    attributeProposals: proposeAttributes(modules),
+    trackedPaths: t.paths.length,
+    proposedModules: modules.length,
+    detectedCommands: commands,
+    realEdges: arch.undeclared.length,
+    unresolvedSpecifiers: arch.unresolved,
+    stillUnmapped: stillUnmapped.slice(0, 50),
+    stillUnmappedCount: stillUnmapped.length,
+    needsDecision,
   }
 }

@@ -12,7 +12,7 @@ import {
   nowIso, git,
 } from './core.mjs'
 import { computeImpact, resolveVerification } from './graph.mjs'
-import { readTask, verifyLedger, verifyReceipts, readLedger } from './quality.mjs'
+import { readTask, verifyLedger, verifyReceipts, readLedger, fastState } from './quality.mjs'
 import { specLint, trace } from './scan.mjs'
 
 const FENCE = '\u0060\u0060\u0060'
@@ -156,6 +156,7 @@ export function doctor (catalogState) {
     { id: 'ledger-intact', ok: ledger.ok, detail: ledger.ok ? ledger.entries + ' ledger entries, chain intact' : ledger.breaks.length + ' chain break(s); prior evidence is untrusted' },
     { id: 'git-hooks-installed', ok: hooksPath === '.dsh/base/githooks', detail: 'core.hooksPath = ' + (hooksPath || '(unset)') },
     { id: 'attributes-declared', ok: modulesWithAttributes > 0 || !catalog, detail: modulesWithAttributes + ' module(s) declare quality attributes' },
+    { id: 'fast-mode', ok: !fastState().active, detail: fastState().active ? 'OPEN until ' + fastState().until + ' - evidence is being deferred' : 'closed' },
   ]
 
   return {
@@ -219,6 +220,20 @@ export function riskScan (catalog) {
   }
   const ledger = verifyLedger()
   if (!ledger.ok) findings.push({ severity: 'error', code: 'LEDGER_BROKEN', message: 'verification ledger chain is broken; treat every prior green as unproven' })
+
+  const fast = fastState()
+  if (fast.active) {
+    findings.push({ severity: 'warning', code: 'FAST_MODE_OPEN', message: 'fast mode is open until ' + fast.until + ' (' + fast.reason + '); evidence is being deferred, not waived' })
+  }
+  const fastGate = readLedger().filter(e => e.gate).slice(-1)[0]
+  if (fastGate && fastGate.fastMode) {
+    findings.push({
+      severity: 'error',
+      code: 'FAST_MODE_DEBT',
+      message: 'the newest gate ran in fast mode and skipped [' + (fastGate.skippedByFastMode || []).join(', ') +
+        ']; that evidence has not been produced. Run "dsb fast off" then "dsb gate" before releasing.',
+    })
+  }
 
   const waiverDir = '.dsh/base/waivers'
   if (exists(waiverDir)) {

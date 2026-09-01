@@ -69,6 +69,20 @@ Six tiers: `critical` `high` `medium` `low` `minimal` `none`.
 4. `minimal` and `none` require a written `attributeReasons` entry. Opting out of governance is a recorded decision, never a free default.
 5. **`security`, `safety` and `privacy` are protected**: never waivable, never fast-skippable, never downgraded by a waiver. There is no expressible waiver for them.
 
+## 5a. Fast mode — shipping under pressure without lying
+
+Time pressure is real, and a gate that ignores it gets bypassed with `--no-verify`,
+which teaches the team that the gate is optional. So the pressure is served, under
+four conditions that stop it becoming permanent.
+
+1. **It expires by itself.** `dsb fast on --minutes 90 --reason "<why>"`. A reason is required and a window with no end is not a window. Maximum 8 hours.
+2. **It cannot touch the protected floor.** Every check claiming `security`, `safety` or `privacy` runs regardless. Those are not slow; they are why the software is allowed to exist.
+3. **It skips only what was marked `allowFastSkip` in advance**, while there was time to think about which evidence is cheap to defer. Deciding that during the emergency is how everything becomes skippable.
+4. **It is a loan, not a discount.** Each skipped check is recorded `SKIPPED` with reason `fast-mode`, the gate record is stamped `fastMode`, and **that record cannot close a task or a release**. `risk` reports `FAST_MODE_DEBT` until a full gate repays it. Run `dsb fast off` then `dsb gate`.
+
+Fast mode does not make the code correct faster. It defers evidence, dates the
+debt, and refuses to let you forget it.
+
 ## 6. Verification law
 
 1. Verification is impact-scoped, never "run everything" and never "run what feels related". `impact` decides.

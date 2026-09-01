@@ -104,7 +104,8 @@
       "class": "test",
       "attributes": [
         "reliability"
-      ]
+      ],
+      "allowFastSkip": true
     },
     "catalog": {
       "command": "node .dsh/base/dsb.mjs catalog-lint",
@@ -153,7 +154,8 @@
       "class": "test",
       "attributes": [
         "reliability"
-      ]
+      ],
+      "allowFastSkip": true
     },
     "fitness": {
       "command": "node .dsh/base/dsb.mjs fitness --all",
