@@ -614,7 +614,8 @@
         "engine-quality",
         "engine-scan",
         "engine-context",
-        "engine-cli"
+        "engine-cli",
+        "tooling"
       ],
       "attributes": {
         "reliability": "high"
@@ -656,6 +657,11 @@
         "engine-cli",
         "tests",
         "the tests drive the CLI as a subprocess; the dependency is now declared, and the co-change is the normal shape of adding a subcommand with its behavioural test."
+      ],
+      [
+        "engine-selftest",
+        "tooling",
+        "no code edge exists and none should: the audit scripts deliberately do not import the engine. They move together because a new capability arrives as engine assertion plus hook wiring in one change - a delivery unit, not a boundary."
       ]
     ]
   },
