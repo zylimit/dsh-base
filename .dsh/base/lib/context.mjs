@@ -481,3 +481,160 @@ export function recap (catalog, { budget = null } = {}) {
     text: body,
   }
 }
+// ── invariants ──────────────────────────────────────────────────────────────
+//
+// Compaction does not correct drift. ContextEcho benchmarked 23 models across
+// long agentic-coding sessions and found that summarising the history does not
+// restore adherence to the instructions that were in it. So the constitution
+// decays inside a session, and nothing notices.
+//
+// This is the counter-measure: the smallest set of non-negotiables, plus the
+// live state that changes what they mean, small enough to re-read at every
+// phase boundary and immediately after any compaction. It is derived, so it
+// cannot go stale the way a pasted reminder does.
+
+export function invariants (catalog, { budget = 1200 } = {}) {
+  const task = readTask()
+  const fast = fastState()
+  const ledger = verifyLedger()
+  const gates = readLedger().filter(e => e.gate)
+  const last = gates[gates.length - 1] || null
+
+  const laws = [
+    '# Invariants - re-read after any compaction and at every phase boundary',
+    '',
+    '1. EVIDENCE. Name the command, run it fresh, read output AND exit code, confirm it supports THIS claim, then speak. Never "should work" or "looks correct".',
+    '2. STATES. exit 0 clean | 1 violation | 2 blocking gate | 3 degraded | 4 stale. Exit 3 is NOT a pass. A missing tool is BLOCKED. An empty plan is BLOCKED.',
+    '3. FLOOR. security, safety and privacy are never waived, never fast-skipped, never downgraded. There is no expressible exception.',
+    '4. SCOPE. Change only what the task envelope names. Missing information is not permission.',
+    '5. TIERS. HIGH acts - push, release, deploy, destructive commands, secrets, migration, new dependency - stop for explicit human authorization.',
+  ]
+
+  const state = []
+  state.push('- task: ' + (task && task.state === 'active' ? task.id + ' - scope: ' + task.scope : 'none open'))
+  if (fast.active) state.push('- FAST MODE OPEN until ' + fast.until + ' (' + fast.reason + '): evidence is deferred, not waived')
+  if (last) {
+    state.push('- last gate: ' + last.gate +
+      (last.fastMode ? ' (fast mode DEBT: ' + (last.skippedByFastMode || []).join(', ') + ')' : '') + ' at ' + last.at)
+  } else state.push('- last gate: never run')
+  if (!ledger.ok) state.push('- LEDGER BROKEN: every prior verification is unproven until re-run')
+
+  let body = laws.join('\n') + '\n\n## Live state\n' + state.join('\n') + '\n'
+  let truncated = false
+  if (body.length > budget) { body = body.slice(0, budget) + '\n...[truncated]\n'; truncated = true }
+  return { ok: true, chars: body.length, budget, truncated, text: body }
+}
+// ── bounded specification view ──────────────────────────────────────────────
+//
+// Project memory can be archived because a Done entry from last year is history.
+// A requirement cannot: one written three years ago is still in force today. So
+// the specification is the one memory file that grows without an archive, and the
+// only way to keep reading it affordable is to stop reading all of it.
+//
+// This derives the requirements a specific change actually touches, by the same
+// route the gate uses to decide what to verify: impact selects modules, trace
+// maps requirements onto modules, and only that intersection is rendered.
+
+export function specView (catalog, { paths = null, budget = 6000, all = false } = {}) {
+  const t = trace(catalog)
+  if (t.degraded) return { ok: false, degraded: true, reason: t.reason }
+
+  let selected = t.rows
+  let affected = null
+  if (!all) {
+    const changed = paths || (isGitRepo() ? git(['-c', 'core.quotePath=false', 'diff', '--name-only', 'HEAD']).stdout.split('\n').filter(Boolean) : [])
+    const impact = computeImpact(catalog, changed)
+    affected = impact.affected
+    // A degraded impact means "everything", which here would defeat the purpose.
+    // Say so rather than rendering the whole specification and calling it focused.
+    if (!impact.degraded) {
+      const set = new Set(affected)
+      selected = t.rows.filter(r => r.modules.some(m => set.has(m)))
+    }
+  }
+
+  const blocks = []
+  // The header is part of what the caller pays for, so it is inside the budget.
+  const headerAllowance = 320
+  let rendered = headerAllowance
+  let omitted = 0
+  for (const row of selected) {
+    const text = readText(row.definedIn, '')
+    const lines = text.split('\n')
+    // Prefer the heading that DECLARES the requirement. An id mentioned inside a
+    // summary paragraph would otherwise be rendered as if it were the requirement.
+    let idx = lines.findIndex(l => /^#{2,4}\s/.test(l) && l.includes(row.id))
+    if (idx < 0) idx = lines.findIndex(l => l.includes(row.id))
+    if (idx < 0) { omitted++; continue }
+    let end = idx + 1
+    while (end < lines.length && !/^#{2,4}\s/.test(lines[end])) end++
+    const body = lines.slice(idx, Math.min(end, idx + 16)).join('\n').trim()
+    const block = body + '\n\n_verified by: ' + (row.tests.join(', ') || 'NOTHING - unverified') + '_\n'
+    if (rendered + block.length > budget) { omitted++; continue }
+    blocks.push(block)
+    rendered += block.length
+  }
+
+  // A requirement is linked to a module by CITATION: its id appears in the code
+  // that implements it or in that module's tests. When a change touches modules
+  // that cite nothing, the honest answer is that the change is untraceable - not
+  // an empty list, which reads like 'nothing applies'.
+  const noLink = !all && affected && affected.length > 0 && selected.length === 0
+  const header = [
+    '# Requirements in scope' + (all ? ' (all)' : (affected ? ' for [' + affected.join(', ') + ']' : '')),
+    '',
+    noLink
+      ? 'No requirement is linked to [' + affected.join(', ') + ']. Put the requirement id in the code ' +
+        'that implements it, or in that module tests. Until then this change cannot be traced to ' +
+        'anything it was asked to do. Use --all to read the whole specification.'
+      : selected.length + ' of ' + t.total + ' declared requirement(s) touch this change; ' +
+        blocks.length + ' rendered, ' + omitted + ' omitted for budget.',
+    '',
+  ].join('\n')
+
+  const body = header + blocks.join('\n')
+  return {
+    ok: true,
+    total: t.total,
+    selected: selected.map(r => r.id),
+    rendered: blocks.length,
+    omitted,
+    affectedModules: affected,
+    noLink,
+    chars: body.length,
+    budget,
+    withinBudget: body.length <= budget,
+    text: body,
+  }
+}
+
+// ── changelog archiving ─────────────────────────────────────────────────────
+
+/** Move all but the newest version sections of a changelog into its archive. */
+export function archiveChangelog (catalog, { apply = false, keep = 10 } = {}) {
+  const dirs = (catalog && catalog.trace && catalog.trace.requirementDirs) || ['docs/requirements']
+  const file = dirs.map(d => d + '/PRODUCT-SPEC-CHANGELOG.md').find(p => exists(p))
+  if (!file) return { ok: false, degraded: true, reason: 'no PRODUCT-SPEC-CHANGELOG.md under ' + dirs.join(', ') }
+  const text = readText(file, '')
+  const lines = text.split('\n')
+
+  const starts = []
+  for (let i = 0; i < lines.length; i++) if (/^##\s+\S/.test(lines[i])) starts.push(i)
+  if (starts.length <= keep) {
+    return { ok: true, applied: false, moved: 0, versions: starts.length, keep, reason: 'nothing to archive' }
+  }
+
+  const cut = starts[keep]
+  const head = lines.slice(0, cut)
+  const tail = lines.slice(cut)
+  const moved = starts.length - keep
+  if (!apply) return { ok: true, applied: false, moved, versions: starts.length, keep, file }
+
+  const archiveFile = file.replace(/\.md$/, '.archive.md')
+  let archive = readText(archiveFile, '')
+  if (!archive) archive = '# Archived specification changelog\n\nAppend-only. An archived entry is never rewritten.\n'
+  writeAtomic(archiveFile, archive + '\n' + tail.join('\n').trimEnd() + '\n')
+  writeAtomic(file, head.join('\n').trimEnd() + '\n\n- Older versions are in [' +
+    archiveFile.split('/').pop() + '](' + archiveFile.split('/').pop() + ').\n')
+  return { ok: true, applied: true, moved, versions: starts.length, keep, file, archive: archiveFile }
+}

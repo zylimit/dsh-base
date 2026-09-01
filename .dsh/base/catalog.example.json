@@ -137,13 +137,15 @@
     "high": [
       "lint",
       "unit",
-      "sast"
+      "sast",
+      "instructions"
     ],
     "critical": [
       "lint",
       "unit",
       "sast",
-      "secrets"
+      "secrets",
+      "instructions"
     ]
   },
   "checks": {
@@ -172,6 +174,14 @@
     },
     "secrets": {
       "command": "CHANGE-ME a secret scanner, for example: gitleaks detect --no-banner",
+      "class": "security",
+      "attributes": [
+        "security",
+        "privacy"
+      ]
+    },
+    "instructions": {
+      "command": "node .dsh/base/audit/scan-instructions.mjs",
       "class": "security",
       "attributes": [
         "security",

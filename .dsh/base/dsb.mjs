@@ -24,11 +24,12 @@ import {
   runGate, verifyLedger, readLedger, gateAudit, writeReceipt, verifyReceipts,
   listWaivers, validateWaiver, waiverContentHash, assessBudget, startTask, readTask, completeTask,
   syncCheck, fastState, setFast, fastSkippable,
+  startReview, recordBlue, recordLens, reviewVerdict, readReview, reviewLenses,
 } from './lib/quality.mjs'
-import { fitness, adrCheck, specLint, skillsLint, agentsLint, trace } from './lib/scan.mjs'
+import { fitness, adrCheck, specLint, skillsLint, agentsLint, trace, rulesAudit } from './lib/scan.mjs'
 import {
   contextPack, doctor, retention, riskScan, attributeAudit,
-  recap, archiveLedger, ledgerHealth,
+  recap, archiveLedger, ledgerHealth, invariants, specView, archiveChangelog,
 } from './lib/context.mjs'
 import { selftest } from './lib/selftest.mjs'
 
@@ -486,6 +487,13 @@ COMMANDS.recap = (args) => {
 
 COMMANDS.archive = (args) => {
   const state = loadCatalog()
+  if (args.flags.changelog) {
+    const c = archiveChangelog(state.catalog, { apply: !!args.flags.apply, keep: args.flags.keep ? Number(args.flags.keep) : 10 })
+    if (c.degraded) return degraded('archive', c.reason)
+    note(c.applied ? 'archived ' + c.moved + ' changelog version(s) into ' + c.archive
+      : (c.moved ? 'would archive ' + c.moved + ' version(s); re-run with --apply' : 'nothing to archive'))
+    return emit({ command: 'archive', target: 'changelog', ...c }, EXIT.OK)
+  }
   const r = archiveLedger(state.catalog, { apply: !!args.flags.apply })
   if (r.degraded) return degraded('archive', r.reason)
   for (const p of r.plan) note('  ' + p.section + ': ' + p.total + ' entries, keeping ' + p.keep + ', moving ' + p.moving)
@@ -754,6 +762,115 @@ COMMANDS.fast = (args) => {
   }
 
   return emit({ command: 'fast', ok: false, reason: 'usage: fast on --minutes N --reason "..." | fast off | fast status' }, EXIT.DEGRADED)
+}
+
+COMMANDS['rules-audit'] = (args) => {
+  const catalog = needCatalog('rules-audit'); if (!catalog) return EXIT.DEGRADED
+  const r = rulesAudit(catalog, { files: args.flags.files ? list(args.flags.files) : null })
+  for (const f of r.findings) note(' ERR  ' + f.code + '  ' + f.file + ':' + f.line + '  ' + f.message)
+  note(r.counts.total + ' rule(s): ' + r.counts.enforced + ' enforced, ' +
+    r.counts.declaredUnenforced + ' declared prompt-only, ' + r.counts.unenforced + ' silently unenforced' +
+    ' (enforcement ratio ' + r.enforcementRatio + ')')
+  note(r.advice)
+  return emit({ command: 'rules-audit', ...r }, r.ok ? EXIT.OK : EXIT.VIOLATION)
+}
+
+COMMANDS.invariants = (args) => {
+  const state = loadCatalog()
+  const r = invariants(state.catalog, { budget: args.flags.budget ? Number(args.flags.budget) : 1200 })
+  note(r.text)
+  return emit({ command: 'invariants', ...r }, EXIT.OK)
+}
+
+
+COMMANDS.review = async (args) => {
+  const catalog = needCatalog('review'); if (!catalog) return EXIT.DEGRADED
+  const sub = args.positional[1] || 'status'
+
+  if (sub === 'start') {
+    const pack = COMMANDS['review-pack'] ? null : null
+    const r = startReview(catalog, { scope: typeof args.flags.scope === 'string' ? args.flags.scope : '' })
+    if (r.degraded) return degraded('review', r.reason)
+    note('review opened against diff ' + r.session.diffHash.slice(0, 12))
+    note('  required lenses: ' + r.session.requiredLenses.join(', '))
+    note('')
+    note('  Protocol - three roles, structured disagreement, not consensus:')
+    note('    1. dsb review-pack                    assemble the evidence, including the deletion audit')
+    note('    2. dsb review blue     < claims.json  state what you verified and with what evidence')
+    note('    3. dsb review lens <n> < findings.json  one report per required lens, each finding located')
+    note('    4. dsb review verdict                 computed from what was recorded, never asserted')
+    note('')
+    note('  Delegate each lens to a separate agent. Agreement reached cheaply is not review.')
+    return emit({ command: 'review', sub, ...r }, EXIT.OK)
+  }
+
+  if (sub === 'blue') {
+    const raw = await readStdin()
+    let payload
+    try { payload = JSON.parse(raw) } catch { return emit({ command: 'review', sub, ok: false, reason: 'stdin must be {"claims":[{"claim":"...","evidence":"..."}]}' }, EXIT.DEGRADED) }
+    const r = recordBlue(payload)
+    if (!r.ok) { note('review: ' + r.reason); return emit({ command: 'review', sub, ...r }, r.stale ? EXIT.STALE : EXIT.VIOLATION) }
+    note('blue recorded ' + r.session.blue.claims.length + ' claim(s), each with evidence')
+    return emit({ command: 'review', sub, ok: true, claims: r.session.blue.claims.length }, EXIT.OK)
+  }
+
+  if (sub === 'lens') {
+    const name = args.positional[2]
+    if (!name) return emit({ command: 'review', sub, ok: false, reason: 'usage: review lens <name> < findings.json' }, EXIT.DEGRADED)
+    const raw = await readStdin()
+    let payload
+    try { payload = JSON.parse(raw) } catch { return emit({ command: 'review', sub, ok: false, reason: 'stdin must be {"findings":[{"severity":"error","location":"file:line","summary":"..."}]}' }, EXIT.DEGRADED) }
+    const r = recordLens(name, payload)
+    if (!r.ok) { note('review: ' + r.reason); return emit({ command: 'review', sub, ...r }, r.stale ? EXIT.STALE : EXIT.VIOLATION) }
+    const rec = r.session.lenses[name]
+    note('lens ' + name + ': ' + rec.findings.length + ' finding(s)' + (rec.unable ? ' [unable to conclude]' : ''))
+    return emit({ command: 'review', sub, ok: true, lens: name, findings: rec.findings.length }, EXIT.OK)
+  }
+
+  if (sub === 'verdict') {
+    const r = reviewVerdict(catalog, {
+      reviewer: typeof args.flags.reviewer === 'string' ? args.flags.reviewer : 'reviewer',
+      notes: typeof args.flags.notes === 'string' ? args.flags.notes : '',
+    })
+    if (r.degraded) return degraded('review', r.reason)
+    if (!r.ok) {
+      for (const b of r.blockers || []) note(' BLOCKER  ' + b)
+      note('no verdict: a review that did not look cannot conclude')
+      return emit({ command: 'review', sub, ...r }, r.stale ? EXIT.STALE : EXIT.VIOLATION)
+    }
+    for (const e of r.errors) note(' ' + e.lens.padEnd(12) + (e.location || e.reproduction) + '  ' + (e.summary || ''))
+    note('verdict: ' + r.verdict + ' over lenses [' + r.lensCoverage.join(', ') + ']')
+    note('  ' + r.advice)
+    if (r.receipt) note('  receipt written, bound to diff ' + String(r.receipt.diffHash).slice(0, 12))
+    return emit({ command: 'review', sub, ...r }, r.verdict === 'ACCEPT' ? EXIT.OK : EXIT.GATE)
+  }
+
+  if (sub === 'status') {
+    const s = readReview()
+    if (!s) { note('no review session open'); return emit({ command: 'review', sub, ok: true, session: null, lenses: reviewLenses(catalog) }, EXIT.OK) }
+    const missing = s.requiredLenses.filter(l => !s.lenses[l])
+    note('review of diff ' + s.diffHash.slice(0, 12) + (s.diffHash === diffHash() ? '' : '  [STALE: the tree changed]'))
+    note('  blue      : ' + (s.blue ? s.blue.claims.length + ' claim(s)' : 'not stated'))
+    note('  reported  : ' + (Object.keys(s.lenses).join(', ') || 'none'))
+    note('  missing   : ' + (missing.join(', ') || 'none'))
+    note('  verdict   : ' + (s.verdict ? s.verdict.verdict : 'none'))
+    return emit({ command: 'review', sub, ok: true, session: s, missing, stale: s.diffHash !== diffHash() }, EXIT.OK)
+  }
+
+  return emit({ command: 'review', ok: false, reason: 'usage: review start|blue|lens <name>|verdict|status' }, EXIT.DEGRADED)
+}
+
+COMMANDS.spec = (args) => {
+  const catalog = needCatalog('spec'); if (!catalog) return EXIT.DEGRADED
+  const r = specView(catalog, {
+    paths: args.flags.paths ? list(args.flags.paths) : null,
+    all: !!args.flags.all,
+    budget: args.flags.budget ? Number(args.flags.budget) : 6000,
+  })
+  if (r.degraded) return degraded('spec', r.reason)
+  note(r.text)
+  note('spec view: ' + r.chars + '/' + r.budget + ' chars, ' + r.selected.length + ' of ' + r.total + ' requirement(s) in scope')
+  return emit({ command: 'spec', ...r }, EXIT.OK)
 }
 
 COMMANDS.help = () => {

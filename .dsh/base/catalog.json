@@ -72,14 +72,16 @@
       "syntax",
       "selftest",
       "unit",
-      "fitness"
+      "fitness",
+      "instructions"
     ],
     "critical": [
       "syntax",
       "selftest",
       "unit",
       "fitness",
-      "secrets"
+      "secrets",
+      "instructions"
     ]
   },
   "checks": {
@@ -182,6 +184,14 @@
       "attributes": [
         "security",
         "maintainability"
+      ]
+    },
+    "instructions": {
+      "command": "node .dsh/base/audit/scan-instructions.mjs",
+      "class": "security",
+      "attributes": [
+        "security",
+        "privacy"
       ]
     }
   },
@@ -499,7 +509,8 @@
       },
       "verification": [
         "skills",
-        "fitness"
+        "fitness",
+        "instructions"
       ]
     },
     {
@@ -557,7 +568,8 @@
         "adr",
         "trace",
         "agents",
-        "catalog"
+        "catalog",
+        "instructions"
       ]
     },
     {
@@ -582,7 +594,8 @@
         "syntax",
         "secrets",
         "fitness",
-        "manifest"
+        "manifest",
+        "instructions"
       ]
     },
     {
@@ -600,7 +613,8 @@
         "engine-graph",
         "engine-quality",
         "engine-scan",
-        "engine-context"
+        "engine-context",
+        "engine-cli"
       ],
       "attributes": {
         "reliability": "high"
@@ -627,7 +641,26 @@
         "engine-selftest",
         "tests",
         "two halves of one concern: the engine's own verification. selftest covers pure functions, tests cover the process surface; a new capability necessarily touches both. Splitting them further would not reduce coupling, only hide it."
+      ],
+      [
+        "doctrine-docs",
+        "engine-graph",
+        "the manual documents the engine, so a capability change moves both. Splitting them would leave the documentation describing an engine that no longer exists, which is the failure this coupling prevents."
+      ],
+      [
+        "doctrine-docs",
+        "tests",
+        "a new capability arrives as engine + test + documentation in one change. The coupling is the delivery unit, not a boundary error."
+      ],
+      [
+        "engine-cli",
+        "tests",
+        "the tests drive the CLI as a subprocess; the dependency is now declared, and the co-change is the normal shape of adding a subcommand with its behavioural test."
       ]
     ]
+  },
+  "rules": {
+    "maxUnenforced": null,
+    "note": "null means advisory. Set a number to make rules-audit a gate once the ratio is where you want it."
   }
 }

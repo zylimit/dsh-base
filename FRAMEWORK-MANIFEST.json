@@ -1,8 +1,8 @@
 {
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
-  "managedFiles": 87,
-  "digest": "bb8b314047d85ac0ff613c12b741a0c3767f866b81df4a973133bf8532bd8bd8",
+  "managedFiles": 88,
+  "digest": "3740008ae7d7fc4af7f1939a102c2eb9c94eb8aa88a0310f5ba9d788b8d07d0a",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -20,19 +20,24 @@
       "bytes": 3754
     },
     {
+      "path": ".dsh/base/audit/scan-instructions.mjs",
+      "sha256": "2b2df97c593f4f60b567c3c22befcc8ff05bb95b6200fd88bff8b4eb3fc2d68a",
+      "bytes": 6253
+    },
+    {
       "path": ".dsh/base/audit/scan-secrets.mjs",
       "sha256": "0efda12a38993a7c0d499e8d2b6a5b2efd9c866bf4db6f56c2bec80172ad4f85",
       "bytes": 4057
     },
     {
       "path": ".dsh/base/catalog.example.json",
-      "sha256": "0da0599ada87bf31eb13a1bf612aef9d53ccf8935be9d1b24bd103877a14f13f",
-      "bytes": 6830
+      "sha256": "ba30b3c2f8bce56c48440b331ac89465a567947601dc53f7f91e28b7d2eadd11",
+      "bytes": 7061
     },
     {
       "path": ".dsh/base/dsb.mjs",
-      "sha256": "7be845c4782b735b7c3084bd505a416c844a9d96509ae7ca20d0f77e29c5212c",
-      "bytes": 39770
+      "sha256": "8fa3aabd291caf381f63b8adc72be083c96f389c6076fd8ba8a2ee1514e5316c",
+      "bytes": 46498
     },
     {
       "path": ".dsh/base/githooks/commit-msg",
@@ -41,8 +46,8 @@
     },
     {
       "path": ".dsh/base/githooks/pre-commit",
-      "sha256": "b57e29eaaec9de84b2a5a7a17b4953f271b2d03066160f361f338aa368295c8c",
-      "bytes": 1855
+      "sha256": "cfaab0907d26488136f04e81e3744fb6dbba1b3a66f8789826a9b915a7348764",
+      "bytes": 1924
     },
     {
       "path": ".dsh/base/githooks/pre-push",
@@ -56,8 +61,8 @@
     },
     {
       "path": ".dsh/base/lib/context.mjs",
-      "sha256": "9cce5d8b5be2ec11f6cfe1d744c4cb2fc958c9910b97c903ca4bc8979792c27a",
-      "bytes": 22824
+      "sha256": "d70e68658c2748d945b0594935d81c781319aec4f4dc419457edd68c3f892cb2",
+      "bytes": 31193
     },
     {
       "path": ".dsh/base/lib/core.mjs",
@@ -76,18 +81,18 @@
     },
     {
       "path": ".dsh/base/lib/quality.mjs",
-      "sha256": "cd9d55b277cbfb2cd667c7569de29cd3442b5243f0c260b97213e2a28bb4a65f",
-      "bytes": 29610
+      "sha256": "e83fa0282b2d5bbce5ff369baa7aaa96c587933614a23b3f5060b796df7a2d6d",
+      "bytes": 36772
     },
     {
       "path": ".dsh/base/lib/scan.mjs",
-      "sha256": "076907fe8d5907b4bf74b309fcdcc753fb1dfd75865c15e1d62c18c25e3e94da",
-      "bytes": 33299
+      "sha256": "3b2e8b67eb71f461f055e9b5af41efde9a74a50b9fb3a114598713af24e58486",
+      "bytes": 37455
     },
     {
       "path": ".dsh/base/lib/selftest.mjs",
-      "sha256": "1049eb5054a198220d944cdc19c866d514c63fe6eca406c52261cee58d9cb578",
-      "bytes": 27149
+      "sha256": "2c32aec497909453df1b6dcddaab1ba269aa773eca5c2097ac2b14a64dea7de5",
+      "bytes": 28800
     },
     {
       "path": ".dsh/docs/ADOPTION.md",

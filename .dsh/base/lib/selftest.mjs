@@ -10,8 +10,8 @@ import {
   CATCH_ALL_GLOBS, ATTRIBUTES, TIERS, PROTECTED_ATTRIBUTES, EMPTY_DIFF_HASH,
 } from './core.mjs'
 import { lintCatalog, computeImpact, resolveVerification, extractImports, resolveSpecifier, findCycles, trendGate } from './graph.mjs'
-import { aggregate, buildPlan, assessAttributes, validateWaiver, waiverContentHash, syncCheck, STATUS } from './quality.mjs'
-import { parseFrontmatter, FITNESS_RULE_IDS, fitness as fitnessScan, skillsLint as skillsLintFn } from './scan.mjs'
+import { aggregate, buildPlan, assessAttributes, validateWaiver, waiverContentHash, syncCheck, reviewLenses, fastSkippable, STATUS } from './quality.mjs'
+import { parseFrontmatter, FITNESS_RULE_IDS, fitness as fitnessScan, skillsLint as skillsLintFn, rulesAudit } from './scan.mjs'
 import { denied, parseLedger, memoryConfig } from './context.mjs'
 import { fleetLint, fleetImpact, contractCycles } from './fleet.mjs'
 
@@ -415,6 +415,34 @@ export function selftest () {
   t('matchesAny: an empty pattern list matches nothing', () => {
     ok(!matchesAny('a.ts', []))
     ok(!matchesAny('a.ts', undefined))
+  })
+
+  // ── review, fast mode, rule audit ─────────────────────────────────────────
+  t('review: the default lens set covers the attributes that block a gate', () => {
+    const d = reviewLenses(null)
+    for (const l of ['security', 'privacy', 'resilience', 'reliability', 'correctness']) {
+      ok(d.includes(l), 'missing default lens ' + l)
+    }
+    eq(reviewLenses({ review: { lenses: ['a', 'b'] } }), ['a', 'b'])
+    eq(reviewLenses({ review: { lenses: [] } }), d, 'an empty list is a mistake, not an instruction to review nothing')
+  })
+  t('fast mode: a protected check is unreachable however the catalog is written', () => {
+    const c = {
+      checks: {
+        ok1: { command: 'x', class: 'lint', attributes: ['maintainability'], allowFastSkip: true },
+        no1: { command: 'x', class: 'security', attributes: ['security'], allowFastSkip: true },
+        no2: { command: 'x', class: 'test', attributes: ['privacy'], allowFastSkip: true },
+        no3: { command: 'x', class: 'safety', allowFastSkip: true },
+        no4: { command: 'x', class: 'test', attributes: ['reliability'] },
+      },
+    }
+    eq(fastSkippable(c), ['ok1'])
+  })
+  t('rules: an unconfigured threshold is advisory, not zero', () => {
+    // A blocking gate with nothing behind it is the exact failure this measures.
+    const r = rulesAudit({ checks: {}, rules: { maxUnenforced: null } }, { files: [] })
+    ok(r.ok, 'null must mean advisory')
+    eq(rulesAudit({ checks: {} }, { files: [] }).ok, true, 'absent must mean advisory')
   })
 
   // ── fleet ─────────────────────────────────────────────────────────────────

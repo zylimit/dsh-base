@@ -630,3 +630,102 @@ export function trace (catalog) {
       : 'Every declared requirement is referenced by at least one test.',
   }
 }
+// ── rule audit ──────────────────────────────────────────────────────────────
+//
+// The finding that matters about instruction files is not that they cost tokens.
+// At a few thousand tokens on a stable cache prefix they cost little. It is that
+// rule count has a compliance ceiling: an unenforced rule does not merely fail
+// to work, it competes for attention with the rules that do work, and restraint
+// rules ("never do X") degrade fastest under pressure.
+//
+// So the quantity to minimise is not bytes. It is rules that name no enforcement
+// and do not admit to being unenforced. A long constitution whose every rule
+// points at a command is healthy; a short one full of exhortation is not.
+
+const RULE_LINE = /^\s*(?:\d+\.|-|\|)\s+\S/
+const PROMPT_ONLY = /\b(prompt-only|prompt only|\(P\))\b/i
+const SECTION = /^#{2,3}\s+(.+?)\s*$/
+
+/** A rule is enforced when it names something that actually exists. */
+function enforcementTokens (line, known) {
+  const found = []
+  const re = /\x60([^\x60]{2,80})\x60/g
+  let m
+  while ((m = re.exec(line)) !== null) {
+    const raw = m[1].trim()
+    const bare = raw.replace(/^node \.dsh\/base\/dsb\.mjs\s+/, '').replace(/^dsb\s+/, '').split(/[\s|]/)[0]
+    if (known.has(bare)) found.push(bare)
+  }
+  return found
+}
+
+export function rulesAudit (catalog, { files = null } = {}) {
+  const known = new Set([
+    ...Object.keys((catalog && catalog.checks) || {}),
+    ...ENGINE_CAPABILITIES,
+    ...FITNESS_RULE_IDS,
+  ])
+  const targets = files || ['AGENTS.md']
+  const rows = []
+
+  for (const f of targets) {
+    if (!exists(f)) continue
+    const lines = readText(f, '').split('\n')
+    let section = '(preamble)'
+    let inFence = false
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i]
+      if (/^\x60\x60\x60/.test(line.trim())) { inFence = !inFence; continue }
+      if (inFence) continue
+      const s = SECTION.exec(line)
+      if (s) { section = s[1]; continue }
+      if (!RULE_LINE.test(line)) continue
+      if (line.trim().length < 25) continue
+      const tokens = enforcementTokens(line, known)
+      const declared = PROMPT_ONLY.test(line) || PROMPT_ONLY.test(lines[i + 1] || '') || PROMPT_ONLY.test(section)
+      rows.push({
+        file: f,
+        line: i + 1,
+        section,
+        state: tokens.length ? 'enforced' : (declared ? 'declared-unenforced' : 'unenforced'),
+        enforcedBy: tokens,
+        text: line.trim().slice(0, 140),
+      })
+    }
+  }
+
+  const enforced = rows.filter(r => r.state === 'enforced')
+  const declared = rows.filter(r => r.state === 'declared-unenforced')
+  const silent = rows.filter(r => r.state === 'unenforced')
+  // Advisory by default. This measures honesty, not correctness: a project may
+  // legitimately keep unenforced rules, and turning that into a blocking gate on
+  // day one would be a rule with nothing behind it, which is the exact failure
+  // this command exists to name.
+  const configured = catalog && catalog.rules ? catalog.rules.maxUnenforced : undefined
+  const max = (configured === undefined || configured === null) ? Infinity : configured
+
+  const findings = silent.map(r => ({
+    severity: 'error',
+    code: 'RULE_UNENFORCED',
+    file: r.file,
+    line: r.line,
+    message: 'rule names no enforcement and does not admit to being unenforced: "' + r.text + '". Bind it to a command, mark it prompt-only, or delete it - an unenforced rule competes with the enforced ones.',
+  }))
+
+  return {
+    ok: silent.length <= max,
+    counts: {
+      total: rows.length,
+      enforced: enforced.length,
+      declaredUnenforced: declared.length,
+      unenforced: silent.length,
+      maxUnenforced: max,
+    },
+    enforcementRatio: rows.length ? Number((enforced.length / rows.length).toFixed(3)) : 1,
+    rows,
+    findings,
+    advice: silent.length
+      ? silent.length + ' rule(s) assert something with nothing behind them. Each one lowers compliance with the rules that do have a check.'
+      : 'every rule either names its enforcement or admits it has none.',
+  }
+}

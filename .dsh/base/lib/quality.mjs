@@ -365,6 +365,7 @@ export function writeReceipt (payload) {
     verdict: payload.verdict,
     scope: payload.scope,
     notes: payload.notes || '',
+    lenses: Array.isArray(payload.lenses) ? payload.lenses : null,
     baseCommit: headCommit(),
     diffHash: diffHash(),
     createdAt: nowIso(),
@@ -415,7 +416,7 @@ export function verifyReceipts () {
     vacuous: vacuous.map(r => r.taskId),
     currentDiffHash: current,
     baseCommit: head,
-    matching: matching.map(r => ({ taskId: r.taskId, reviewer: r.reviewer, createdAt: r.createdAt })),
+    matching: matching.map(r => ({ taskId: r.taskId, reviewer: r.reviewer, createdAt: r.createdAt, lenses: r.lenses || null })),
     receipts: receipts.length,
   }
 }
@@ -500,7 +501,14 @@ export function completeTask (catalog, impact) {
       ']; a loan against evidence cannot close a task. Run "dsb fast off" then "dsb gate".')
   }
   if (!gateFresh) blockers.push('no PASSING gate bound to the current diff (run: dsb gate)')
-  if (!receipts.ok) blockers.push('no fresh ACCEPT review receipt bound to the current diff (run: dsb receipt write)')
+  if (!receipts.ok) blockers.push('no fresh ACCEPT review receipt bound to the current diff (run: dsb review start, then the lenses, then dsb review verdict)')
+  const structured = !(catalog && catalog.review && catalog.review.requireStructured === false)
+  if (structured && receipts.ok) {
+    const withLenses = (receipts.matching || []).some(m => m.lenses && m.lenses.length)
+    if (!withLenses) {
+      blockers.push('the accepting receipt records no lens coverage; a verdict reached without structured disagreement is consensus, which measures worse than three lenses that disagree')
+    }
+  }
   if (!ledger.ok) blockers.push('verification ledger chain is broken; prior evidence cannot be trusted')
   if (plan.empty) blockers.push('verification plan is empty')
   if (blockers.length) return { ok: false, task: task.id, blockers }
@@ -625,4 +633,165 @@ export function fastSkippable (catalog) {
     out.push(id)
   }
   return out
+}
+// ── structured-disagreement review ──────────────────────────────────────────
+//
+// The strongest measured lever in agentic coding is not a better model or more
+// samples: it is a review loop. An agentic review raised one model from 27.5 %
+// to 56.9 % on SWE-bench Verified at 6.5x the token efficiency of resampling,
+// and three agents in structured disagreement outperformed five in consensus.
+// Consensus is the failure mode - agents agreeing cheaply is not review.
+//
+// This scaffold had that as prose in a skill, which is the same as not having
+// it. Here it is a gate: a verdict cannot be written until every required lens
+// has actually reported, every finding carries a location or a reproduction,
+// and the whole thing binds the exact diff it judged.
+
+const REVIEW_PATH = () => path.join(BASE_DIR, 'state', 'review', 'session.json')
+const DEFAULT_LENSES = ['security', 'privacy', 'resilience', 'reliability', 'correctness']
+const LOCATION = /^[^\s:]+:\d+/
+
+export function reviewLenses (catalog) {
+  const configured = catalog && catalog.review && Array.isArray(catalog.review.lenses) ? catalog.review.lenses : null
+  return configured && configured.length ? configured : DEFAULT_LENSES
+}
+
+export function readReview () { return readJson(rel(REVIEW_PATH()), null) }
+
+function saveReview (s) { writeJsonAtomic(rel(REVIEW_PATH()), s); return s }
+
+export function startReview (catalog, { packPath = null, scope = '' } = {}) {
+  if (!isGitRepo()) return { ok: false, degraded: true, reason: 'not-a-git-repository' }
+  if (diffIsEmpty()) return { ok: false, degraded: true, reason: 'no-change: there is nothing under review' }
+  return {
+    ok: true,
+    session: saveReview({
+      version: 1,
+      diffHash: diffHash(),
+      baseCommit: headCommit(),
+      startedAt: nowIso(),
+      scope,
+      packPath,
+      requiredLenses: reviewLenses(catalog),
+      blue: null,
+      lenses: {},
+      verdict: null,
+    }),
+  }
+}
+
+/** The session is only evidence about the tree it was opened against. */
+function freshness (s) {
+  if (!s) return { ok: false, reason: 'no review session; run "dsb review start"' }
+  const now = diffHash()
+  if (s.diffHash !== now) return { ok: false, stale: true, reason: 'the working tree changed since this review opened; re-open it' }
+  return { ok: true }
+}
+
+/** Blue states what it verified and how. A claim with no evidence is an opinion. */
+export function recordBlue (payload) {
+  const s = readReview()
+  const f = freshness(s)
+  if (!f.ok) return { ok: false, ...f }
+  const claims = Array.isArray(payload && payload.claims) ? payload.claims : []
+  if (claims.length === 0) return { ok: false, reason: 'blue must state at least one claim' }
+  const bad = claims.filter(c => !c || !c.claim || !c.evidence)
+  if (bad.length) return { ok: false, reason: bad.length + ' claim(s) carry no evidence; a claim without a command, a path or an exit code is an opinion' }
+  s.blue = { at: nowIso(), claims }
+  return { ok: true, session: saveReview(s) }
+}
+
+/**
+ * One lens reports. A finding must be locatable: file:line, or a reproduction
+ * someone else can run. Anything else is an impression, and impressions are what
+ * make review theatre.
+ */
+export function recordLens (name, payload) {
+  const s = readReview()
+  const f = freshness(s)
+  if (!f.ok) return { ok: false, ...f }
+  if (!s.requiredLenses.includes(name)) {
+    return { ok: false, reason: 'unknown lens "' + name + '"; this review requires ' + s.requiredLenses.join(', ') }
+  }
+  const findings = Array.isArray(payload && payload.findings) ? payload.findings : []
+  const unlocated = findings.filter(x => !(x && ((x.location && LOCATION.test(String(x.location))) || (x.reproduction && String(x.reproduction).trim()))))
+  if (unlocated.length) {
+    return { ok: false, reason: unlocated.length + ' finding(s) have neither a file:line location nor a reproduction; such a finding cannot be acted on and does not count' }
+  }
+  for (const x of findings) {
+    if (!['error', 'warning', 'info'].includes(x.severity)) {
+      return { ok: false, reason: 'each finding needs severity error | warning | info' }
+    }
+  }
+  s.lenses[name] = {
+    at: nowIso(),
+    unable: !!(payload && payload.unable),
+    unableReason: (payload && payload.unableReason) || null,
+    findings,
+  }
+  return { ok: true, session: saveReview(s) }
+}
+
+/**
+ * The verdict. It is computed from what was actually recorded, not asserted:
+ * an unexamined lens cannot be waved through, and a lens that reported an error
+ * cannot be outvoted by lenses that found nothing.
+ */
+export function reviewVerdict (catalog, { reviewer = 'reviewer', notes = '' } = {}) {
+  const s = readReview()
+  const f = freshness(s)
+  if (!f.ok) return { ok: false, ...f }
+
+  const missing = s.requiredLenses.filter(l => !s.lenses[l])
+  const blockers = []
+  if (!s.blue) blockers.push('blue has not stated what it verified')
+  if (missing.length) blockers.push('lens(es) never reported: ' + missing.join(', '))
+  if (blockers.length) return { ok: false, blockers, requiredLenses: s.requiredLenses, recorded: Object.keys(s.lenses) }
+
+  const all = Object.entries(s.lenses)
+  const errors = all.flatMap(([l, v]) => (v.findings || []).filter(x => x.severity === 'error').map(x => ({ lens: l, ...x })))
+  const unable = all.filter(([, v]) => v.unable).map(([l]) => l)
+
+  let verdict
+  if (errors.length) verdict = 'FIX_REQUIRED'
+  else if (unable.length) verdict = 'NEEDS_MORE_EVIDENCE'
+  else verdict = 'ACCEPT'
+
+  s.verdict = {
+    at: nowIso(),
+    verdict,
+    reviewer,
+    notes,
+    errorCount: errors.length,
+    unableLenses: unable,
+    lensCoverage: s.requiredLenses,
+  }
+  saveReview(s)
+
+  let receipt = null
+  if (verdict === 'ACCEPT') {
+    receipt = writeReceipt({
+      taskId: (readTask() || {}).id || 'review-' + s.diffHash.slice(0, 8),
+      reviewer,
+      verdict: 'ACCEPT',
+      scope: s.scope || 'working tree',
+      notes: notes,
+      lenses: s.requiredLenses,
+    })
+  }
+
+  return {
+    ok: true,
+    verdict,
+    errors: errors.slice(0, 20),
+    errorCount: errors.length,
+    unableLenses: unable,
+    lensCoverage: s.requiredLenses,
+    receipt,
+    advice: verdict === 'ACCEPT'
+      ? 'every required lens reported and none found an error'
+      : (verdict === 'FIX_REQUIRED'
+        ? 'fix the errors and re-open the review; a lens that found an error is not outvoted by lenses that found nothing'
+        : 'a lens could not reach a conclusion; supply what it needs rather than accepting around it'),
+  }
 }

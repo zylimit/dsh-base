@@ -39,6 +39,7 @@ run () {
 }
 
 run secrets      node .dsh/base/audit/scan-secrets.mjs --staged
+run instructions node .dsh/base/audit/scan-instructions.mjs --staged
 run syntax       node .dsh/base/audit/check-syntax.mjs
 run catalog-lint node .dsh/base/dsb.mjs catalog-lint
 run skills-lint  node .dsh/base/dsb.mjs skills-lint
