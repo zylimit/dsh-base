@@ -1,4 +1,4 @@
-# deepseek-base installer (Windows wrapper, PowerShell 5.1 compatible, ASCII only).
+# dsh-base installer (Windows wrapper, PowerShell 5.1 compatible, ASCII only).
 #
 #   pwsh -File setup.ps1 -Target <dir> [-DryRun] [-Enable] [-Hooks] [-Verify]
 #   pwsh -File setup.ps1 <dir> <dir> ... -Verify

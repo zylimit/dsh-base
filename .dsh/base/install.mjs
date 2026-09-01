@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// deepseek-base installer. One implementation; setup.sh and setup.ps1 are thin
+// dsh-base installer. One implementation; setup.sh and setup.ps1 are thin
 // wrappers over it, so there is no shell/PowerShell parity to maintain.
 //
 //   node .dsh/base/install.mjs <target...> [options]
@@ -14,7 +14,7 @@
 //
 // Policy:
 //   managed  - overwritten only when identical; a difference is staged beside the
-//              original as <file>.deepseek-base-new and never applied silently
+//              original as <file>.dsh-base-new and never applied silently
 //   seeded   - written once; an existing project file is always kept
 //   excluded - the scaffold's own instance data (requirements, ADRs, runtime state)
 //
@@ -153,7 +153,7 @@ function install (target, opts) {
     const src = fs.readFileSync(from)
     if (!fs.existsSync(to)) { write(rel, src); result.copied++; continue }
     if (hashLf(src) === hashLf(fs.readFileSync(to))) { result.unchanged++; continue }
-    write(rel + '.deepseek-base-new', src)
+    write(rel + '.dsh-base-new', src)
     result.staged.push(rel)
   }
 
@@ -271,7 +271,7 @@ if (!opts.json) {
     process.stderr.write('        copied ' + r.copied + ', unchanged ' + r.unchanged +
       ', staged ' + r.staged.length + ', kept ' + r.kept.length + '\n')
     for (const s of r.seeded) process.stderr.write('        seeded: ' + s + '\n')
-    for (const s of r.staged) process.stderr.write('        differs, staged for review: ' + s + '.deepseek-base-new\n')
+    for (const s of r.staged) process.stderr.write('        differs, staged for review: ' + s + '.dsh-base-new\n')
     for (const w of r.warnings) process.stderr.write('        warn: ' + w + '\n')
     for (const e of r.errors) process.stderr.write('        ERROR: ' + e + '\n')
     if (r.verify) {

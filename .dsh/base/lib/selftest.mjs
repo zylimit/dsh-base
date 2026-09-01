@@ -1,4 +1,4 @@
-// deepseek-base :: built-in regression assertions.
+// dsh-base :: built-in regression assertions.
 //
 // The engine must be able to prove itself before it is allowed to judge a
 // repository. Every assertion here exercises a pure function against a

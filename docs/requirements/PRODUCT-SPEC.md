@@ -1,4 +1,4 @@
-# deepseek-base — Product Specification
+# dsh-base — Product Specification
 
 Version: 1.0
 Status: Accepted
@@ -6,7 +6,7 @@ Owner: maintainers
 
 ## 1. Purpose
 
-deepseek-base is a development scaffold for the DeepSeek Harness. It supplies a
+dsh-base is a development scaffold for the DeepSeek Harness. It supplies a
 project constitution, a skill library, a zero-dependency governance engine, document
 templates, git hooks and CI so that a team using the harness produces evidence
 instead of assertions, and so that architecture and requirement quality are checked
@@ -19,7 +19,7 @@ quality-attribute enforcement, verification evidence, delegation protocol, and
 operation at repositories above 1,000,000 lines.
 
 Non-goals: replacing a build system, a test runner, a CI provider, a package
-manager, or a static-analysis engine. deepseek-base wires those in; it does not
+manager, or a static-analysis engine. dsh-base wires those in; it does not
 reimplement them. It also does not provide legal advice on privacy regulation.
 
 ## 3. Target users

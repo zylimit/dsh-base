@@ -1,4 +1,4 @@
-// deepseek-base :: bounded context packing, environment doctor, retention, risk scan.
+// dsh-base :: bounded context packing, environment doctor, retention, risk scan.
 //
 // context-pack exists because the scarce resource in a 1M-line repository is not
 // compute, it is the model's attention. A pack is a budgeted, deny-filtered,

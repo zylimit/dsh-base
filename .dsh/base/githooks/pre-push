@@ -1,5 +1,5 @@
 #!/bin/sh
-# deepseek-base :: pre-push
+# dsh-base :: pre-push
 #
 # Pushing is a HIGH-tier act: it publishes work others will build on.
 # This is the last automated place to refuse unproven work.
@@ -13,11 +13,11 @@ cd "$ROOT" || exit 0
 [ -f .dsh/base/catalog.json ] || exit 0
 
 if ! command -v node >/dev/null 2>&1; then
-  echo "deepseek-base: node was not found on PATH. The pre-push gate was SKIPPED, which is not a pass." >&2
+  echo "dsh-base: node was not found on PATH. The pre-push gate was SKIPPED, which is not a pass." >&2
   exit 0
 fi
 
-echo "deepseek-base: running the Definition of Done ..." >&2
+echo "dsh-base: running the Definition of Done ..." >&2
 node .dsh/base/dsb.mjs dod >/dev/null
 DOD=$?
 
@@ -30,17 +30,17 @@ if git rev-parse --verify --quiet '@{u}' >/dev/null 2>&1; then
 fi
 
 if [ -n "$BASE" ]; then
-  echo "deepseek-base: running the gate scoped to $BASE..HEAD ..." >&2
+  echo "dsh-base: running the gate scoped to $BASE..HEAD ..." >&2
   node .dsh/base/dsb.mjs gate --baseline "$BASE" >/dev/null
 else
-  echo "deepseek-base: no upstream ref; running the gate over the working tree ..." >&2
+  echo "dsh-base: no upstream ref; running the gate over the working tree ..." >&2
   node .dsh/base/dsb.mjs gate >/dev/null
 fi
 GATE=$?
 
 if [ "$DOD" != "0" ] || [ "$GATE" != "0" ]; then
   echo "" >&2
-  echo "deepseek-base: push blocked. dod exit=$DOD gate exit=$GATE" >&2
+  echo "dsh-base: push blocked. dod exit=$DOD gate exit=$GATE" >&2
   echo "Run these to see why:" >&2
   echo "  node .dsh/base/dsb.mjs dod" >&2
   echo "  node .dsh/base/dsb.mjs gate" >&2
@@ -48,5 +48,5 @@ if [ "$DOD" != "0" ] || [ "$GATE" != "0" ]; then
   exit 1
 fi
 
-echo "deepseek-base: dod and gate both passed." >&2
+echo "dsh-base: dod and gate both passed." >&2
 exit 0

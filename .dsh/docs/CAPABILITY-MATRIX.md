@@ -12,7 +12,7 @@ commands**, **no markdown subagent definitions**, **no project settings file** a
 output styles**. Roles are skills; commands are user-invocable skills; enforcement lives in
 git hooks, CI and the engine.
 
-| # | Capability | Donor scaffold(s) | Verdict | How it is realised in deepseek-base | Rationale |
+| # | Capability | Donor scaffold(s) | Verdict | How it is realised in dsh-base | Rationale |
 |---|---|---|---|---|---|
 | 1 | Module catalog | codex-base, cursor-base | Adapted | `.dsh/base/catalog.json` (`modules`, `layers`, `checks`, `riskChecks`, `budget`), linted by `catalog-lint` | One machine-readable architecture instead of prose plus a rules file; it is also the on/off switch for governance |
 | 2 | Path classification precedence | codex-base | Absorbed | `classifyPath`: module > ignored > global > unmapped, most specific glob wins | Deterministic ownership; ambiguity is an error, not a coin flip |

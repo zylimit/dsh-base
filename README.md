@@ -1,4 +1,4 @@
-# deepseek-base
+# dsh-base
 
 A development scaffold for the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness).
 
@@ -35,18 +35,18 @@ harder does not fix any of them. Each needs a mechanism.
 ## Install
 
 ```sh
-git clone --depth 1 <this-repo> /tmp/deepseek-base
+git clone --depth 1 <this-repo> /tmp/dsh-base
 
 # one repository, wired and verified in a single step
-sh /tmp/deepseek-base/setup.sh /path/to/repo --hooks --enable --verify
-# Windows: pwsh -File C:\deepseek-base\setup.ps1 -Target C:\repo -Hooks -Enable -Verify
+sh /tmp/dsh-base/setup.sh /path/to/repo --hooks --enable --verify
+# Windows: pwsh -File C:\dsh-base\setup.ps1 -Target C:\repo -Hooks -Enable -Verify
 ```
 
 Batch adoption across many repositories:
 
 ```sh
-node /tmp/deepseek-base/.dsh/base/install.mjs repo-a repo-b repo-c --hooks --enable --verify
-node /tmp/deepseek-base/.dsh/base/install.mjs --targets-from repos.txt --hooks --enable --verify --json
+node /tmp/dsh-base/.dsh/base/install.mjs repo-a repo-b repo-c --hooks --enable --verify
+node /tmp/dsh-base/.dsh/base/install.mjs --targets-from repos.txt --hooks --enable --verify --json
 ```
 
 | Flag | Effect |
@@ -62,7 +62,7 @@ node /tmp/deepseek-base/.dsh/base/install.mjs --targets-from repos.txt --hooks -
 
 The run is idempotent: installing twice copies nothing. A managed file the project
 has edited is never overwritten — it is written beside the original as
-`<file>.deepseek-base-new` so the change is reviewed. Project-owned files
+`<file>.dsh-base-new` so the change is reviewed. Project-owned files
 (`AGENTS.md`, `progress.md`, `.editorconfig`, `.gitattributes`,
 `.dsh/base/cordis.patch.yml`) are seeded once and then kept. Exit `0` means every target
 is clean, `1` that a target needs attention, `2` a usage error.

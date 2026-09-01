@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 89,
-  "digest": "58f5197abcd30b64f110a8ded86a0d7c4035f35cc6683c2dfca1b5ca746888e3",
+  "digest": "bbb2355e4572ea5cddf5ee974074c1e26cc9f4331dacc7e0a37ad22988500c89",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -36,68 +36,68 @@
     },
     {
       "path": ".dsh/base/dsb.mjs",
-      "sha256": "1d06e4c1107484f66c093a8a62c429381940d5fef46fc8e332970f8016259037",
-      "bytes": 50453
+      "sha256": "5d5977d2b9470e4ff0278034fd2f1ea3dd9b783cd2da63da1c2a61d7b78f40d1",
+      "bytes": 50433
     },
     {
       "path": ".dsh/base/githooks/commit-msg",
-      "sha256": "cdf2f8040f49ebd8379559ef7ee3ca837a09918658296e6a877a4de668b4a4ee",
-      "bytes": 930
+      "sha256": "165cb4dc00854b94d8468cc17d0a82e7699b687f0cf0e5000336411c5603efcd",
+      "bytes": 910
     },
     {
       "path": ".dsh/base/githooks/pre-commit",
-      "sha256": "cfaab0907d26488136f04e81e3744fb6dbba1b3a66f8789826a9b915a7348764",
-      "bytes": 1924
+      "sha256": "b8c03114aeca8c47934608df4b5fef09ceac428cc501af7b5a3408daa0f1899d",
+      "bytes": 1894
     },
     {
       "path": ".dsh/base/githooks/pre-push",
-      "sha256": "ebf2e2a5aacb1ef53d3786c2d6f184663f30f10b6ad662a40c1407a9fd69c35a",
-      "bytes": 1745
+      "sha256": "974209193899e1fdc6d9e869b5a51d9b536efab68a0b1faadda48ef4d2667e3b",
+      "bytes": 1710
     },
     {
       "path": ".dsh/base/install.mjs",
-      "sha256": "4d1a4e94a3e352cd48a43b7c672eb49c09021c8a7fb7f4728b95e7ff2917ad6d",
-      "bytes": 13793
+      "sha256": "fcb6801ad518b1315ab4550a28d4c80976e46498ce8ae743e6aba40ab290df82",
+      "bytes": 13773
     },
     {
       "path": ".dsh/base/lib/context.mjs",
-      "sha256": "233cd78964c5e407e4a059bb551729fe9a27d2fb36b941e6de93e0c9da5de04b",
-      "bytes": 35638
+      "sha256": "3d8b972b4062759239405f2ba3f5dcbeac4168d1972aeb31c10e8ad49944c028",
+      "bytes": 35633
     },
     {
       "path": ".dsh/base/lib/core.mjs",
-      "sha256": "d06c560f1e2c25babaca20eee5b5525be52ccc7b4deab54b57620c1508c96d42",
-      "bytes": 16872
+      "sha256": "e2a596db6c1b42cff5e21d8dd45f108676ef8e2e4e05c41155687f39af9a07b2",
+      "bytes": 16867
     },
     {
       "path": ".dsh/base/lib/fleet.mjs",
-      "sha256": "fc109063d77532e34a74a26b9354ce4816e2a4e3d77358b778559feaac7b99c9",
-      "bytes": 15848
+      "sha256": "dbe3818b43eb186fabffb4ab5b8fa6927669ee80f898626dd3027fc4d73f4806",
+      "bytes": 15843
     },
     {
       "path": ".dsh/base/lib/graph.mjs",
-      "sha256": "a7af0c4b621a51e8247cc6a30a0112665ed75b430473e555c3c1efaa8279867f",
-      "bytes": 44201
+      "sha256": "2e3818dd5cebf4e066e91bb8599d441dbde4cb36f7e9f71497a0e8d30c65f568",
+      "bytes": 44196
     },
     {
       "path": ".dsh/base/lib/quality.mjs",
-      "sha256": "b4b5a291ebfd8f2098ca584d8f30fc74ceea1645d9c4bed1abca9b8c2b4ce882",
-      "bytes": 50742
+      "sha256": "9a31e726dbc86637506f37a76dd789f3b362eebd82450f76672b7394300a0389",
+      "bytes": 50737
     },
     {
       "path": ".dsh/base/lib/scan.mjs",
-      "sha256": "33053871fe49f6fa64c5ec4431c98f568844042ca30597eb2500cd1ef7a7cff2",
-      "bytes": 37717
+      "sha256": "9ed6aed59ae20d76faab3ea6ff4b0c17445586c7577953092f4c920ab9b1294e",
+      "bytes": 37712
     },
     {
       "path": ".dsh/base/lib/selftest.mjs",
-      "sha256": "d4fba37d7075196c3ecd617eea333e425e2cd5ad231518bdcdd5192e5a580c2d",
-      "bytes": 30656
+      "sha256": "937cb9b1a19eef30ffeb8b685e1b1db0b6cd649096a8a533ad020a5e36cf4299",
+      "bytes": 30651
     },
     {
       "path": ".dsh/docs/ADOPTION.md",
-      "sha256": "3caabef96798c2cb88800d123b01ce953700a7135b4ae7b31faf9d98487d009e",
-      "bytes": 10378
+      "sha256": "7d6d189f659e8d480a7faaa223863963018a6977881997962e6588f9a834a946",
+      "bytes": 10363
     },
     {
       "path": ".dsh/docs/ADR-CONTRACT.md",
@@ -111,8 +111,8 @@
     },
     {
       "path": ".dsh/docs/CAPABILITY-MATRIX.md",
-      "sha256": "f4e4164f09cf50565fc88880cf3c0d5d914ba45255cf533c28492550cfebb493",
-      "bytes": 15045
+      "sha256": "4d3392bee66066d2ccf6ab54f30bfe2db64638c5e56cdc0e3b3c8f36443f3489",
+      "bytes": 15040
     },
     {
       "path": ".dsh/docs/LARGE-REPO-GUIDE.md",
@@ -126,8 +126,8 @@
     },
     {
       "path": ".dsh/docs/PROTOCOLS.md",
-      "sha256": "4e8287b9898e6f4f8c2e6e7a73f1338a146f1b7ef9eeb0e3f1e7f5a832565c5b",
-      "bytes": 12429
+      "sha256": "c6418c4f09f827891057b7480a21a1170c6b9dc0ee9784f49cef3b347eab6b24",
+      "bytes": 12424
     },
     {
       "path": ".dsh/docs/QUALITY-ATTRIBUTES.md",
@@ -136,8 +136,8 @@
     },
     {
       "path": ".dsh/docs/README.md",
-      "sha256": "edfc87a61110d2cc8201f9a4f39a1c2516f8f60865f8adf36baddad97ff84eb1",
-      "bytes": 5039
+      "sha256": "994ad31504026c96280b7df3461d3195c0e33ae34f34eef440f20768670fb446",
+      "bytes": 5024
     },
     {
       "path": ".dsh/docs/nfr/PRIVACY.md",
@@ -376,8 +376,8 @@
     },
     {
       "path": "AGENTS.md",
-      "sha256": "0dac78b3806e553a33b2db86c7fe5b5c8f02989dfef37cab5bfd3e9046899c13",
-      "bytes": 18119
+      "sha256": "d2ddbe6c23e1e8da7cbeb84b74101ed6cec340d5aa49cc1aa927cb92a5f276b9",
+      "bytes": 18114
     },
     {
       "path": "docs/adr/ADR-0001-zero-dependency-engine.md",
@@ -426,13 +426,13 @@
     },
     {
       "path": "docs/requirements/PRODUCT-SPEC-CHANGELOG.md",
-      "sha256": "acce33c7e6c4bc6d9d0b710dc5de29bdb9829c6b8a4d85e5e585c4ba6b64cf4a",
-      "bytes": 1188
+      "sha256": "41d6af7d52ead23e1fe544358df1a3c6eb195175b56fbaf8b1d6545da18fae4a",
+      "bytes": 1569
     },
     {
       "path": "docs/requirements/PRODUCT-SPEC.md",
-      "sha256": "32599ba77acd4c5f28da1ede89f1a29b31bd9c475b19c8a8fa237a41d438cc4b",
-      "bytes": 10945
+      "sha256": "6d8bc513d5edc85db36cac89fdbca5ef0b0cac91dd5f3493ce364d9553aa76a1",
+      "bytes": 10930
     },
     {
       "path": "docs/research/ai-coding-agents-state-of-practice-2026.md",
@@ -441,13 +441,13 @@
     },
     {
       "path": "setup.ps1",
-      "sha256": "0f1be94e91c41971f0f005c96a6d1d0d48fb97849723dfefb2649014ec0fff15",
-      "bytes": 1171
+      "sha256": "1885d24b4a867243a2496943a6a0f0abdc4674e825004d843a868e6a1ce3469d",
+      "bytes": 1166
     },
     {
       "path": "setup.sh",
-      "sha256": "9e9a2a7586e41388cefb2e2cecc60bd4f4dc92367defdc26b40fa0a62990143d",
-      "bytes": 533
+      "sha256": "b02a4f4a49909531e6c69b3145ac4cee5830dd3dafa7dcc24f3cb33d7a273378",
+      "bytes": 528
     }
   ]
 }

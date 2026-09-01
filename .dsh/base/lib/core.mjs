@@ -1,4 +1,4 @@
-// deepseek-base :: governance engine core
+// dsh-base :: governance engine core
 // Zero-dependency. Node >= 20. No network. No writes outside .dsh/base runtime dirs.
 //
 // This module owns: repo discovery, JSON/atomic IO, hashing, glob matching,

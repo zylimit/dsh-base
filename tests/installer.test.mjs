@@ -114,7 +114,7 @@ test('a modified managed file is staged for review, never overwritten', () => {
     const again = install([dir])
     assert.deepEqual(again.json.results[0].staged, ['.dsh/skills/test-strategy/SKILL.md'])
     assert.match(fs.readFileSync(target, 'utf8'), /local edit/, 'the project edit must survive')
-    assert.equal(fs.existsSync(target + '.deepseek-base-new'), true, 'the update must be available beside it')
+    assert.equal(fs.existsSync(target + '.dsh-base-new'), true, 'the update must be available beside it')
   } finally { rmDir(dir) }
 })
 

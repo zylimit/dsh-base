@@ -1,6 +1,6 @@
 # Adoption
 
-How to install deepseek-base into a repository. Three starting points: a brand-new project,
+How to install dsh-base into a repository. Three starting points: a brand-new project,
 an existing greenfield project, and a 1M-line brownfield monolith. The engine is the same in
 all three; only the order of enablement differs.
 
@@ -30,13 +30,13 @@ disables the ratchet ([ADR-0007](../../docs/adr/ADR-0007-debt-ratchets-one-way.m
 One installer, one policy, run unattended:
 
 ```sh
-node /path/to/deepseek-base/.dsh/base/install.mjs --targets-from repos.txt --hooks --enable --verify --json
+node /path/to/dsh-base/.dsh/base/install.mjs --targets-from repos.txt --hooks --enable --verify --json
 ```
 
 | Property | Behaviour | Why it matters in batch |
 |---|---|---|
 | Idempotent | a repeat run copies 0 files | re-running over 200 repositories is safe |
-| Never overwrites a project edit | writes `<file>.deepseek-base-new` beside it | one team's customisation is not silently reverted |
+| Never overwrites a project edit | writes `<file>.dsh-base-new` beside it | one team's customisation is not silently reverted |
 | Line-ending blind | content identity is LF-normalised | a CRLF checkout does not stage all 74 managed files |
 | Excludes instance data | no `docs/requirements/**`, no `docs/adr/ADR-*.md` | a repository never inherits another project's specification |
 | Seeds memory from the template | `progress.md` from `.dsh/templates/PROGRESS.md` | no repository starts with someone else's Done list |

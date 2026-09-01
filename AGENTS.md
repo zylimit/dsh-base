@@ -1,4 +1,4 @@
-# deepseek-base — project constitution
+# dsh-base — project constitution
 
 This file is injected into every request. It holds only durable invariants.
 Procedure lives in skills (`.dsh/skills/`); reference material lives in `docs/`.

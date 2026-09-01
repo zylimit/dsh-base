@@ -1,6 +1,6 @@
 # Protocols
 
-The exact machine contracts of the deepseek-base engine: what `dsb` accepts on stdin, what
+The exact machine contracts of the dsh-base engine: what `dsb` accepts on stdin, what
 it writes to disk, how evidence is bound to a diff, and what every exit code means.
 Everything here is machine-enforced unless marked prompt-only (**P**).
 

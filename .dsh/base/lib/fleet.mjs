@@ -1,4 +1,4 @@
-// deepseek-base :: the fleet layer.
+// dsh-base :: the fleet layer.
 //
 // One repository per service, each small enough that a single agent holds its
 // whole model, is a good answer to context. It is not a free one: the complexity

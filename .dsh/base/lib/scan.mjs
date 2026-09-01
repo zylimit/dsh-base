@@ -1,4 +1,4 @@
-// deepseek-base :: static scanners.
+// dsh-base :: static scanners.
 //
 //   fitness      - zero-dependency anti-pattern rules for the five key attributes
 //   adrCheck     - every live decision must name a real enforcement point

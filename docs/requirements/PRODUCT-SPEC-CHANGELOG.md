@@ -23,3 +23,9 @@ without a changelog entry is an incomplete change.
 - Rationale: the scaffold governs itself, so its own behaviour has to be stated as
   decidable requirements before it can require the same of an adopting project.
 - Approver: maintainers.
+
+## 1.2 - project renamed deepseek-base -> dsh-base
+
+- Changed: every reference to the project name across the constitution, engine output, hooks, installer messages and this specification now reads dsh-base.
+- Rationale: the config repository is zylimit/dsh-base; the old name collided with the upstream product family. No requirement semantics changed.
+- Approver: maintainers.

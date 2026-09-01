@@ -1,4 +1,4 @@
-// deepseek-base :: catalog lint, impact closure, architecture guard, drift ratchet.
+// dsh-base :: catalog lint, impact closure, architecture guard, drift ratchet.
 //
 // The architecture guard compares REAL import edges extracted from source
 // against the DECLARED dependency graph in the module catalog. Undeclared

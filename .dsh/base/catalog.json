@@ -1,7 +1,7 @@
 {
   "version": 1,
   "project": {
-    "name": "deepseek-base",
+    "name": "dsh-base",
     "scaleTier": "M"
   },
   "maxTrackedPaths": 200000,
@@ -677,6 +677,11 @@
         "doctrine-docs",
         "engine-scan",
         "the manual documents every command, and the capability registry these commands resolve through lives in scan.mjs. Delivery-unit coupling, not a boundary."
+      ],
+      [
+        "doctrine-docs",
+        "engine-quality",
+        "the review law in the constitution documents the verdict model that lives in engine-quality. Delivery-unit coupling, not a boundary."
       ]
     ]
   },

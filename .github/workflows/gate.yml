@@ -1,4 +1,4 @@
-name: deepseek-base gate
+name: dsh-base gate
 
 on:
   push:

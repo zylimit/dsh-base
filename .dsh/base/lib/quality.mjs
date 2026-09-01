@@ -1,4 +1,4 @@
-// deepseek-base :: four-state verification gate, attribute coverage,
+// dsh-base :: four-state verification gate, attribute coverage,
 // tamper-evident receipt ledger, structured waivers, and the change budget.
 //
 // Iron rules encoded here:

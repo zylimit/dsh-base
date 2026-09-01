@@ -1,5 +1,5 @@
 #!/bin/sh
-# deepseek-base :: commit-msg
+# dsh-base :: commit-msg
 #
 # A commit message is the only durable explanation attached to a change.
 # This hook rejects messages that explain nothing.
@@ -18,19 +18,19 @@ esac
 LEN=$(printf '%s' "$SUBJECT" | wc -c | tr -d ' ')
 
 if [ "$LEN" -lt 12 ]; then
-  echo "deepseek-base: commit subject is $LEN characters. Say what changed and why." >&2
+  echo "dsh-base: commit subject is $LEN characters. Say what changed and why." >&2
   exit 1
 fi
 
 LOWER=$(printf '%s' "$SUBJECT" | tr 'A-Z' 'a-z')
 case "$LOWER" in
   wip|wip*|fix|fixes|update|updates|changes|misc|stuff|temp|test|asdf|.)
-    echo "deepseek-base: '$SUBJECT' explains nothing. Name the behaviour that changed." >&2
+    echo "dsh-base: '$SUBJECT' explains nothing. Name the behaviour that changed." >&2
     exit 1 ;;
 esac
 
 if [ "$LEN" -gt 72 ]; then
-  echo "deepseek-base: subject is $LEN characters; keep it under 72 and put detail in the body." >&2
+  echo "dsh-base: subject is $LEN characters; keep it under 72 and put detail in the body." >&2
 fi
 
 exit 0

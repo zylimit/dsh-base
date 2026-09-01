@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// deepseek-base governance engine :: CLI router.
+// dsh-base governance engine :: CLI router.
 //
 //   node .dsh/base/dsb.mjs <subcommand> [flags]
 //
@@ -531,7 +531,7 @@ COMMANDS.init = (args) => {
     const missing = entries.filter(e => !have.has(e))
     isolation = { mode, file: target, added: missing, already: missing.length === 0 }
     if (missing.length && !args.flags['dry-run']) {
-      const head = '# deepseek-base: private tooling, not part of this repository'
+      const head = '# dsh-base: private tooling, not part of this repository'
       const block = (existing && !existing.endsWith('\n') ? '\n' : '') + (existing ? '\n' : '') +
         head + '\n' + missing.join('\n') + '\n'
       writeAtomic(target, existing + block)
@@ -581,7 +581,7 @@ COMMANDS.init = (args) => {
 
   const health = doctor(loadCatalog())
   note('')
-  note('deepseek-base init - mode: ' + mode)
+  note('dsh-base init - mode: ' + mode)
   if (isolation.file) {
     note(isolation.already
       ? '  already isolated in ' + isolation.file
@@ -955,7 +955,7 @@ COMMANDS.release = (args) => {
 
 COMMANDS.help = () => {
   const names = Object.keys(COMMANDS).sort()
-  note('dsb — deepseek-base governance engine')
+  note('dsb — dsh-base governance engine')
   note('usage: node .dsh/base/dsb.mjs <subcommand> [--flags]')
   note('subcommands: ' + names.join(' '))
   note('exit codes: 0 clean | 1 violation | 2 blocking gate | 3 degraded | 4 stale')

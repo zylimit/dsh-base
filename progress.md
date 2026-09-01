@@ -63,7 +63,7 @@ and hedged language is demoted to `Notes` as `Needs-Confirmation`.
 - #005 P2 Render the traceability matrix as a reviewable markdown table rather than JSON only.
 - #007 P1 Measure `cochange` against a repository with real history. The current window is 6 analysed commits and the command correctly reports `LOW_CONFIDENCE`; the thresholds (ratio 0.5, minPairs 3) are guesses until calibrated on a tree with hundreds of commits.
 - #008 P2 `fleet lint` proves the manifest is internally consistent; it cannot prove the manifest lists every contract that actually exists. Investigate a per-repository declaration the engine can cross-check, so an undeclared contract is detectable rather than merely undeclared. Raise to P1 once a real fleet is onboarded.
-- #006 P2 Teach the installer an `--upgrade` mode that shows a diff for each staged `.deepseek-base-new` file instead of leaving the reader to find them. Raise to P1 once more than ten repositories are on the scaffold.
+- #006 P2 Teach the installer an `--upgrade` mode that shows a diff for each staged `.dsh-base-new` file instead of leaving the reader to find them. Raise to P1 once more than ten repositories are on the scaffold.
 
 ## In progress
 
@@ -106,7 +106,7 @@ Nothing.
 - RISK `scan-secrets.mjs` is a lexical scanner: it proves no known credential shape is present in tracked text, not that no secret exists | trigger: a secret in an unrecognised format reaches a high-risk module | mitigation: TODO #001, wire `gitleaks` or `trufflehog` as an additional check claiming `security`
 - RISK the large-repository performance figures are targets on synthetic input, not measurements | trigger: adoption on a real 1,000,000-line tree | mitigation: TODO #002; the document labels them as targets
 - RISK `--no-verify` bypasses the local hooks | trigger: deadline pressure | mitigation: CI runs the same gate and is the authority for a merge; a local bypass is a HIGH-tier act
-- RISK a batch install leaves `.deepseek-base-new` files unreviewed across many repositories | trigger: more than a few repositories customise a managed file | mitigation: TODO #006; the JSON result lists `staged` per target
+- RISK a batch install leaves `.dsh-base-new` files unreviewed across many repositories | trigger: more than a few repositories customise a managed file | mitigation: TODO #006; the JSON result lists `staged` per target
 - ASSUMPTION the `AGENTS.md` chain and `.dsh/skills` are the harness's only repository-level extension points | falsified by: re-reading `dsh-agent-instructions` and `dsh-skill-filesystem` READMEs after a harness upgrade (verified at 0.1.1-rc.2)
 - ASSUMPTION the seeded `.gitattributes` keeps managed files LF in every target | falsified by: `node .dsh/base/install.mjs <target>` reporting a non-empty `staged` list immediately after a fresh install
 

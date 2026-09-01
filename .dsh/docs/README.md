@@ -1,6 +1,6 @@
-# deepseek-base documentation
+# dsh-base documentation
 
-Reference material for the deepseek-base scaffold. Durable law lives in
+Reference material for the dsh-base scaffold. Durable law lives in
 [../AGENTS.md](../../AGENTS.md) (auto-injected into every request). Procedure lives in the
 skills under `.dsh/skills/`. Enforcement lives in `node .dsh/base/dsb.mjs <subcommand>`.
 
@@ -17,7 +17,7 @@ green) · `4` stale evidence.
 | [OPERATING-MODEL.md](OPERATING-MODEL.md) | How does work move from request to release, which gate closes each phase, and who signs off? | Orchestrator at the start of any non-trivial change; engineer before their first task |
 | [QUALITY-ATTRIBUTES.md](QUALITY-ATTRIBUTES.md) | What do the eight attributes mean, what does a tier oblige, and why did a green run still block? | Architect when declaring attributes; anyone who reads `BLOCKED_BY_ATTRIBUTES` |
 | [PROTOCOLS.md](PROTOCOLS.md) | What is the exact JSON the engine accepts and writes, and what does each exit code mean? | Anyone writing a task envelope, receipt or waiver; anyone wiring CI |
-| [ADOPTION.md](ADOPTION.md) | How is this scaffold installed into a new, greenfield or 1M-line brownfield repository? | Whoever introduces deepseek-base into a repository, once |
+| [ADOPTION.md](ADOPTION.md) | How is this scaffold installed into a new, greenfield or 1M-line brownfield repository? | Whoever introduces dsh-base into a repository, once |
 | [CAPABILITY-MATRIX.md](CAPABILITY-MATRIX.md) | Which donor-scaffold capability was absorbed, adapted or rejected, and why? | Anyone proposing a new mechanism, before proposing it |
 | [../progress.md](../progress.md) | What was done, what was decided, what is open? | Every agent on cold start; every engineer resuming work. Written by phase 8; absent in a fresh clone |
 | [requirements/PRODUCT-SPEC.md](requirements/PRODUCT-SPEC.md) + `PRODUCT-SPEC-CHANGELOG.md` | What must the system do, in decidable `REQ-`/`NFR-` form? | Specify and Verify phases. Created by the loop; linted by `spec-lint` |

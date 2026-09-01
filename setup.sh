@@ -1,5 +1,5 @@
 #!/bin/sh
-# deepseek-base installer (POSIX wrapper).
+# dsh-base installer (POSIX wrapper).
 #
 #   sh setup.sh <target-repo-dir> [more targets...] [--dry-run] [--enable] [--hooks] [--verify]
 #

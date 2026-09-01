@@ -1,4 +1,4 @@
-# deepseek-base runtime state — evidence and verdicts are local facts, never commits.
+# dsh-base runtime state — evidence and verdicts are local facts, never commits.
 .dsh/base/state/
 .dsh/base/evidence/
 .dsh/base/receipts/
