@@ -100,10 +100,11 @@ test('one lens finding an error is not outvoted by lenses that found nothing', (
   try {
     dsb(['review', 'start'], { cwd: dir })
     dsb(['review', 'blue'], { cwd: dir, input: blue })
+    // Correctness is stage 1 and must report first; security is stage 3.
+    dsb(['review', 'lens', 'correctness'], { cwd: dir, input: clean })
     dsb(['review', 'lens', 'security'], { cwd: dir, input: JSON.stringify({
       findings: [{ severity: 'error', location: 'src/api/a.mjs:1', summary: 'value is unvalidated' }],
     }) })
-    dsb(['review', 'lens', 'correctness'], { cwd: dir, input: clean })
 
     const v = dsb(['review', 'verdict'], { cwd: dir })
     assert.equal(v.code, 2)
@@ -118,8 +119,8 @@ test('a lens that cannot conclude produces NEEDS_MORE_EVIDENCE, not an accept', 
   try {
     dsb(['review', 'start'], { cwd: dir })
     dsb(['review', 'blue'], { cwd: dir, input: blue })
-    dsb(['review', 'lens', 'security'], { cwd: dir, input: JSON.stringify({ findings: [], unable: true, unableReason: 'no threat model exists' }) })
     dsb(['review', 'lens', 'correctness'], { cwd: dir, input: clean })
+    dsb(['review', 'lens', 'security'], { cwd: dir, input: JSON.stringify({ findings: [], unable: true, unableReason: 'no threat model exists' }) })
 
     const v = dsb(['review', 'verdict'], { cwd: dir })
     assert.equal(v.json.verdict, 'NEEDS_MORE_EVIDENCE')
@@ -133,13 +134,21 @@ test('a clean review accepts and writes a receipt recording its lens coverage', 
   try {
     dsb(['review', 'start'], { cwd: dir })
     dsb(['review', 'blue'], { cwd: dir, input: blue })
-    dsb(['review', 'lens', 'security'], { cwd: dir, input: clean })
     dsb(['review', 'lens', 'correctness'], { cwd: dir, input: clean })
 
-    const v = dsb(['review', 'verdict'], { cwd: dir })
-    assert.equal(v.code, 0)
-    assert.equal(v.json.verdict, 'ACCEPT')
-    assert.deepEqual(v.json.receipt.lenses, ['security', 'correctness'])
+    // No stage-2 lens was convened, so the next thing the review needs IS the
+    // stage-3 lens, stated as a blocker rather than a silent skip.
+    const stage1 = dsb(['review', 'verdict'], { cwd: dir })
+    assert.equal(stage1.code, 1, 'an incomplete review is a violation, not a gate failure')
+    assert.equal(stage1.json.ok, false)
+    assert.ok(stage1.json.blockers.some(b => /stage 3/.test(b) && /security/.test(b)))
+
+    dsb(['review', 'lens', 'security'], { cwd: dir, input: clean })
+    const final = dsb(['review', 'verdict'], { cwd: dir })
+    assert.equal(final.code, 0)
+    assert.equal(final.json.isFinal, true)
+    assert.equal(final.json.verdict, 'ACCEPT')
+    assert.deepEqual(final.json.receipt.lenses, ['security', 'correctness'])
 
     const verify = dsb(['receipt', 'verify'], { cwd: dir })
     assert.equal(verify.code, 0)

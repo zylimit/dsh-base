@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 89,
-  "digest": "33da5e50f838363299ebde8e5241068a12152556410d6883305cd088f502bd55",
+  "digest": "803bf352fc455660259823ecd2fe9bc9082cfcb9b0da9cfe3a02fefc97e736f7",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -31,13 +31,13 @@
     },
     {
       "path": ".dsh/base/catalog.example.json",
-      "sha256": "ba30b3c2f8bce56c48440b331ac89465a567947601dc53f7f91e28b7d2eadd11",
-      "bytes": 7061
+      "sha256": "b817612524bb70e8f04bc48e9ab0df1633f70f4faed4b9622026ac7a36bb43e4",
+      "bytes": 7567
     },
     {
       "path": ".dsh/base/dsb.mjs",
-      "sha256": "8fa3aabd291caf381f63b8adc72be083c96f389c6076fd8ba8a2ee1514e5316c",
-      "bytes": 46498
+      "sha256": "bfc27f789fa69e0a3415fa8e63c987639dfa7ff5af49ad53a8ccdea3b74ffa3c",
+      "bytes": 49782
     },
     {
       "path": ".dsh/base/githooks/commit-msg",
@@ -81,8 +81,8 @@
     },
     {
       "path": ".dsh/base/lib/quality.mjs",
-      "sha256": "e83fa0282b2d5bbce5ff369baa7aaa96c587933614a23b3f5060b796df7a2d6d",
-      "bytes": 36772
+      "sha256": "4507edb398708c3da5ec00a8c9dc96728afe11145c05382213c8bc117f4d5eda",
+      "bytes": 48005
     },
     {
       "path": ".dsh/base/lib/scan.mjs",
@@ -91,8 +91,8 @@
     },
     {
       "path": ".dsh/base/lib/selftest.mjs",
-      "sha256": "2c32aec497909453df1b6dcddaab1ba269aa773eca5c2097ac2b14a64dea7de5",
-      "bytes": 28800
+      "sha256": "d4fba37d7075196c3ecd617eea333e425e2cd5ad231518bdcdd5192e5a580c2d",
+      "bytes": 30656
     },
     {
       "path": ".dsh/docs/ADOPTION.md",
@@ -376,8 +376,8 @@
     },
     {
       "path": "AGENTS.md",
-      "sha256": "3cc179a5c58bf36471b87e66a848999729a8bc3a94648e009b06b607a6c3a120",
-      "bytes": 16530
+      "sha256": "277887851ee76e5c0acec679b47ab16bc83e77f3d29809ec2fcddd743c0e1678",
+      "bytes": 17889
     },
     {
       "path": "docs/adr/ADR-0001-zero-dependency-engine.md",

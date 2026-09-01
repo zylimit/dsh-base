@@ -25,6 +25,8 @@ import {
   listWaivers, validateWaiver, waiverContentHash, assessBudget, startTask, readTask, completeTask,
   syncCheck, fastState, setFast, fastSkippable,
   startReview, recordBlue, recordLens, reviewVerdict, readReview, reviewLenses,
+  lensExclusions, LENS_LIBRARY, REVIEW_PROFILES, REVIEW_STAGES,
+  backlogAdd, backlogList, currentStage,
 } from './lib/quality.mjs'
 import { fitness, adrCheck, specLint, skillsLint, agentsLint, trace, rulesAudit } from './lib/scan.mjs'
 import {
@@ -788,11 +790,22 @@ COMMANDS.review = async (args) => {
   const sub = args.positional[1] || 'status'
 
   if (sub === 'start') {
-    const pack = COMMANDS['review-pack'] ? null : null
-    const r = startReview(catalog, { scope: typeof args.flags.scope === 'string' ? args.flags.scope : '' })
+    // The team is chosen from what this change actually touches, so a privacy
+    // reviewer is not convened for a module that stores nothing.
+    const impact = computeImpact(catalog, changedFor(args.flags))
+    const r = startReview(catalog, {
+      scope: typeof args.flags.scope === 'string' ? args.flags.scope : '',
+      affected: impact.affected,
+    })
     if (r.degraded) return degraded('review', r.reason)
     note('review opened against diff ' + r.session.diffHash.slice(0, 12))
-    note('  required lenses: ' + r.session.requiredLenses.join(', '))
+    note('  affected modules: ' + (impact.affected.join(', ') || 'none'))
+    note('  convened        : ' + r.session.requiredLenses.join(', '))
+    for (const x of r.session.excludedLenses || []) note('  not convened    : ' + x.lens + ' - ' + x.reason)
+    if ((r.session.lineage || []).length) {
+      note('  prior rejections: ' + r.session.lineage.length + ' - round ' + (r.session.lineage.length + 1) + ' of ' +
+        ((catalog.review && catalog.review.maxRounds) || 3))
+    }
     note('')
     note('  Protocol - three roles, structured disagreement, not consensus:')
     note('    1. dsb review-pack                    assemble the evidence, including the deletion audit')
@@ -821,7 +834,11 @@ COMMANDS.review = async (args) => {
     let payload
     try { payload = JSON.parse(raw) } catch { return emit({ command: 'review', sub, ok: false, reason: 'stdin must be {"findings":[{"severity":"error","location":"file:line","summary":"..."}]}' }, EXIT.DEGRADED) }
     const r = recordLens(name, payload)
-    if (!r.ok) { note('review: ' + r.reason); return emit({ command: 'review', sub, ...r }, r.stale ? EXIT.STALE : EXIT.VIOLATION) }
+    if (!r.ok) {
+      note('review: ' + r.reason)
+      if (r.stageGated) note('  run "dsb review status" to see which stage-1 lenses are still missing')
+      return emit({ command: 'review', sub, ...r }, r.stale ? EXIT.STALE : EXIT.VIOLATION)
+    }
     const rec = r.session.lenses[name]
     note('lens ' + name + ': ' + rec.findings.length + ' finding(s)' + (rec.unable ? ' [unable to conclude]' : ''))
     return emit({ command: 'review', sub, ok: true, lens: name, findings: rec.findings.length }, EXIT.OK)
@@ -838,11 +855,57 @@ COMMANDS.review = async (args) => {
       note('no verdict: a review that did not look cannot conclude')
       return emit({ command: 'review', sub, ...r }, r.stale ? EXIT.STALE : EXIT.VIOLATION)
     }
-    for (const e of r.errors) note(' ' + e.lens.padEnd(12) + (e.location || e.reproduction) + '  ' + (e.summary || ''))
-    note('verdict: ' + r.verdict + ' over lenses [' + r.lensCoverage.join(', ') + ']')
+    for (const e of r.errors) note(' ' + e.lens.padEnd(16) + (e.location || e.reproduction) + '  ' + (e.summary || ''))
+    note('verdict: ' + r.verdict + ' at stage ' + r.stage + ' (' + REVIEW_STAGES[r.stage] + ')' +
+      (r.isFinal ? ' [final]' : ' [advance to stage ' + (r.stage + 1) + ']') +
+      ' (round ' + r.round + ' of ' + r.maxRounds + ')')
+    if (r.escalate) note('  *** STOP - do not open another round ***')
     note('  ' + r.advice)
     if (r.receipt) note('  receipt written, bound to diff ' + String(r.receipt.diffHash).slice(0, 12))
     return emit({ command: 'review', sub, ...r }, r.verdict === 'ACCEPT' ? EXIT.OK : EXIT.GATE)
+  }
+
+  if (sub === 'backlog') {
+    const act = args.positional[2] || 'list'
+    if (act === 'list') {
+      const r = backlogList()
+      for (const e of r.entries) {
+        note('  ' + (e.expired ? 'EXPIRED ' : 'open    ') + e.owner.padEnd(12) + e.expiry + '  ' + e.lens + '  ' + e.summary)
+      }
+      note(r.count + ' entry(ies)' + (r.expired ? ', ' + r.expired + ' EXPIRED - renew with a new expiry or repay them' : ''))
+      return emit({ command: 'review', sub, act, ...r }, EXIT.OK)
+    }
+    if (act === 'add') {
+      const raw = await readStdin()
+      let payload
+      try { payload = JSON.parse(raw) } catch { return emit({ command: 'review', sub, act, ok: false, reason: 'stdin must be {"owner","expiry","summary","lens","location?"}' }, EXIT.DEGRADED) }
+      const r = backlogAdd(payload)
+      if (!r.ok) { note('backlog: ' + r.reason); return emit({ command: 'review', sub, act, ...r }, EXIT.VIOLATION) }
+      note('backlogged to ' + r.entry.owner + ' until ' + r.entry.expiry + ' (' + r.count + ' total)')
+      return emit({ command: 'review', sub, act, ...r }, EXIT.OK)
+    }
+    return emit({ command: 'review', sub, ok: false, reason: 'usage: review backlog list|add' }, EXIT.DEGRADED)
+  }
+
+  if (sub === 'team') {
+    const impact = computeImpact(catalog, changedFor(args.flags))
+    const convened = reviewLenses(catalog, { affected: impact.affected })
+    const excluded = lensExclusions(catalog, impact.affected)
+    const profile = (catalog.review && catalog.review.profile) || catalog.profile || 'team'
+    note('profile: ' + profile + '   (personal | team | production | regulated, or an explicit catalog.review.lenses)')
+    note('affected modules: ' + (impact.affected.join(', ') || 'none'))
+    note('')
+    note('convened:')
+    for (const n of convened) {
+      const lens = LENS_LIBRARY[n]
+      note('  ' + n.padEnd(16) + (lens ? lens.asks : '(not in the library)'))
+    }
+    note('')
+    if (excluded.length) {
+      note('not convened:')
+      for (const x of excluded) note('  ' + x.lens.padEnd(16) + x.reason)
+    }
+    return emit({ command: 'review', sub, ok: true, profile, convened, excluded, library: LENS_LIBRARY, profiles: REVIEW_PROFILES }, EXIT.OK)
   }
 
   if (sub === 'status') {
@@ -857,7 +920,7 @@ COMMANDS.review = async (args) => {
     return emit({ command: 'review', sub, ok: true, session: s, missing, stale: s.diffHash !== diffHash() }, EXIT.OK)
   }
 
-  return emit({ command: 'review', ok: false, reason: 'usage: review start|blue|lens <name>|verdict|status' }, EXIT.DEGRADED)
+  return emit({ command: 'review', ok: false, reason: 'usage: review start|blue|lens <name>|verdict|status|team|backlog list|add' }, EXIT.DEGRADED)
 }
 
 COMMANDS.spec = (args) => {

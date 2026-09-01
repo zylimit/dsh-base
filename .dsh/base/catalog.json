@@ -668,5 +668,10 @@
   "rules": {
     "maxUnenforced": null,
     "note": "null means advisory. Set a number to make rules-audit a gate once the ratio is where you want it."
+  },
+  "review": {
+    "profile": "production",
+    "maxRounds": 3,
+    "//": "this scaffold gates other people's code, so a defect here is a defect everywhere it is installed"
   }
 }

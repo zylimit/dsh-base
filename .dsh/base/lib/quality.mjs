@@ -648,21 +648,112 @@ export function fastSkippable (catalog) {
 // and the whole thing binds the exact diff it judged.
 
 const REVIEW_PATH = () => path.join(BASE_DIR, 'state', 'review', 'session.json')
-const DEFAULT_LENSES = ['security', 'privacy', 'resilience', 'reliability', 'correctness']
 const LOCATION = /^[^\s:]+:\d+/
 
-export function reviewLenses (catalog) {
-  const configured = catalog && catalog.review && Array.isArray(catalog.review.lenses) ? catalog.review.lenses : null
-  return configured && configured.length ? configured : DEFAULT_LENSES
+/**
+ * The review team. Nine lenses, each with a distinct failure mode it owns, so a
+ * finding has an obvious home and two lenses do not report the same thing twice.
+ *
+ * A lens carries the attribute it speaks for. That is what lets the engine leave
+ * it out of a review where nothing declares that attribute above `minimal`:
+ * convening a privacy reviewer for a module that stores nothing produces nitpicks,
+ * and nitpicks are how a review loop stops being believed.
+ */
+// Stages order the work the way cost order it. Spending expensive review on
+// code that has not passed cheap review is waste; spending security review on
+// code that does not work yet is theatre. Stage gating IS the budget.
+export const REVIEW_STAGES = Object.freeze({
+  1: 'code',
+  2: 'functional',
+  3: 'trust',
+})
+
+export const LENS_LIBRARY = Object.freeze({
+  correctness:     { stage: 1, attribute: null,              asks: 'does it do what the requirement says, at the boundaries and in the error paths, not just on the happy path' },
+  architecture:    { stage: 1, attribute: 'maintainability', asks: 'is the change inside its declared boundary, does any new edge exist in the catalog, and does it respect the layer direction' },
+  maintainability: { stage: 1, attribute: 'maintainability', asks: 'will the next person understand this without archaeology: duplication, dead code, naming that lies, comments that explain what instead of why' },
+  testing:         { stage: 2, attribute: 'reliability',     asks: 'does a test fail without the fix, does every case trace to an anchor, and is a failure classified rather than retried' },
+  performance:     { stage: 2, attribute: 'performance',     asks: 'what is the complexity class on the growth path, what allocates per call, and does it meet the stated budget rather than feeling fast' },
+  reliability:     { stage: 3, attribute: 'reliability',     asks: 'what happens under partial failure: is the effect idempotent, is an error handled or propagated, is anything swallowed' },
+  resilience:      { stage: 3, attribute: 'resilience',      asks: 'is every outbound call bounded by a timeout, every retry by a budget with backoff, every queue and cache by a limit, and is the degraded mode declared' },
+  security:        { stage: 3, attribute: 'security',        asks: 'STRIDE across the trust boundary this change touches: authn, authz, injection sinks, secrets, transport, supply chain' },
+  privacy:         { stage: 3, attribute: 'privacy',         asks: 'what personal data is touched, logged, exported or retained, under what lawful basis, and can its deletion be proven' },
+})
+
+/**
+ * How much review this project's stakes justify. A personal tool and a payment
+ * system need the same engine and emphatically not the same review team.
+ */
+export const REVIEW_PROFILES = Object.freeze({
+  personal:   ['correctness'],
+  team:       ['correctness', 'testing', 'architecture'],
+  production: ['correctness', 'testing', 'architecture', 'security', 'reliability', 'performance'],
+  regulated:  Object.keys(LENS_LIBRARY),
+})
+
+const TIER_RANK = ['none', 'minimal', 'low', 'medium', 'high', 'critical']
+
+/**
+ * Which lenses this review convenes.
+ *
+ * Order of authority: an explicit list wins; otherwise the profile sets the team,
+ * and a lens is then EXCLUDED when no affected module declares its attribute
+ * above `minimal`. Attributes can only remove a lens, never add one — otherwise
+ * a project that declared everything high would convene everybody, which is the
+ * failure this is here to prevent.
+ */
+export function reviewLenses (catalog, { affected = null } = {}) {
+  const explicit = catalog && catalog.review && Array.isArray(catalog.review.lenses) ? catalog.review.lenses : null
+  if (explicit && explicit.length) return explicit
+
+  const profile = (catalog && catalog.review && catalog.review.profile) ||
+    (catalog && catalog.profile) || 'team'
+  const base = REVIEW_PROFILES[profile] || REVIEW_PROFILES.team
+  if (!affected || !catalog || !Array.isArray(catalog.modules)) return base
+
+  const mods = catalog.modules.filter(m => affected.includes(m.id))
+  if (mods.length === 0) return base
+  return base.filter(name => {
+    const attr = LENS_LIBRARY[name] && LENS_LIBRARY[name].attribute
+    // A lens with no attribute - correctness - is the floor of every review. It
+    // is the one lens whose absence makes the stage model vacuous: with nothing
+    // left in stage 1 the gate would skip straight to stage 3 and the verdict
+    // would forever be missing its cheapest report.
+    if (!attr) return true
+    return mods.some(m => TIER_RANK.indexOf((m.attributes || {})[attr] || 'none') >= TIER_RANK.indexOf('low'))
+  })
+}
+
+/** Why a lens the profile named was not convened. */
+export function lensExclusions (catalog, affected) {
+  const explicit = catalog && catalog.review && Array.isArray(catalog.review.lenses) ? catalog.review.lenses : null
+  if (explicit && explicit.length) return []
+  const profile = (catalog && catalog.review && catalog.review.profile) || (catalog && catalog.profile) || 'team'
+  const base = REVIEW_PROFILES[profile] || REVIEW_PROFILES.team
+  const kept = new Set(reviewLenses(catalog, { affected }))
+  return base.filter(n => !kept.has(n)).map(n => ({
+    lens: n,
+    reason: 'no affected module declares ' + LENS_LIBRARY[n].attribute + ' above minimal',
+  }))
 }
 
 export function readReview () { return readJson(rel(REVIEW_PATH()), null) }
 
 function saveReview (s) { writeJsonAtomic(rel(REVIEW_PATH()), s); return s }
 
-export function startReview (catalog, { packPath = null, scope = '' } = {}) {
+export function startReview (catalog, { packPath = null, scope = '', affected = null } = {}) {
   if (!isGitRepo()) return { ok: false, degraded: true, reason: 'not-a-git-repository' }
   if (diffIsEmpty()) return { ok: false, degraded: true, reason: 'no-change: there is nothing under review' }
+
+  // Consecutive rejections of the same work are a signal about the bar, not an
+  // instruction to try again. Seven rounds on one change means either the change
+  // is wrong or the standard is wrong, and only a human can say which.
+  const previous = readReview()
+  const lineage = previous && previous.lineage ? previous.lineage : []
+  const rejections = previous && previous.verdict && previous.verdict.verdict === 'FIX_REQUIRED'
+    ? lineage.concat([{ at: previous.verdict.at, diffHash: previous.diffHash, errors: previous.verdict.errorCount }])
+    : lineage
+
   return {
     ok: true,
     session: saveReview({
@@ -672,7 +763,9 @@ export function startReview (catalog, { packPath = null, scope = '' } = {}) {
       startedAt: nowIso(),
       scope,
       packPath,
-      requiredLenses: reviewLenses(catalog),
+      requiredLenses: reviewLenses(catalog, { affected }),
+      excludedLenses: lensExclusions(catalog, affected),
+      lineage: rejections,
       blue: null,
       lenses: {},
       verdict: null,
@@ -706,6 +799,29 @@ export function recordBlue (payload) {
  * someone else can run. Anything else is an impression, and impressions are what
  * make review theatre.
  */
+/** The highest stage whose lenses may report. Stage gating is the budget. */
+export function currentStage (s) {
+  const stageOf = (n) => (LENS_LIBRARY[n] ? LENS_LIBRARY[n].stage : 1)
+  const reported = new Set(Object.keys(s.lenses || {}))
+  const required = s.requiredLenses || []
+  const stageComplete = (stage) => required
+    .filter(n => stageOf(n) === stage)
+    .every(n => reported.has(n))
+  let current = 1
+  for (;;) {
+    const lenses = required.filter(n => stageOf(n) === current)
+    if (lenses.length === 0) {
+      // A stage this profile never convenes is not a gate: skip it rather than
+      // demanding reports nobody was asked to write.
+      if (current < 3) { current++; continue }
+      return current
+    }
+    if (!stageComplete(current)) return current
+    if (current < 3) { current++; continue }
+    return current
+  }
+}
+
 export function recordLens (name, payload) {
   const s = readReview()
   const f = freshness(s)
@@ -721,6 +837,22 @@ export function recordLens (name, payload) {
   for (const x of findings) {
     if (!['error', 'warning', 'info'].includes(x.severity)) {
       return { ok: false, reason: 'each finding needs severity error | warning | info' }
+    }
+  }
+  // A later stage may not open before the earlier one has fully reported: that
+  // is the mechanism that keeps expensive lenses away from code that has not
+  // passed the cheap ones yet.
+  const stage = LENS_LIBRARY[name] ? LENS_LIBRARY[name].stage : 1
+  const current = currentStage(s)
+  if (stage > current) {
+    return {
+      ok: false,
+      stageGated: true,
+      lens: name,
+      stage,
+      currentStage: current,
+      reason: 'this lens belongs to stage ' + stage + ' (' + REVIEW_STAGES[stage] + ') and the review is at stage ' +
+        current + ' (' + REVIEW_STAGES[current] + '); report the earlier-stage lenses first',
     }
   }
   s.lenses[name] = {
@@ -742,34 +874,50 @@ export function reviewVerdict (catalog, { reviewer = 'reviewer', notes = '' } = 
   const f = freshness(s)
   if (!f.ok) return { ok: false, ...f }
 
-  const missing = s.requiredLenses.filter(l => !s.lenses[l])
-  const blockers = []
-  if (!s.blue) blockers.push('blue has not stated what it verified')
-  if (missing.length) blockers.push('lens(es) never reported: ' + missing.join(', '))
-  if (blockers.length) return { ok: false, blockers, requiredLenses: s.requiredLenses, recorded: Object.keys(s.lenses) }
-
+  const stage = currentStage(s)
   const all = Object.entries(s.lenses)
+  // An error anywhere is the dominant fact, whatever stage it was found in:
+  // fixing it is what the next round exists for. A later-stage lens could only
+  // have reported after the earlier stages passed, so ordering still holds.
   const errors = all.flatMap(([l, v]) => (v.findings || []).filter(x => x.severity === 'error').map(x => ({ lens: l, ...x })))
   const unable = all.filter(([, v]) => v.unable).map(([l]) => l)
+  const blockers = []
+  if (!s.blue) blockers.push('blue has not stated what it verified')
 
-  let verdict
+  const stageLenses = s.requiredLenses.filter(n => (LENS_LIBRARY[n] ? LENS_LIBRARY[n].stage : 1) === stage)
+  const missing = stageLenses.filter(l => !s.lenses[l])
+  let verdict = null
   if (errors.length) verdict = 'FIX_REQUIRED'
   else if (unable.length) verdict = 'NEEDS_MORE_EVIDENCE'
+  else if (missing.length) blockers.push('stage ' + stage + ' lens(es) never reported: ' + missing.join(', '))
   else verdict = 'ACCEPT'
+  if (blockers.length) return { ok: false, blockers, stage, requiredLenses: s.requiredLenses, recorded: Object.keys(s.lenses) }
+
+  // Repeated rejection of the same work is information about the bar, not an
+  // instruction to try again. At the limit the loop stops and asks a human which
+  // is wrong - the change or the standard - because no further round can answer it.
+  const maxRounds = (catalog && catalog.review && catalog.review.maxRounds) || 3
+  const round = (s.lineage || []).length + 1
+  const escalate = verdict === 'FIX_REQUIRED' && round >= maxRounds
+  const isFinal = stage >= 3 || !(s.requiredLenses || []).some(n => (LENS_LIBRARY[n] ? LENS_LIBRARY[n].stage : 1) > stage)
 
   s.verdict = {
     at: nowIso(),
     verdict,
     reviewer,
     notes,
+    round,
+    escalate,
+    stage,
+    isFinal,
     errorCount: errors.length,
     unableLenses: unable,
-    lensCoverage: s.requiredLenses,
+    lensCoverage: stageLenses,
   }
   saveReview(s)
 
   let receipt = null
-  if (verdict === 'ACCEPT') {
+  if (verdict === 'ACCEPT' && isFinal) {
     receipt = writeReceipt({
       taskId: (readTask() || {}).id || 'review-' + s.diffHash.slice(0, 8),
       reviewer,
@@ -787,11 +935,68 @@ export function reviewVerdict (catalog, { reviewer = 'reviewer', notes = '' } = 
     errorCount: errors.length,
     unableLenses: unable,
     lensCoverage: s.requiredLenses,
+    excludedLenses: s.excludedLenses || [],
+    stage,
+    isFinal,
+    round,
+    maxRounds,
+    escalate,
     receipt,
-    advice: verdict === 'ACCEPT'
-      ? 'every required lens reported and none found an error'
-      : (verdict === 'FIX_REQUIRED'
-        ? 'fix the errors and re-open the review; a lens that found an error is not outvoted by lenses that found nothing'
-        : 'a lens could not reach a conclusion; supply what it needs rather than accepting around it'),
+    advice: escalate
+      ? 'round ' + round + ' of ' + maxRounds + ': this change has been rejected ' + round + ' times. Stop. ' +
+        'Either the change is wrong or the standard is, and another round cannot tell you which. Take it to a human: ' +
+        'reduce the scope, lower catalog.review.profile if the stakes do not justify this team, or accept the finding as debt with a written reason.'
+      : (verdict === 'ACCEPT'
+        ? (isFinal
+          ? 'every stage passed, every required lens reported, and none found an error'
+          : 'stage ' + stage + ' (' + REVIEW_STAGES[stage] + ') passed; report the stage ' + (stage + 1) + ' lenses to advance')
+        : (verdict === 'FIX_REQUIRED'
+          ? 'fix the errors and re-open the review; a lens that found an error is not outvoted by lenses that found nothing'
+          : 'a lens could not reach a conclusion; supply what it needs rather than accepting around it')),
   }
+}
+// ── backlog ─────────────────────────────────────────────────────────────────
+//
+// A review must end. Endless rounds are how a good standard is abandoned, so
+// rejections escalate after the configured limit. What may NOT happen instead
+// is findings evaporating. A finding that a human decides to carry becomes a
+// backlog entry: owner, expiry, and a reason why the bar is temporarily lower
+// than the finding. Nothing is deleted, nothing is pretended away, and the
+// protected floor holds: a security, safety or privacy finding is never
+// backloggable, because the backlog would be the waiver the design refuses.
+
+const BACKLOG_FORBIDDEN = /(security|safety|privacy|pii|secret|credential)/i
+
+export function backlogAdd (payload) {
+  const s = readReview()
+  const f = freshness(s)
+  if (!f.ok) return { ok: false, ...f }
+  const required = ['owner', 'expiry', 'summary', 'lens']
+  const missing = required.filter(k => !(payload && payload[k] && String(payload[k]).trim()))
+  if (missing.length) return { ok: false, reason: 'a backlog entry needs: ' + missing.join(', ') + ' (owner, expiry as ISO date, summary, lens)' }
+  if (!(new Date(payload.expiry) > new Date())) return { ok: false, reason: 'expiry must be in the future; an undated debt is never repaid' }
+  const summary = String(payload.summary)
+  if (BACKLOG_FORBIDDEN.test(summary)) {
+    return { ok: false, reason: 'a security, safety or privacy finding cannot be backlogged; it is exactly what the backlog would become a waiver for' }
+  }
+  s.backlog = s.backlog || []
+  const entry = {
+    at: nowIso(),
+    owner: String(payload.owner),
+    expiry: payload.expiry,
+    lens: String(payload.lens),
+    summary,
+    location: payload.location || null,
+  }
+  s.backlog.push(entry)
+  saveReview(s)
+  return { ok: true, entry, count: s.backlog.length }
+}
+
+export function backlogList () {
+  const s = readReview()
+  if (!s) return { ok: true, count: 0, entries: [] }
+  const now = new Date()
+  const entries = (s.backlog || []).map(e => ({ ...e, expired: !(new Date(e.expiry) > now) }))
+  return { ok: true, count: entries.length, entries, expired: entries.filter(e => e.expired).length }
 }

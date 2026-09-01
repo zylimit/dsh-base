@@ -299,5 +299,10 @@
       }
     }
   ],
-  "//fast": "allowFastSkip marks a check as deferrable under a time-boxed fast-mode window. Decide this calmly, in advance. A check claiming security, safety or privacy may never set it: catalog-lint rejects that with PROTECTED_FAST_SKIP."
+  "//fast": "allowFastSkip marks a check as deferrable under a time-boxed fast-mode window. Decide this calmly, in advance. A check claiming security, safety or privacy may never set it: catalog-lint rejects that with PROTECTED_FAST_SKIP.",
+  "review": {
+    "profile": "team",
+    "maxRounds": 3,
+    "//": "CHANGE-ME. personal = correctness only | team = + testing, architecture | production = + security, reliability, performance | regulated = all nine. A lens is dropped when no affected module declares its attribute above minimal, so attributes can only shrink the team, never grow it. catalog.review.lenses overrides the profile entirely. catalog.review.maxRounds (default 3) stops a review loop that keeps rejecting the same change."
+  }
 }

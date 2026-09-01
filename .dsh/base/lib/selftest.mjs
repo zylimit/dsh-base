@@ -10,7 +10,10 @@ import {
   CATCH_ALL_GLOBS, ATTRIBUTES, TIERS, PROTECTED_ATTRIBUTES, EMPTY_DIFF_HASH,
 } from './core.mjs'
 import { lintCatalog, computeImpact, resolveVerification, extractImports, resolveSpecifier, findCycles, trendGate } from './graph.mjs'
-import { aggregate, buildPlan, assessAttributes, validateWaiver, waiverContentHash, syncCheck, reviewLenses, fastSkippable, STATUS } from './quality.mjs'
+import {
+  aggregate, buildPlan, assessAttributes, validateWaiver, waiverContentHash, syncCheck,
+  reviewLenses, lensExclusions, fastSkippable, LENS_LIBRARY, REVIEW_PROFILES, STATUS,
+} from './quality.mjs'
 import { parseFrontmatter, FITNESS_RULE_IDS, fitness as fitnessScan, skillsLint as skillsLintFn, rulesAudit } from './scan.mjs'
 import { denied, parseLedger, memoryConfig } from './context.mjs'
 import { fleetLint, fleetImpact, contractCycles } from './fleet.mjs'
@@ -418,13 +421,41 @@ export function selftest () {
   })
 
   // ── review, fast mode, rule audit ─────────────────────────────────────────
-  t('review: the default lens set covers the attributes that block a gate', () => {
-    const d = reviewLenses(null)
-    for (const l of ['security', 'privacy', 'resilience', 'reliability', 'correctness']) {
-      ok(d.includes(l), 'missing default lens ' + l)
-    }
+  t('review: the profile decides the team, and an explicit list overrides it', () => {
+    eq(reviewLenses({ profile: 'personal' }), ['correctness'])
+    eq(reviewLenses({ profile: 'team' }).length, 3)
+    eq(reviewLenses({ profile: 'production' }).length, 6)
+    eq(reviewLenses({ profile: 'regulated' }).length, Object.keys(LENS_LIBRARY).length)
+    eq(reviewLenses(null), reviewLenses({ profile: 'team' }), 'an unstated profile is team, not everything')
+    eq(reviewLenses({ profile: 'nonsense' }), reviewLenses({ profile: 'team' }), 'an unknown profile falls back, it does not disable review')
     eq(reviewLenses({ review: { lenses: ['a', 'b'] } }), ['a', 'b'])
-    eq(reviewLenses({ review: { lenses: [] } }), d, 'an empty list is a mistake, not an instruction to review nothing')
+    eq(reviewLenses({ review: { lenses: [] } }), reviewLenses({ profile: 'team' }),
+      'an empty list is a mistake, not an instruction to review nothing')
+  })
+  t('review: a lens is excluded when nothing it speaks for is declared above minimal', () => {
+    const catalog = {
+      profile: 'regulated',
+      modules: [
+        { id: 'a', paths: ['a/**'], attributes: { security: 'high', reliability: 'medium', privacy: 'minimal' } },
+        { id: 'b', paths: ['b/**'], attributes: { privacy: 'none' } },
+      ],
+    }
+    const convened = reviewLenses(catalog, { affected: ['a', 'b'] })
+    ok(convened.includes('security'), 'security is declared high on an affected module')
+    ok(convened.includes('correctness'), 'correctness speaks for no attribute and is always convened')
+    ok(!convened.includes('privacy'), 'convening a privacy reviewer where nothing is stored produces nitpicks')
+    ok(!convened.includes('resilience'), 'nothing declares resilience at all')
+    const excluded = lensExclusions(catalog, ['a', 'b']).map(x => x.lens)
+    ok(excluded.includes('privacy'))
+    ok(lensExclusions(catalog, ['a', 'b']).every(x => x.reason.length > 0), 'an exclusion states its reason')
+  })
+  t('review: attributes may only remove a lens, never add one', () => {
+    const catalog = {
+      profile: 'personal',
+      modules: [{ id: 'a', paths: ['a/**'], attributes: { security: 'critical', privacy: 'critical' } }],
+    }
+    eq(reviewLenses(catalog, { affected: ['a'] }), ['correctness'],
+      'a project that declared everything critical would otherwise convene everybody')
   })
   t('fast mode: a protected check is unreachable however the catalog is written', () => {
     const c = {
