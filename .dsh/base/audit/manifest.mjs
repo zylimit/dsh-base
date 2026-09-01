@@ -13,8 +13,11 @@ import process from 'node:process'
 const MANAGED = [
   /^AGENTS\.md$/,
   /^\.dsh\/base\/dsb\.mjs$/,
+  /^\.dsh\/base\/install\.mjs$/,
   /^\.dsh\/base\/lib\/.*\.mjs$/,
+  /^\.dsh\/base\/audit\/.*\.mjs$/,
   /^\.dsh\/base\/githooks\//,
+  /^\.dsh\/docs\//,
   // The adapter table and the example catalog are distributed assets whose
   // integrity matters: an edited adapter entry could point a check that claims
   // the security attribute at a command that proves nothing.
@@ -23,7 +26,6 @@ const MANAGED = [
   /^\.dsh\/skills\/.*\/SKILL\.md$/,
   /^\.dsh\/templates\//,
   /^\.dsh\/workflows\//,
-  /^scripts\/.*\.mjs$/,
   /^setup\.(ps1|sh)$/,
   /^docs\//,
 ]
@@ -60,7 +62,7 @@ if (process.argv.includes('--write')) {
 }
 
 if (!fs.existsSync('FRAMEWORK-MANIFEST.json')) {
-  process.stderr.write('manifest: FRAMEWORK-MANIFEST.json is absent; run "node scripts/manifest.mjs --write"\n')
+  process.stderr.write('manifest: FRAMEWORK-MANIFEST.json is absent; run "node .dsh/base/audit/manifest.mjs --write"\n')
   process.stdout.write(JSON.stringify({ command: 'manifest', ok: false, reason: 'manifest-absent' }) + '\n')
   process.exit(1)
 }
@@ -79,6 +81,6 @@ const ok = changed.length === 0 && added.length === 0 && removed.length === 0
 for (const p of changed) process.stderr.write('DRIFT    ' + p + '\n')
 for (const p of added) process.stderr.write('ADDED    ' + p + '\n')
 for (const p of removed) process.stderr.write('REMOVED  ' + p + '\n')
-if (!ok) process.stderr.write('manifest: run "node scripts/manifest.mjs --write" and review the diff before committing\n')
+if (!ok) process.stderr.write('manifest: run "node .dsh/base/audit/manifest.mjs --write" and review the diff before committing\n')
 process.stdout.write(JSON.stringify({ command: 'manifest', ok, changed, added, removed, digest }) + '\n')
 process.exit(ok ? 0 : 1)

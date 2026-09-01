@@ -58,7 +58,7 @@
       "reason": "ignore policy"
     },
     {
-      "path": "cordis.patch.yml",
+      "path": ".dsh/base/cordis.patch.yml",
       "reason": "optional dsh profile patch; not read unless passed to dsh --patch"
     },
     {
@@ -106,23 +106,23 @@
       "reason": "architecture-debt ledger; an append-only measurement, not source"
     },
     {
-      "path": "scripts/check-syntax.mjs",
+      "path": ".dsh/base/audit/check-syntax.mjs",
       "reason": "vendored audit script"
     },
     {
-      "path": "scripts/scan-secrets.mjs",
+      "path": ".dsh/base/audit/scan-secrets.mjs",
       "reason": "vendored audit script"
     },
     {
-      "path": "scripts/manifest.mjs",
+      "path": ".dsh/base/audit/manifest.mjs",
       "reason": "vendored audit script"
     },
     {
-      "path": "scripts/install.mjs",
+      "path": ".dsh/base/install.mjs",
       "reason": "vendored installer"
     },
     {
-      "path": "scripts/AGENTS.md",
+      "path": ".dsh/base/audit/AGENTS.md",
       "reason": "vendored script directory contract"
     }
   ],

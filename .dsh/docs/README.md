@@ -1,7 +1,7 @@
 # deepseek-base documentation
 
 Reference material for the deepseek-base scaffold. Durable law lives in
-[../AGENTS.md](../AGENTS.md) (auto-injected into every request). Procedure lives in the
+[../AGENTS.md](../../AGENTS.md) (auto-injected into every request). Procedure lives in the
 skills under `.dsh/skills/`. Enforcement lives in `node .dsh/base/dsb.mjs <subcommand>`.
 
 Every rule in this set is marked either **machine-enforced** — with the exact command,
@@ -13,7 +13,7 @@ green) · `4` stale evidence.
 
 | Document | Question it answers | Who reads it, when |
 |---|---|---|
-| [../AGENTS.md](../AGENTS.md) | What rules hold in this repository regardless of task? | Every agent on every request (auto-injected); every engineer on day one |
+| [../AGENTS.md](../../AGENTS.md) | What rules hold in this repository regardless of task? | Every agent on every request (auto-injected); every engineer on day one |
 | [OPERATING-MODEL.md](OPERATING-MODEL.md) | How does work move from request to release, which gate closes each phase, and who signs off? | Orchestrator at the start of any non-trivial change; engineer before their first task |
 | [QUALITY-ATTRIBUTES.md](QUALITY-ATTRIBUTES.md) | What do the eight attributes mean, what does a tier oblige, and why did a green run still block? | Architect when declaring attributes; anyone who reads `BLOCKED_BY_ATTRIBUTES` |
 | [PROTOCOLS.md](PROTOCOLS.md) | What is the exact JSON the engine accepts and writes, and what does each exit code mean? | Anyone writing a task envelope, receipt or waiver; anyone wiring CI |
@@ -31,7 +31,7 @@ A new document is added to this table in the same change that creates it (prompt
 
 ## Reading order for a new engineer
 
-1. [../AGENTS.md](../AGENTS.md) — the invariants. Nothing below overrides it.
+1. [../AGENTS.md](../../AGENTS.md) — the invariants. Nothing below overrides it.
 2. [OPERATING-MODEL.md](OPERATING-MODEL.md) — the nine phases, the gates, the approval tiers, the stop conditions.
 3. [PROTOCOLS.md](PROTOCOLS.md) — the envelopes, the receipt, the waiver, the ledger, the exit codes.
 4. [QUALITY-ATTRIBUTES.md](QUALITY-ATTRIBUTES.md) — why declaring an attribute creates an obligation to wire a check.
@@ -41,7 +41,7 @@ A new document is added to this table in the same change that creates it (prompt
 
 ## Reading order for an agent on cold start
 
-1. [../AGENTS.md](../AGENTS.md) — already injected; treat it as read and binding.
+1. [../AGENTS.md](../../AGENTS.md) — already injected; treat it as read and binding.
 2. `node .dsh/base/dsb.mjs doctor` — establishes whether governance is configured at all. Exit is always `0`; read the `enabled` flag and the `failing` array, not the exit code.
 3. [../progress.md](../progress.md) — project memory: Done entries carry evidence pointers, Decisions carry rejected alternatives.
 4. `node .dsh/base/dsb.mjs task status` — the active task envelope and the current `diffHash`.

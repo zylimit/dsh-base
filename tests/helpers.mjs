@@ -23,7 +23,7 @@ export function dsb (args, opts = {}) {
 }
 
 export function script (name, args = [], opts = {}) {
-  const r = spawnSync(process.execPath, [path.join(REPO, 'scripts', name), ...args], {
+  const r = spawnSync(process.execPath, [path.join(REPO, '.dsh', 'base', 'audit', name), ...args], {
     cwd: opts.cwd || REPO, encoding: 'utf8', windowsHide: true,
   })
   let json = null

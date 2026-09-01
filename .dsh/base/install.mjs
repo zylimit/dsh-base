@@ -2,7 +2,7 @@
 // deepseek-base installer. One implementation; setup.sh and setup.ps1 are thin
 // wrappers over it, so there is no shell/PowerShell parity to maintain.
 //
-//   node scripts/install.mjs <target...> [options]
+//   node .dsh/base/install.mjs <target...> [options]
 //
 //   --dry-run            report what would happen, write nothing
 //   --enable             seed .dsh/base/catalog.json from catalog.example.json
@@ -27,26 +27,28 @@ import { spawnSync } from 'node:child_process'
 import url from 'node:url'
 import process from 'node:process'
 
-const SRC = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '..')
+const SRC = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '..', '..')
 
-const MANAGED_ROOTS = ['.dsh', 'docs', 'scripts']
+// The entire copy surface is one directory. Everything the scaffold owns lives
+// under .dsh/, so a plain recursive copy of .dsh/ plus AGENTS.md is a complete
+// and supported installation; this program only adds policy and verification.
+const MANAGED_ROOTS = ['.dsh']
 
 // Never installed. Runtime state is local; requirements and decisions belong to
 // the project that wrote them, and installing ours would make spec-lint pass on a
 // specification nobody in the adopting project ever wrote.
 const EXCLUDE_PREFIX = [
   '.dsh/base/state/', '.dsh/base/evidence/', '.dsh/base/receipts/', '.dsh/base/waivers/',
-  'docs/requirements/', 'docs/adr/ADR-',
 ]
 const EXCLUDE_EXACT = new Set(['.dsh/base/catalog.json'])
 
 // Written once, then owned by the project. progress.md is seeded from the template
 // rather than from our own ledger: a new project starts with an empty memory.
+// Only what the harness requires at the project root, plus project memory.
+// .editorconfig and .gitattributes are no longer seeded: they are the project's
+// own opinion, and overwriting that choice is not an installer's call.
 const SEEDS = [
   { to: 'AGENTS.md', from: 'AGENTS.md' },
-  { to: '.editorconfig', from: '.editorconfig' },
-  { to: '.gitattributes', from: '.gitattributes' },
-  { to: 'cordis.patch.yml', from: 'cordis.patch.yml' },
   { to: 'progress.md', from: '.dsh/templates/PROGRESS.md' },
 ]
 
@@ -256,7 +258,7 @@ function parse (argv) {
 
 const { targets, opts } = parse(process.argv.slice(2))
 if (targets.length === 0) {
-  console.error('usage: node scripts/install.mjs <target...> [--dry-run] [--enable] [--hooks] [--stage] [--verify] [--targets-from FILE] [--json]')
+  console.error('usage: node .dsh/base/install.mjs <target...> [--dry-run] [--enable] [--hooks] [--stage] [--verify] [--targets-from FILE] [--json]')
   process.exit(2)
 }
 

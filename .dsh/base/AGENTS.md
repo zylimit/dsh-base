@@ -36,7 +36,7 @@ that enables governance for a repository.
 1. Governance is opt-in and silent when off. No `catalog.json` means every targeted
    subcommand exits 3 with a reason, and the git hooks return 0 without noise.
 2. Adding a subcommand requires: an entry in `COMMANDS`, an exit-code row in
-   `docs/PROTOCOLS.md`, and at least one assertion in `lib/selftest.mjs`.
+   `.dsh/docs/PROTOCOLS.md`, and at least one assertion in `lib/selftest.mjs`.
 3. Every check id referenced anywhere in `catalog.json` must exist in
    `catalog.checks`. Enforced by `catalog-lint` (`DANGLING_CHECK`).
 4. Every tracked path must classify as module, global or ignored. An unmapped path

@@ -20,7 +20,7 @@
     ".dsh/base/catalog.json",
     ".dsh/base/.gitignore",
     "FRAMEWORK-MANIFEST.json",
-    "cordis.patch.yml"
+    ".dsh/base/cordis.patch.yml"
   ],
   "ignored": [
     {
@@ -58,10 +58,6 @@
     {
       "path": ".dsh/base/trend/**",
       "reason": "architecture-debt ledger; append-only measurement, not source"
-    },
-    {
-      "path": ".dsh/base/README.md",
-      "reason": "engine directory guide"
     }
   ],
   "riskChecks": {
@@ -88,7 +84,7 @@
   },
   "checks": {
     "syntax": {
-      "command": "node scripts/check-syntax.mjs",
+      "command": "node .dsh/base/audit/check-syntax.mjs",
       "class": "structure",
       "attributes": [
         "reliability"
@@ -171,7 +167,7 @@
       ]
     },
     "secrets": {
-      "command": "node scripts/scan-secrets.mjs",
+      "command": "node .dsh/base/audit/scan-secrets.mjs",
       "class": "security",
       "attributes": [
         "security",
@@ -179,7 +175,7 @@
       ]
     },
     "manifest": {
-      "command": "node scripts/manifest.mjs --check",
+      "command": "node .dsh/base/audit/manifest.mjs --check",
       "class": "security",
       "attributes": [
         "security",
@@ -210,7 +206,14 @@
       "**/*.test.mjs",
       "**/*.test.js"
     ],
-    "minCoverage": 1
+    "minCoverage": 1,
+    "documentationGlobs": [
+      "docs/**",
+      ".dsh/docs/**",
+      ".dsh/templates/**",
+      ".dsh/skills/**",
+      "*.md"
+    ]
   },
   "adr": {
     "dir": "docs/adr"
@@ -364,7 +367,8 @@
       "dependsOn": [
         "engine-core",
         "engine-graph",
-        "engine-quality"
+        "engine-quality",
+        "engine-scan"
       ],
       "forbiddenDependencies": [
         "engine-selftest",
@@ -417,7 +421,8 @@
       "id": "engine-cli",
       "paths": [
         ".dsh/base/dsb.mjs",
-        ".dsh/base/AGENTS.md"
+        ".dsh/base/AGENTS.md",
+        ".dsh/base/install.mjs"
       ],
       "layer": "app",
       "owners": [
@@ -501,6 +506,7 @@
       "id": "doctrine-docs",
       "paths": [
         "docs/**",
+        ".dsh/docs/**",
         "AGENTS.md"
       ],
       "layer": "doctrine",
@@ -522,7 +528,7 @@
     {
       "id": "tooling",
       "paths": [
-        "scripts/**",
+        ".dsh/base/audit/**",
         "setup.ps1",
         "setup.sh",
         ".dsh/base/githooks/**",
@@ -570,5 +576,13 @@
         "selftest"
       ]
     }
-  ]
+  ],
+  "memory": {
+    "ledger": "progress.md",
+    "archive": "progress.archive.md",
+    "maxLedgerBytes": 24000,
+    "keepDone": 40,
+    "keepNotes": 30,
+    "recapBudget": 6000
+  }
 }

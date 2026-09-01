@@ -31,13 +31,13 @@ jobs:
         run: node .dsh/base/dsb.mjs selftest
 
       - name: Syntax
-        run: node scripts/check-syntax.mjs
+        run: node .dsh/base/audit/check-syntax.mjs
 
       - name: Secret and provenance audit
-        run: node scripts/scan-secrets.mjs
+        run: node .dsh/base/audit/scan-secrets.mjs
 
       - name: Integrity manifest
-        run: node scripts/manifest.mjs --check
+        run: node .dsh/base/audit/manifest.mjs --check
 
       - name: Unit tests
         run: node --test "tests/*.test.mjs"

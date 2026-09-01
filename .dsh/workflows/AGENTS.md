@@ -34,7 +34,7 @@ and are copied into the tool's `script` parameter when run.
 ## Verification
 
 ```sh
-node scripts/check-syntax.mjs    # every script here must parse
+node .dsh/base/audit/check-syntax.mjs    # every script here must parse
 ```
 
 Behaviour is verified by running the workflow against a known-answer subset and

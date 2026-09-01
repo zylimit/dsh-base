@@ -6,7 +6,7 @@ whenToUse: When a user-facing capability needs a measurable reliability target, 
 
 ## Purpose
 
-Make reliability a number with a consequence. Produces `docs/nfr/RELIABILITY.md` (SLI/SLO table, error budget policy, observability contract) and one runbook per alert. An SLO without an error-budget consequence is decoration; an alert without a runbook is a pager loop.
+Make reliability a number with a consequence. Produces `.dsh/docs/nfr/RELIABILITY.md` (SLI/SLO table, error budget policy, observability contract) and one runbook per alert. An SLO without an error-budget consequence is decoration; an alert without a runbook is a pager loop.
 
 ## When this fires
 
@@ -43,7 +43,7 @@ Make reliability a number with a consequence. Produces `docs/nfr/RELIABILITY.md`
 
 ## Output contract
 
-`docs/nfr/RELIABILITY.md`:
+`.dsh/docs/nfr/RELIABILITY.md`:
 
 ```
 ## 1. SLI/SLO table

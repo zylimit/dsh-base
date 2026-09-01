@@ -3,7 +3,7 @@
 #
 #   sh setup.sh <target-repo-dir> [more targets...] [--dry-run] [--enable] [--hooks] [--verify]
 #
-# The installation logic lives in scripts/install.mjs so there is exactly one
+# The installation logic lives in .dsh/base/install.mjs so there is exactly one
 # implementation to maintain. This wrapper only locates it and checks for node.
 set -eu
 
@@ -14,4 +14,4 @@ if ! command -v node >/dev/null 2>&1; then
   exit 2
 fi
 
-exec node "$DIR/scripts/install.mjs" "$@"
+exec node "$DIR/.dsh/base/install.mjs" "$@"

@@ -35,9 +35,9 @@ prints one line of JSON on stdout, and exits non-zero on a finding.
 ## Verification
 
 ```sh
-node scripts/check-syntax.mjs
-node scripts/scan-secrets.mjs
-node scripts/manifest.mjs --check
+node .dsh/base/audit/check-syntax.mjs
+node .dsh/base/audit/scan-secrets.mjs
+node .dsh/base/audit/manifest.mjs --check
 node --test "tests/*.test.mjs"
 ```
 

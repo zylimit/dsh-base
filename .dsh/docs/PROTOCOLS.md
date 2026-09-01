@@ -27,7 +27,7 @@ Piped to stdin as JSON. Six fields plus an id.
 |---|---|---|
 | `id` | yes | Sanitised to `[A-Za-z0-9._-]` and truncated to 120 chars |
 | `goal` `scope` `outOfScope` `verification` `escalation` | yes | Non-empty strings; a missing one aborts with exit `3` and names what is missing |
-| `existingPattern` | no (engine) / yes (**P**) | [../AGENTS.md](../AGENTS.md) section 3 requires it; the engine stores it but does not validate it |
+| `existingPattern` | no (engine) / yes (**P**) | [../AGENTS.md](../../AGENTS.md) section 3 requires it; the engine stores it but does not validate it |
 
 The engine adds `state: "active"`, `baseCommit` (HEAD at start) and `startedAt`, then writes
 `.dsh/base/state/task.json`. There is one active task per worktree: a second `task start`

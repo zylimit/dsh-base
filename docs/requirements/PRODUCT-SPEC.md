@@ -208,7 +208,7 @@ Acceptance: a scan that reaches a bound sets `truncated: true` in its result.
 The repository MUST contain 0 committed credential files and 0 credential-shaped
 literals outside explicitly marked example files.
 
-Acceptance: `node scripts/scan-secrets.mjs` exits 0 over the whole tracked set.
+Acceptance: `node .dsh/base/audit/scan-secrets.mjs` exits 0 over the whole tracked set.
 
 ### NFR-SEC-002 — Protected attributes cannot be bypassed
 

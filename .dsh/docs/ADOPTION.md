@@ -22,7 +22,7 @@ Runtime state is already ignored: the installer ships `.dsh/base/.gitignore` cov
 `state/`, `evidence/`, `receipts/` and `waivers/`. **`.dsh/base/trend/` is deliberately
 not ignored** — the architecture-debt ledger is a shared team fact, and a per-machine
 baseline would let every developer measure against a different best value, which
-disables the ratchet ([ADR-0007](adr/ADR-0007-debt-ratchets-one-way.md),
+disables the ratchet ([ADR-0007](../../docs/adr/ADR-0007-debt-ratchets-one-way.md),
 [PROTOCOLS.md](PROTOCOLS.md) section 8).
 
 ## A0. Batch adoption across many repositories
@@ -30,7 +30,7 @@ disables the ratchet ([ADR-0007](adr/ADR-0007-debt-ratchets-one-way.md),
 One installer, one policy, run unattended:
 
 ```sh
-node /path/to/deepseek-base/scripts/install.mjs --targets-from repos.txt --hooks --enable --verify --json
+node /path/to/deepseek-base/.dsh/base/install.mjs --targets-from repos.txt --hooks --enable --verify --json
 ```
 
 | Property | Behaviour | Why it matters in batch |

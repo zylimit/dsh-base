@@ -24,7 +24,7 @@
 //
 // WHY THE WRAPPER EXISTS
 //   The workflow tool takes a function BODY with top-level await and a final return. A file
-//   containing that body would not parse (node scripts/check-syntax.mjs runs node --check on
+//   containing that body would not parse (node .dsh/base/audit/check-syntax.mjs runs node --check on
 //   every tracked .js file), so the body is wrapped in a function here. Do not copy the
 //   wrapper line or the closing brace.
 

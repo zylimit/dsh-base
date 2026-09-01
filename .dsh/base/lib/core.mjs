@@ -64,7 +64,23 @@ export function findRepoRoot (start = process.cwd()) {
 }
 
 export const ROOT = findRepoRoot(process.env.DSB_ROOT || process.cwd())
-export const BASE_DIR = path.join(ROOT, '.dsh', 'base')
+
+/**
+ * Where the catalog and the runtime state live.
+ *
+ * Default: inside the project, vendored and shareable with the team.
+ * `DSB_BASE`: anywhere else, so a private toolchain can govern a repository
+ * without placing a single file inside it. The engine reads the project through
+ * git and the filesystem either way; only its own home moves.
+ */
+export const BASE_DIR = process.env.DSB_BASE
+  ? path.resolve(process.env.DSB_BASE)
+  : path.join(ROOT, '.dsh', 'base')
+
+/** The harness config root; also the user-global home for doctrine. */
+export const DSH_HOME = process.env.DSH_HOME
+  ? path.resolve(process.env.DSH_HOME)
+  : path.join(process.env.USERPROFILE || process.env.HOME || '.', '.dsh')
 export const STATE_DIR = path.join(BASE_DIR, 'state')
 export const CATALOG_PATH = path.join(BASE_DIR, 'catalog.json')
 

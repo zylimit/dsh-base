@@ -9,7 +9,7 @@ and hedged language is demoted to `Notes` as `Needs-Confirmation`.
 
 - Goal: a DeepSeek Harness development scaffold in which every rule is either backed by a named command or explicitly marked prompt-only, installable unattended across many repositories.
 - Constraints: zero runtime dependencies, Node >= 20; a missing tool is BLOCKED and exit 3 is never a pass; `security`/`safety`/`privacy` have no expressible bypass; the harness has no hooks, no project settings file and no markdown commands or subagents, so enforcement lives in git hooks, CI and the engine.
-- Sources: docs/requirements/PRODUCT-SPEC.md | docs/requirements/PRODUCT-SPEC-CHANGELOG.md | .dsh/base/catalog.json | docs/OPERATING-MODEL.md
+- Sources: docs/requirements/PRODUCT-SPEC.md | docs/requirements/PRODUCT-SPEC-CHANGELOG.md | .dsh/base/catalog.json | .dsh/docs/OPERATING-MODEL.md
 
 ## Decisions
 
@@ -28,7 +28,7 @@ and hedged language is demoted to `Notes` as `Needs-Confirmation`.
 ## TODO
 
 - #001 P1 Wire a real SAST tool and a real secret scanner as checks claiming `security`, replacing the lexical `scan-secrets.mjs` as the sole evidence for high-risk modules; candidates in `.dsh/base/adapters.json`.
-- #002 P1 Measure the performance budgets in `docs/LARGE-REPO-GUIDE.md` against a repository above 1,000,000 lines and replace the labelled targets with measurements.
+- #002 P1 Measure the performance budgets in `.dsh/docs/LARGE-REPO-GUIDE.md` against a repository above 1,000,000 lines and replace the labelled targets with measurements.
 - #003 P2 Add a behaviour regression for the skill catalog: a trigger phrase per skill and the expected observable behaviour, so a skill that never fires is detectable. Raise to P1 when the catalog exceeds 30 skills.
 - #004 P2 Extend `arch-check` specifier resolution for polyglot trees; unresolved specifiers are counted and sampled today, not attributed. Raise to P1 when a target repository is not predominantly JavaScript.
 - #005 P2 Render the traceability matrix as a reviewable markdown table rather than JSON only.
@@ -41,7 +41,7 @@ Nothing.
 ## Done
 
 - 2026-09-01 | #— Batch-ready installation | evidence: five scenario installs (empty, existing source, project-owned files, non-git, CRLF) each run twice; second pass `copied 0, unchanged 74, staged 0`; 429 CRLF endings forced into `core.mjs` still read as unchanged; `node --test "tests/*.test.mjs"` 53/53 including 10 installer policy tests; commit 0c32f81
-- 2026-09-01 | #— Five batch-scale installer defects found and fixed | evidence: dual sh/PowerShell implementations collapsed into `scripts/install.mjs`; byte comparison replaced by LF-normalised identity; hook mode recorded via `git add --chmod=+x` (verified `100755` in a target index); `--verify` now stages before linting and `catalog-lint` warns `NO_TRACKED_PATHS`; per-target isolation with exit 1 on any failure; commit 0c32f81
+- 2026-09-01 | #— Five batch-scale installer defects found and fixed | evidence: dual sh/PowerShell implementations collapsed into `.dsh/base/install.mjs`; byte comparison replaced by LF-normalised identity; hook mode recorded via `git add --chmod=+x` (verified `100755` in a target index); `--verify` now stages before linting and `catalog-lint` warns `NO_TRACKED_PATHS`; per-target isolation with exit 1 on any failure; commit 0c32f81
 - 2026-09-01 | #— Adoption defects found by installing into an empty repository | evidence: `catalog.example.json` left 64 UNMAPPED on first enablement, now 0; the installer shipped our own `docs/requirements/**` and `docs/adr/ADR-*.md` so `spec-lint` passed on a foreign specification, now excluded and covered by a test; `progress.md` seeded from the template; commits 0b3c159, 1c15a8a
 - 2026-09-01 | #— Vacuous review receipts closed | evidence: the `progress-ledger` recovery read found `receipt verify` exit 0 on a clean tree; writing a receipt for an empty diff is now refused, verification binds `baseCommit`, a receipt carrying the empty-diff identity is reported vacuous, and a clean tree renders no verdict (exit 3); `selftest` 64/64; commit 67c2aed and follow-up
 - 2026-08-31 | #— Governance engine, 27 subcommands | evidence: `node .dsh/base/dsb.mjs help` lists them; `selftest` exit 0 with 64/64 assertions
@@ -59,7 +59,7 @@ Nothing.
 - RISK `--no-verify` bypasses the local hooks | trigger: deadline pressure | mitigation: CI runs the same gate and is the authority for a merge; a local bypass is a HIGH-tier act
 - RISK a batch install leaves `.deepseek-base-new` files unreviewed across many repositories | trigger: more than a few repositories customise a managed file | mitigation: TODO #006; the JSON result lists `staged` per target
 - ASSUMPTION the `AGENTS.md` chain and `.dsh/skills` are the harness's only repository-level extension points | falsified by: re-reading `dsh-agent-instructions` and `dsh-skill-filesystem` READMEs after a harness upgrade (verified at 0.1.1-rc.2)
-- ASSUMPTION the seeded `.gitattributes` keeps managed files LF in every target | falsified by: `node scripts/install.mjs <target>` reporting a non-empty `staged` list immediately after a fresh install
+- ASSUMPTION the seeded `.gitattributes` keeps managed files LF in every target | falsified by: `node .dsh/base/install.mjs <target>` reporting a non-empty `staged` list immediately after a fresh install
 
 ## Notes
 
@@ -72,13 +72,13 @@ Nothing.
 - constitution: AGENTS.md
 - spec: docs/requirements/PRODUCT-SPEC.md
 - spec changelog: docs/requirements/PRODUCT-SPEC-CHANGELOG.md
-- operating model: docs/OPERATING-MODEL.md
-- machine contracts: docs/PROTOCOLS.md
-- quality attributes: docs/QUALITY-ATTRIBUTES.md
-- scale: docs/LARGE-REPO-GUIDE.md
-- adoption and batch install: docs/ADOPTION.md
-- donor absorb/reject ledger: docs/CAPABILITY-MATRIX.md
+- operating model: .dsh/docs/OPERATING-MODEL.md
+- machine contracts: .dsh/docs/PROTOCOLS.md
+- quality attributes: .dsh/docs/QUALITY-ATTRIBUTES.md
+- scale: .dsh/docs/LARGE-REPO-GUIDE.md
+- adoption and batch install: .dsh/docs/ADOPTION.md
+- donor absorb/reject ledger: .dsh/docs/CAPABILITY-MATRIX.md
 - architecture: .dsh/base/catalog.json (authoritative), docs/adr/
 - engine: .dsh/base/AGENTS.md, .dsh/base/lib/AGENTS.md
-- installer: scripts/install.mjs, tests/installer.test.mjs
+- installer: .dsh/base/install.mjs, tests/installer.test.mjs
 - tests: tests/AGENTS.md

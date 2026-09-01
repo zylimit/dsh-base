@@ -10,7 +10,7 @@ import { spawnSync } from 'node:child_process'
 import { tempDir, rmDir, REPO } from './helpers.mjs'
 
 function install (targets, flags = []) {
-  const args = [path.join(REPO, 'scripts', 'install.mjs'), ...targets, ...flags]
+  const args = [path.join(REPO, '.dsh', 'base', 'install.mjs'), ...targets, ...flags]
   const r = spawnSync(process.execPath, args, { cwd: REPO, encoding: 'utf8', windowsHide: true })
   let json = null
   const line = (r.stdout || '').trim().split('\n').filter(Boolean).pop()
@@ -50,11 +50,15 @@ test('the installer never ships the scaffold own requirements or decisions', () 
       'installing our specification would make spec-lint pass on a spec nobody in that project wrote')
     assert.equal(files.some(f => /^docs\/adr\/ADR-/.test(f)), false,
       'installing our decisions would seed another project architecture history')
-    assert.ok(files.includes('docs/adr/README.md'), 'the ADR contract itself is reference material and is installed')
-    assert.ok(files.includes('docs/OPERATING-MODEL.md'))
+    assert.ok(files.includes('.dsh/docs/ADR-CONTRACT.md'), 'the ADR contract itself is reference material and is installed')
+    assert.ok(files.includes('.dsh/docs/OPERATING-MODEL.md'))
     assert.ok(files.includes('.dsh/base/dsb.mjs'))
     assert.ok(files.includes('.dsh/base/catalog.example.json'))
     assert.equal(files.includes('.dsh/base/catalog.json'), false, 'governance stays off until the adopter enables it')
+    // The whole copy surface is one directory plus the two root files the harness
+    // and the project own, so a plain recursive copy is an equivalent install.
+    const outside = files.filter(f => !f.startsWith('.dsh/') && f !== 'AGENTS.md' && f !== 'progress.md')
+    assert.deepEqual(outside, [], 'nothing may be installed outside .dsh/ except AGENTS.md and progress.md')
   } finally { rmDir(dir) }
 })
 

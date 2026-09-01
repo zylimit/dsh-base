@@ -31,7 +31,7 @@
 //
 // WHY THE WRAPPER EXISTS
 //   The workflow tool takes a function BODY with top-level await and a final return; that
-//   body alone would not parse under node --check, which scripts/check-syntax.mjs runs over
+//   body alone would not parse under node --check, which .dsh/base/audit/check-syntax.mjs runs over
 //   every tracked .js file. Do not copy the wrapper line or the closing brace.
 
 async function adversarialReview () {

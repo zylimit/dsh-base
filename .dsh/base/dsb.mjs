@@ -12,15 +12,20 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {
   EXIT, ROOT, BASE_DIR, loadCatalog, emit, note, degraded, isGitRepo,
-  changedPaths, diffHash, writeJsonAtomic, readJson, rel, exists, nowIso, listFiles, git,
+  changedPaths, diffHash, writeJsonAtomic, writeAtomic, readJson, readText,
+  rel, exists, nowIso, listFiles, git,
 } from './lib/core.mjs'
 import { lintCatalog, computeImpact, archCheck, recordTrend, trendGate, readTrend } from './lib/graph.mjs'
 import {
   runGate, verifyLedger, readLedger, gateAudit, writeReceipt, verifyReceipts,
   listWaivers, validateWaiver, waiverContentHash, assessBudget, startTask, readTask, completeTask,
+  syncCheck,
 } from './lib/quality.mjs'
 import { fitness, adrCheck, specLint, skillsLint, agentsLint, trace } from './lib/scan.mjs'
-import { contextPack, doctor, retention, riskScan, attributeAudit } from './lib/context.mjs'
+import {
+  contextPack, doctor, retention, riskScan, attributeAudit,
+  recap, archiveLedger, ledgerHealth,
+} from './lib/context.mjs'
 import { selftest } from './lib/selftest.mjs'
 
 // ── argument parsing ────────────────────────────────────────────────────────
@@ -450,6 +455,114 @@ COMMANDS.dod = (args) => {
   note(ok ? 'Definition of Done: satisfied' : 'Definition of Done: NOT satisfied (' + blockingFailures.map(s => s.id).join(', ') + ')')
   if (!args.flags['skip-gate']) note('NOTE: dod runs static governance only. Behavioural proof still requires: node .dsh/base/dsb.mjs gate')
   return emit({ command: 'dod', ok, steps, blockingFailures: blockingFailures.map(s => s.id) }, ok ? EXIT.OK : EXIT.GATE)
+}
+
+
+COMMANDS['sync-check'] = (args) => {
+  const catalog = needCatalog('sync-check'); if (!catalog) return EXIT.DEGRADED
+  const r = syncCheck(catalog, { staged: !!args.flags.staged, paths: args.flags.paths ? list(args.flags.paths) : null })
+  if (r.degraded) return degraded('sync-check', r.reason)
+  for (const f of r.findings) note((f.severity === 'error' ? ' ERR  ' : ' warn ') + f.code + ' :: ' + f.message)
+  note(r.ok
+    ? 'memory is in step with the code (' + r.codeChanged + ' governed file(s) changed)'
+    : 'memory is out of step; the next session could not resume from this commit')
+  return emit({ command: 'sync-check', ...r }, r.ok ? EXIT.OK : EXIT.VIOLATION)
+}
+
+COMMANDS.recap = (args) => {
+  const state = loadCatalog()
+  const r = recap(state.catalog, { budget: args.flags.budget ? Number(args.flags.budget) : null })
+  note(r.text)
+  note('recap: ' + r.chars + '/' + r.budget + ' chars' + (r.truncated ? ' (truncated)' : '') +
+    ' | memory ' + r.health.bytes + '/' + r.health.maxLedgerBytes + ' bytes, ' +
+    r.health.doneEntries + '/' + r.health.keepDone + ' Done entries')
+  if (!r.health.ok) note('  ' + r.health.advice)
+  return emit({ command: 'recap', ...r }, EXIT.OK)
+}
+
+COMMANDS.archive = (args) => {
+  const state = loadCatalog()
+  const r = archiveLedger(state.catalog, { apply: !!args.flags.apply })
+  if (r.degraded) return degraded('archive', r.reason)
+  for (const p of r.plan) note('  ' + p.section + ': ' + p.total + ' entries, keeping ' + p.keep + ', moving ' + p.moving)
+  note(r.applied
+    ? 'archived ' + r.moved + ' entry(ies) into ' + r.archive + '; nothing was deleted'
+    : (r.moved ? 'would archive ' + r.moved + ' entry(ies); re-run with --apply' : 'nothing to archive'))
+  return emit({ command: 'archive', ...r }, EXIT.OK)
+}
+
+COMMANDS.init = (args) => {
+  if (!isGitRepo()) {
+    note('init: not a git repository. Run "git init" first, then init again.')
+    return emit({ command: 'init', ok: false, degraded: true, reason: 'not-a-git-repository' }, EXIT.DEGRADED)
+  }
+  const mode = args.flags.vendored ? 'vendored' : (args.flags['exclude-file'] ? 'exclude-file' : 'private')
+  const notes = []
+
+  // 1. Isolation. The tool travels with the working copy but need not enter the
+  //    project's history. Project memory is NOT isolated: it is project state and
+  //    is what lets another machine resume without interruption.
+  const entries = ['.dsh/']
+  if (args.flags['ignore-constitution']) entries.push('AGENTS.md', 'AGENTS.local.md')
+  let isolation = { mode, file: null, added: [], already: false }
+  if (mode !== 'vendored') {
+    const target = mode === 'exclude-file' ? '.git/info/exclude' : '.gitignore'
+    if (mode === 'exclude-file') fs.mkdirSync(path.join(ROOT, '.git', 'info'), { recursive: true })
+    const existing = exists(target) ? readText(target, '') : ''
+    const have = new Set(existing.split(/\r?\n/).map(l => l.trim()))
+    const missing = entries.filter(e => !have.has(e))
+    isolation = { mode, file: target, added: missing, already: missing.length === 0 }
+    if (missing.length && !args.flags['dry-run']) {
+      const head = '# deepseek-base: private tooling, not part of this repository'
+      const block = (existing && !existing.endsWith('\n') ? '\n' : '') + (existing ? '\n' : '') +
+        head + '\n' + missing.join('\n') + '\n'
+      writeAtomic(target, existing + block)
+    }
+  } else notes.push('vendored mode: the scaffold is committed with the project; nothing was ignored')
+
+  // 2. The enforcement seam. core.hooksPath lives in .git/config, which is
+  //    per-clone: it must be set again on every machine and every fresh clone.
+  const before = (git(['config', '--get', 'core.hooksPath']).stdout || '').trim()
+  const hooks = { path: '.dsh/base/githooks', previous: before || null, already: before === '.dsh/base/githooks', changed: false }
+  if (args.flags['no-hooks']) notes.push('hooks left untouched (--no-hooks)')
+  else if (!hooks.already && !args.flags['dry-run']) {
+    const res = git(['config', 'core.hooksPath', '.dsh/base/githooks'])
+    hooks.changed = res.ok
+    if (!res.ok) notes.push('could not set core.hooksPath: ' + res.stderr.trim())
+  }
+  for (const h of ['pre-commit', 'commit-msg', 'pre-push']) {
+    try { fs.chmodSync(path.join(BASE_DIR, 'githooks', h), 0o755) } catch { /* filesystem without modes */ }
+  }
+
+  // 3. The switch. Governance stays off until a catalog exists.
+  const catalogPath = path.join(BASE_DIR, 'catalog.json')
+  const examplePath = path.join(BASE_DIR, 'catalog.example.json')
+  const catalog = { path: rel(catalogPath), existed: fs.existsSync(catalogPath), created: false }
+  if (!catalog.existed && !args.flags['no-enable'] && !args.flags['dry-run'] && fs.existsSync(examplePath)) {
+    fs.copyFileSync(examplePath, catalogPath)
+    catalog.created = true
+    notes.push('catalog seeded from catalog.example.json; it still describes placeholder modules and must be edited')
+  }
+
+  const health = doctor(loadCatalog())
+  note('')
+  note('deepseek-base init - mode: ' + mode)
+  if (isolation.file) {
+    note(isolation.already
+      ? '  already isolated in ' + isolation.file
+      : '  isolated in ' + isolation.file + ': ' + isolation.added.join(' '))
+    note('  progress.md is NOT ignored: project memory is project state and must travel with the repository')
+  }
+  note(hooks.already ? '  hooks already wired' : (hooks.changed ? '  hooks wired: core.hooksPath = .dsh/base/githooks' : '  hooks not wired'))
+  note(catalog.created || catalog.existed ? '  governance ON  (' + catalog.path + ')' : '  governance OFF (no catalog; every targeted command exits 3)')
+  for (const n of notes) note('  note: ' + n)
+  note('')
+  note('  Next:  node .dsh/base/dsb.mjs recap      # where are we')
+  note('         node .dsh/base/dsb.mjs doctor     # 8 checks, read "failing"')
+  note('         node .dsh/base/dsb.mjs dod        # the static Definition of Done')
+  note('  On a new machine: copy .dsh/ back in and run init again. It is idempotent.')
+
+  return emit({ command: 'init', ok: true, mode, isolation, hooks, catalog, notes, doctorFailing: health.failing }, EXIT.OK)
 }
 
 COMMANDS.help = () => {

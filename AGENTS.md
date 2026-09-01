@@ -87,10 +87,11 @@ Six tiers: `critical` `high` `medium` `low` `minimal` `none`.
 
 ## 8. Memory law
 
-1. `progress.md` is project memory. A `Done` entry without an evidence pointer is not written. A `Decisions` entry without the rejected alternative is a status update and belongs under `Done`.
-2. Hedged language is demoted to `Notes` tagged `Needs-Confirmation`.
-3. Recovery after compaction or a new session reads `progress.md` **and** `docs/requirements/PRODUCT-SPEC.md` **and** its changelog **and** `dsb task status`. A compaction summary is a claim, not a fact; re-establish facts from artifacts.
-4. Any edit to the product spec updates `docs/requirements/PRODUCT-SPEC-CHANGELOG.md` in the same turn.
+1. `progress.md` is project memory and is **committed**. It is project state, so another machine resumes from it; the tool under `.dsh/` may be private, the memory never is.
+2. **Three-file synchronisation.** Governed code and the ledger move in the same commit, and a specification edit carries its changelog entry in the same commit. Enforced by `node .dsh/base/dsb.mjs sync-check --staged` in the pre-commit hook: exit 1 on `MEMORY_BEHIND_CODE` or `SPEC_WITHOUT_CHANGELOG`.
+3. A `Done` entry without an evidence pointer is not written. A `Decisions` entry without the rejected alternative is a status update and belongs under `Done`. Hedged language is demoted to `Notes` tagged `Needs-Confirmation`.
+4. **Recovery is one bounded command**: `node .dsh/base/dsb.mjs recap`. It derives the live state — position, pinned, in progress, P0/P1, recent decisions and Done, risks, decay signals — inside a character budget, so resuming costs the same whether the project is a week or two years old. A compaction summary is a claim, not a fact; recap reads artifacts.
+5. **Memory is archived, never deleted.** When the ledger exceeds its budget, `node .dsh/base/dsb.mjs archive --apply` moves the oldest `Done` and `Notes` entries into `progress.archive.md` and leaves a pointer. An archived entry is never rewritten; a correction is a new entry in the live ledger.
 
 ## 9. Delegation law
 

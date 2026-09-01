@@ -11,7 +11,7 @@ import path from 'node:path'
 import fs from 'node:fs'
 import {
   ATTRIBUTES, classifyPath, trackedFiles, readText, readJson, abs, exists,
-  listFiles, matchesAny,
+  listFiles, matchesAny, DSH_HOME,
 } from './core.mjs'
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -405,10 +405,13 @@ export function parseFrontmatter (text) {
 // and so does this lint, deliberately and by name rather than by accident.
 const SKILL_ROOT_RESERVED = new Set(['AGENTS.md', 'AGENTS.local.md', 'CLAUDE.md', 'CLAUDE.local.md', 'README.md'])
 
-export function skillsLint (dirs = ['.dsh/skills', '.agents/skills']) {
+export function skillsLint (dirs = null) {
+  // Project roots first, then the user-global root the harness also scans, so a
+  // privately installed doctrine is linted where it actually lives.
+  const roots = dirs || ['.dsh/skills', '.agents/skills', path.posix.join(DSH_HOME.split(path.sep).join('/'), 'skills')]
   const findings = []
   const skills = []
-  for (const d of dirs) {
+  for (const d of roots) {
     if (!exists(d)) continue
     let entries
     try { entries = fs.readdirSync(abs(d), { withFileTypes: true }) } catch { continue }
@@ -494,8 +497,15 @@ export function agentsLint (catalog) {
   const maxBytes = cfg.maxBytes || 12000
   const requireFor = new Set(cfg.requireForRiskTiers || ['high', 'critical'])
 
+  const globalConstitution = path.posix.join(DSH_HOME.split(path.sep).join('/'), 'AGENTS.md')
   if (!exists('AGENTS.md')) {
-    findings.push({ severity: 'error', code: 'NO_ROOT_AGENTS', message: 'no root AGENTS.md; the harness has no project constitution to inject' })
+    // The harness reads $DSH_HOME/AGENTS.md before any project file, so a
+    // user-global constitution is a real one; only a total absence is an error.
+    if (exists(globalConstitution)) {
+      findings.push({ file: globalConstitution, severity: 'warning', code: 'GLOBAL_ROOT_AGENTS', message: 'no project AGENTS.md; the constitution is user-global at ' + globalConstitution + ' and applies to every repository on this machine' })
+    } else {
+      findings.push({ severity: 'error', code: 'NO_ROOT_AGENTS', message: 'no AGENTS.md in the project and none at ' + globalConstitution + '; the harness has no constitution to inject' })
+    }
   } else {
     const bytes = Buffer.byteLength(readText('AGENTS.md', ''), 'utf8')
     if (bytes > maxBytes) findings.push({ file: 'AGENTS.md', severity: 'warning', code: 'ROOT_AGENTS_LARGE', message: 'root AGENTS.md is ' + bytes + ' bytes and is resent on every request; keep durable invariants here and push procedure into skills' })
@@ -549,7 +559,7 @@ export function trace (catalog) {
   // Prose may legitimately cite an illustrative id. A dangling reference from
   // documentation is reported; a dangling reference from code or tests fails,
   // because that one names a requirement that no longer exists.
-  const docGlobs = (catalog.trace && catalog.trace.documentationGlobs) || ['docs/**', '.dsh/templates/**', '.dsh/skills/**', '*.md']
+  const docGlobs = (catalog.trace && catalog.trace.documentationGlobs) || ['docs/**', '.dsh/docs/**', '.dsh/templates/**', '.dsh/skills/**', '*.md']
   const dangling = []
   const danglingInDocs = []
 

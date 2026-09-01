@@ -1,9 +1,9 @@
 # Optional DeepSeek Harness profile patch shipped with this repository.
 #
 # This file is NOT read automatically. A profile's own patch layer lives at
-# $DSH_HOME/profiles/<name>/cordis.patch.yml. To apply this one for a single run:
+# $DSH_HOME/profiles/<name>/.dsh/base/cordis.patch.yml. To apply this one for a single run:
 #
-#     dsh --profile web --patch ./cordis.patch.yml
+#     dsh --profile web --patch ./.dsh/base/cordis.patch.yml
 #
 # Before relying on any entry here, confirm that the id it targets exists in the
 # composed tree for your profile:

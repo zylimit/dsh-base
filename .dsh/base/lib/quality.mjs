@@ -15,7 +15,7 @@ import {
   BASE_DIR, ROOT, ATTRIBUTES, BLOCKING_TIERS, PROTECTED_ATTRIBUTES, PROTECTED_CLASSES,
   readJson, readText, writeJsonAtomic, writeAtomic, listFiles, rel, abs, exists,
   sha256, sha256Lf, nowIso, diffHash, diffIsEmpty, EMPTY_DIFF_HASH,
-  headCommit, changedPaths, git, isGitRepo,
+  headCommit, changedPaths, git, isGitRepo, classifyPath,
 } from './core.mjs'
 
 import { resolveVerification } from './graph.mjs'
@@ -492,4 +492,67 @@ export function completeTask (catalog, impact) {
   if (blockers.length) return { ok: false, task: task.id, blockers }
   writeJsonAtomic(rel(TASK_PATH()), { ...task, state: 'complete', completedAt: nowIso() })
   return { ok: true, task: task.id, diffHash: current }
+}
+// ── three-file synchronisation ──────────────────────────────────────────────
+
+/**
+ * Project memory must never fall behind the code by more than one commit.
+ *
+ * This is the rule that makes "clear the session and resume" safe: if the code
+ * moved, the memory moved with it, so the recovery sources always describe the
+ * same commit. It is a commit-time gate rather than advice, because advice is
+ * precisely what gets skipped under deadline pressure.
+ */
+export function syncCheck (catalog, { staged = false, paths = null } = {}) {
+  if (!isGitRepo()) return { ok: false, degraded: true, reason: 'not-a-git-repository' }
+
+  const mem = (catalog && catalog.memory) || {}
+  const ledgerFile = mem.ledger || 'progress.md'
+  const specDirs = (catalog && catalog.trace && catalog.trace.requirementDirs) || ['docs/requirements']
+
+  const changed = paths || changedPaths({ staged }).paths
+  const has = (p) => changed.includes(p)
+  const codeChanged = changed.filter(p => classifyPath(catalog, p).kind === 'module')
+  const findings = []
+
+  if (codeChanged.length > 0 && !has(ledgerFile)) {
+    findings.push({
+      severity: 'error',
+      code: 'MEMORY_BEHIND_CODE',
+      sample: codeChanged.slice(0, 5),
+      message: codeChanged.length + ' governed file(s) changed but ' + ledgerFile + ' did not. ' +
+        'Record what changed and the evidence for it, or the next session cannot resume from this commit.',
+    })
+  }
+
+  const specFiles = changed.filter(p => specDirs.some(d => p.startsWith(d + '/')) && /\.md$/i.test(p))
+  const specBody = specFiles.filter(p => !/CHANGELOG/i.test(p))
+  const specLog = specFiles.filter(p => /CHANGELOG/i.test(p))
+  if (specBody.length > 0 && specLog.length === 0) {
+    findings.push({
+      severity: 'error',
+      code: 'SPEC_WITHOUT_CHANGELOG',
+      sample: specBody,
+      message: 'the specification changed (' + specBody.join(', ') + ') with no changelog entry in the same change; ' +
+        'a requirement that moved without a recorded reason is unreviewable',
+    })
+  }
+  if (specLog.length > 0 && specBody.length === 0) {
+    findings.push({
+      severity: 'warning',
+      code: 'CHANGELOG_WITHOUT_SPEC',
+      message: 'the changelog changed with no specification edit; confirm the entry describes something that actually happened',
+    })
+  }
+
+  const errors = findings.filter(f => f.severity === 'error')
+  return {
+    ok: errors.length === 0,
+    changed: changed.length,
+    codeChanged: codeChanged.length,
+    ledgerFile,
+    ledgerInChange: has(ledgerFile),
+    findings,
+    counts: { error: errors.length, warning: findings.length - errors.length },
+  }
 }

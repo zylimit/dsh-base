@@ -45,8 +45,8 @@ sh /tmp/deepseek-base/setup.sh /path/to/repo --hooks --enable --verify
 Batch adoption across many repositories:
 
 ```sh
-node /tmp/deepseek-base/scripts/install.mjs repo-a repo-b repo-c --hooks --enable --verify
-node /tmp/deepseek-base/scripts/install.mjs --targets-from repos.txt --hooks --enable --verify --json
+node /tmp/deepseek-base/.dsh/base/install.mjs repo-a repo-b repo-c --hooks --enable --verify
+node /tmp/deepseek-base/.dsh/base/install.mjs --targets-from repos.txt --hooks --enable --verify --json
 ```
 
 | Flag | Effect |
@@ -64,7 +64,7 @@ The run is idempotent: installing twice copies nothing. A managed file the proje
 has edited is never overwritten — it is written beside the original as
 `<file>.deepseek-base-new` so the change is reviewed. Project-owned files
 (`AGENTS.md`, `progress.md`, `.editorconfig`, `.gitattributes`,
-`cordis.patch.yml`) are seeded once and then kept. Exit `0` means every target
+`.dsh/base/cordis.patch.yml`) are seeded once and then kept. Exit `0` means every target
 is clean, `1` that a target needs attention, `2` a usage error.
 
 Requires Node 20 or later and git. Nothing else. There is no install step and no
@@ -95,7 +95,7 @@ progress.md                project memory
 `Frame - Specify - Design - Plan - Implement - Verify - Review - Record - Release`
 
 Each phase produces an artifact and is closed by a command, not by an opinion.
-`docs/OPERATING-MODEL.md` has the table. Load the `dsb-operating-loop` skill
+`.dsh/docs/OPERATING-MODEL.md` has the table. Load the `dsb-operating-loop` skill
 before starting non-trivial work.
 
 ## Commands
@@ -118,19 +118,19 @@ Exit codes: `0` clean, `1` rule violation, `2` blocking gate failure,
 | Document | Question it answers |
 |---|---|
 | [AGENTS.md](AGENTS.md) | what are the non-negotiable rules? |
-| [docs/OPERATING-MODEL.md](docs/OPERATING-MODEL.md) | how does work flow from idea to release? |
-| [docs/QUALITY-ATTRIBUTES.md](docs/QUALITY-ATTRIBUTES.md) | how are the eight attributes governed? |
-| [docs/PROTOCOLS.md](docs/PROTOCOLS.md) | what are the exact machine contracts? |
-| [docs/LARGE-REPO-GUIDE.md](docs/LARGE-REPO-GUIDE.md) | how does this work at 1,000,000+ lines? |
-| [docs/ADOPTION.md](docs/ADOPTION.md) | how do I turn this on in an existing repository? |
-| [docs/CAPABILITY-MATRIX.md](docs/CAPABILITY-MATRIX.md) | what was absorbed from prior scaffolds, and what was rejected? |
-| [docs/nfr/](docs/nfr/) | resilience, security, safety, privacy, reliability tactics |
+| [.dsh/docs/OPERATING-MODEL.md](.dsh/docs/OPERATING-MODEL.md) | how does work flow from idea to release? |
+| [.dsh/docs/QUALITY-ATTRIBUTES.md](.dsh/docs/QUALITY-ATTRIBUTES.md) | how are the eight attributes governed? |
+| [.dsh/docs/PROTOCOLS.md](.dsh/docs/PROTOCOLS.md) | what are the exact machine contracts? |
+| [.dsh/docs/LARGE-REPO-GUIDE.md](.dsh/docs/LARGE-REPO-GUIDE.md) | how does this work at 1,000,000+ lines? |
+| [.dsh/docs/ADOPTION.md](.dsh/docs/ADOPTION.md) | how do I turn this on in an existing repository? |
+| [.dsh/docs/CAPABILITY-MATRIX.md](.dsh/docs/CAPABILITY-MATRIX.md) | what was absorbed from prior scaffolds, and what was rejected? |
+| [.dsh/docs/nfr/](.dsh/docs/nfr/) | resilience, security, safety, privacy, reliability tactics |
 
 ## What this is not
 
 It is not a build system, a test runner, a CI provider, or a static-analysis engine.
 It wires those in and refuses to pretend they ran when they did not. It also does not
-provide legal advice; `docs/nfr/PRIVACY.md` states engineering obligations only.
+provide legal advice; `.dsh/docs/nfr/PRIVACY.md` states engineering obligations only.
 
 ## License
 

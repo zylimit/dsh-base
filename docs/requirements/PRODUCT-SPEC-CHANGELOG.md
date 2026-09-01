@@ -3,6 +3,17 @@
 Every edit to `PRODUCT-SPEC.md` adds an entry here in the same change. A spec edit
 without a changelog entry is an incomplete change.
 
+## 1.1 — copy surface collapsed into .dsh/
+
+- Changed: the acceptance command of NFR-SEC-001 now reads
+  `node .dsh/base/audit/scan-secrets.mjs`; the audit scripts moved from
+  `scripts/` into `.dsh/base/audit/` and the reference manual moved from
+  `docs/` into `.dsh/docs/`.
+- Rationale: the scaffold must be installable by copying one directory, and it
+  must not claim ownership of `docs/` or `scripts/`, which belong to the adopting
+  project. No requirement text changed; only a path inside an acceptance criterion.
+- Approver: maintainers.
+
 ## 1.0 — initial specification
 
 - Added: REQ-GOV-001..004, REQ-ARC-001..006, REQ-SPC-001..002, REQ-DEL-001..002,

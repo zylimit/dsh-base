@@ -3,7 +3,7 @@
 #   pwsh -File setup.ps1 -Target <dir> [-DryRun] [-Enable] [-Hooks] [-Verify]
 #   pwsh -File setup.ps1 <dir> <dir> ... -Verify
 #
-# The installation logic lives in scripts/install.mjs so there is exactly one
+# The installation logic lives in .dsh/base/install.mjs so there is exactly one
 # implementation to maintain. This wrapper only locates it and checks for node.
 
 [CmdletBinding()]
@@ -32,6 +32,6 @@ if ($Enable) { $argv.Add('--enable') }
 if ($Hooks)  { $argv.Add('--hooks') }
 if ($Verify) { $argv.Add('--verify') }
 
-$installer = Join-Path $PSScriptRoot 'scripts/install.mjs'
+$installer = Join-Path $PSScriptRoot '.dsh/base/install.mjs'
 & node $installer @argv
 exit $LASTEXITCODE

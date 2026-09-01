@@ -13,6 +13,7 @@ import {
 } from './core.mjs'
 import { computeImpact, resolveVerification } from './graph.mjs'
 import { readTask, verifyLedger, verifyReceipts, readLedger } from './quality.mjs'
+import { specLint, trace } from './scan.mjs'
 
 const FENCE = '\u0060\u0060\u0060'
 const TICK = '\u0060'
@@ -280,4 +281,188 @@ export function attributeAudit (catalog) {
     }
   }
   return { ok: gaps.length === 0, rows, gaps, counts: { declarations: rows.length, gaps: gaps.length } }
+}
+// ── project memory: bounded recap and archiving ─────────────────────────────
+//
+// Memory that grows without bound stops being memory: past a certain size nobody
+// reads it, and an agent that does spends its context on history instead of work.
+// So recap is a DERIVED, budgeted digest rather than three whole files, and
+// archiving keeps the live ledger small without ever deleting anything. That is
+// what makes "clear the session and resume" affordable as a project ages.
+
+const MEMORY_DEFAULTS = Object.freeze({
+  ledger: 'progress.md',
+  archive: 'progress.archive.md',
+  maxLedgerBytes: 24000,
+  keepDone: 40,
+  keepNotes: 30,
+  recapBudget: 6000,
+})
+
+export function memoryConfig (catalog) {
+  return { ...MEMORY_DEFAULTS, ...((catalog && catalog.memory) || {}) }
+}
+
+/** Split a ledger into its "## " sections, preserving order and raw bodies. */
+export function parseLedger (text) {
+  const sections = []
+  let current = null
+  for (const line of String(text || '').split('\n')) {
+    const m = /^##\s+(.+?)\s*$/.exec(line)
+    if (m) { current = { title: m[1], lines: [] }; sections.push(current) }
+    else if (current) current.lines.push(line)
+  }
+  return sections
+}
+
+const entriesOf = (s) => (s ? s.lines.filter(l => /^\s*-\s+\S/.test(l)) : [])
+
+/** An entry's own priority token, not a mention of one in its prose. */
+const priorityOf = (line) => {
+  const m = /^\s*-\s+#\d+\s+(P[0-2])\b/.exec(line)
+  return m ? m[1] : null
+}
+
+/**
+ * Recap is a digest, not a transcript. A ledger entry carries its evidence
+ * pointer inline and can run long; quoting it in full would let three entries
+ * consume the whole budget, which is the failure this command exists to prevent.
+ */
+const clip = (line, max = 200) =>
+  line.length <= max ? line : line.slice(0, max - 3).trimEnd() + '...'
+const sectionNamed = (sections, name) =>
+  sections.find(s => s.title.toLowerCase().startsWith(name.toLowerCase())) || null
+
+/** Live size report for the memory files, with the archiving advice. */
+export function ledgerHealth (catalog) {
+  const cfg = memoryConfig(catalog)
+  const text = readText(cfg.ledger, '')
+  const bytes = Buffer.byteLength(text, 'utf8')
+  const sections = parseLedger(text)
+  const done = entriesOf(sectionNamed(sections, 'Done')).length
+  const notes = entriesOf(sectionNamed(sections, 'Notes')).length
+  const over = bytes > cfg.maxLedgerBytes || done > cfg.keepDone
+  return {
+    ledger: cfg.ledger, bytes, maxLedgerBytes: cfg.maxLedgerBytes,
+    doneEntries: done, keepDone: cfg.keepDone, noteEntries: notes,
+    archive: cfg.archive, archiveBytes: Buffer.byteLength(readText(cfg.archive, ''), 'utf8'),
+    ok: !over,
+    advice: over
+      ? 'memory exceeds its budget; run "dsb archive --apply" to move the oldest entries into ' + cfg.archive +
+        '. Nothing is deleted, and recap stays a fixed cost as the project ages.'
+      : 'memory is within budget',
+  }
+}
+
+/**
+ * Move the oldest Done and Notes entries into the archive.
+ * History is append-only: entries move, never disappear, and an archived entry is
+ * never rewritten. A pointer line in the live ledger says where they went.
+ */
+export function archiveLedger (catalog, { apply = false } = {}) {
+  const cfg = memoryConfig(catalog)
+  if (!exists(cfg.ledger)) return { ok: false, degraded: true, reason: 'no ledger at ' + cfg.ledger }
+  const text = readText(cfg.ledger, '')
+  const sections = parseLedger(text)
+
+  const plan = []
+  const moved = { Done: [], Notes: [] }
+  for (const [name, keep] of [['Done', cfg.keepDone], ['Notes', cfg.keepNotes]]) {
+    const s = sectionNamed(sections, name)
+    if (!s) continue
+    const items = entriesOf(s)
+    if (items.length <= keep) continue
+    // Newest first is the section contract, so the tail is the oldest.
+    const tail = items.slice(keep)
+    moved[name] = tail
+    plan.push({ section: name, total: items.length, keep, moving: tail.length })
+  }
+
+  const total = plan.reduce((n, p) => n + p.moving, 0)
+  if (total === 0) {
+    return { ok: true, applied: false, moved: 0, plan: [], reason: 'nothing to archive', health: ledgerHealth(catalog) }
+  }
+  if (!apply) {
+    return { ok: true, applied: false, moved: total, plan, health: ledgerHealth(catalog) }
+  }
+
+  const stamp = nowIso().slice(0, 10)
+  let archive = readText(cfg.archive, '')
+  if (!archive) {
+    archive = '# Archived project memory\n\nAppend-only. An archived entry is never rewritten; a correction is a new entry in the live ledger.\n'
+  }
+  archive += '\n## Archived ' + stamp + '\n'
+  for (const name of ['Done', 'Notes']) {
+    if (moved[name].length === 0) continue
+    archive += '\n### ' + name + '\n\n' + moved[name].join('\n') + '\n'
+  }
+  writeAtomic(cfg.archive, archive)
+
+  const movedSet = new Set([...moved.Done, ...moved.Notes])
+  const pointer = '- Older entries are in [' + cfg.archive + '](' + cfg.archive + ').'
+  const out = []
+  let placed = false
+  for (const line of text.split('\n')) {
+    if (movedSet.has(line)) {
+      if (!placed) { out.push(pointer); placed = true }
+      continue
+    }
+    out.push(line)
+  }
+  writeAtomic(cfg.ledger, out.join('\n'))
+  return { ok: true, applied: true, moved: total, plan, archive: cfg.archive, health: ledgerHealth(catalog) }
+}
+
+/**
+ * One bounded answer to "where are we".
+ *
+ * It reads the memory files but returns only what is still live, so its cost is a
+ * function of the current state rather than of the project's age.
+ */
+export function recap (catalog, { budget = null } = {}) {
+  const cfg = memoryConfig(catalog)
+  const cap = budget || cfg.recapBudget
+  const sections = parseLedger(readText(cfg.ledger, ''))
+  const pick = (name, limit) => entriesOf(sectionNamed(sections, name)).slice(0, limit).map(l => clip(l))
+  const todo = entriesOf(sectionNamed(sections, 'TODO'))
+
+  const spec = catalog ? specLint(catalog) : { degraded: true }
+  const tr = spec.degraded ? { degraded: true } : trace(catalog)
+  const task = readTask()
+  const gates = readLedger().filter(e => e.gate)
+  const lastGate = gates[gates.length - 1] || null
+  const risks = catalog ? riskScan(catalog) : { findings: [] }
+  const branch = (git(['rev-parse', '--abbrev-ref', 'HEAD']).stdout || '').trim()
+  const dirty = (git(['status', '--porcelain']).stdout || '').split('\n').filter(Boolean).length
+
+  const blocks = []
+  const push = (title, lines) => { if (lines && lines.length) blocks.push('## ' + title + '\n' + lines.join('\n')) }
+
+  push('Position', [
+    '- branch ' + (branch || 'unknown') + ' at ' + (headCommit() || 'no commit') + ', ' + dirty + ' uncommitted path(s)',
+    '- active task: ' + (task && task.state === 'active' ? task.id + ' - ' + task.goal : 'none'),
+    '- last gate: ' + (lastGate ? lastGate.gate + ' at ' + lastGate.at + ' over [' + (lastGate.modules || []).join(', ') + ']' : 'never run'),
+    '- requirements: ' + (spec.degraded ? 'none declared' : spec.counts.requirements + ' declared, test coverage ' + (tr.degraded ? 'n/a' : (tr.coverage * 100).toFixed(0) + ' %')),
+  ])
+  push('Pinned', pick('Pinned', 12))
+  push('In progress', pick('In progress', 8))
+  push('Next (P0)', todo.filter(l => priorityOf(l) === 'P0').slice(0, 10).map(l => clip(l)))
+  push('Next (P1)', todo.filter(l => priorityOf(l) === 'P1').slice(0, 10).map(l => clip(l)))
+  push('Recent decisions', pick('Decisions', 5))
+  push('Recently done', pick('Done', 6))
+  push('Risks and assumptions', pick('Risks', 8))
+  if (risks.findings.length) push('Decay signals', risks.findings.map(f => clip('- ' + f.code + ': ' + f.message)))
+
+  let body = '# Recap - ' + nowIso() + '\n\n' + blocks.join('\n\n') + '\n'
+  let truncated = false
+  if (body.length > cap) {
+    body = body.slice(0, cap) + '\n\n...[recap truncated at ' + cap + ' chars; open ' + cfg.ledger + ' for the rest]\n'
+    truncated = true
+  }
+  return {
+    ok: true, chars: body.length, budget: cap, truncated,
+    health: ledgerHealth(catalog),
+    sources: [cfg.ledger].concat(spec.degraded ? [] : [...new Set(spec.ids.map(i => i.file))]),
+    text: body,
+  }
 }

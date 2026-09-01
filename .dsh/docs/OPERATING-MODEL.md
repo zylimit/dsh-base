@@ -54,7 +54,7 @@ common way a governed process quietly stops governing.
 
 ## 3. The evidence five-step
 
-Mandatory before any factual claim about this repository. See [../AGENTS.md](../AGENTS.md) section 1.
+Mandatory before any factual claim about this repository. See [../AGENTS.md](../../AGENTS.md) section 1.
 
 1. Name the exact command that would prove the claim. If no such command exists, the claim
    is an opinion — say so.

@@ -6,7 +6,7 @@ whenToUse: When designing or reviewing failure behaviour, capacity headroom or r
 
 ## Purpose
 
-Keep the system serving under attack, fault, surge and disaster, and make recovery a measured procedure rather than an improvisation. Produces the resilience section of `docs/nfr/` (`docs/nfr/RESILIENCE.md`): a tactics table per dependency, hard limits with numbers, a surge target with the load test that proves it, and RTO/RPO with the restore drill that proves them.
+Keep the system serving under attack, fault, surge and disaster, and make recovery a measured procedure rather than an improvisation. Produces the resilience section of `.dsh/docs/nfr/` (`.dsh/docs/nfr/RESILIENCE.md`): a tactics table per dependency, hard limits with numbers, a surge target with the load test that proves it, and RTO/RPO with the restore drill that proves them.
 
 ## When this fires
 
@@ -37,7 +37,7 @@ Keep the system serving under attack, fault, surge and disaster, and make recove
    | R3 | Retries are only for idempotent operations, or carry an idempotency key | prompt-only, reviewer checks the call site |
    | R4 | Every queue, channel and buffer has a declared maximum size and an overflow policy | prompt-only, reviewer checks the constructor |
    | R5 | Every cache has a maximum size and a TTL | prompt-only, reviewer checks the constructor |
-   | R6 | Every dependency declares a degraded mode (what the caller returns when it is down) | table row in `docs/nfr/RESILIENCE.md` |
+   | R6 | Every dependency declares a degraded mode (what the caller returns when it is down) | table row in `.dsh/docs/nfr/RESILIENCE.md` |
    | R7 | Retry budget: total retries capped as a fraction of request volume (for example 10 percent) | metric + alert, named in the runbook |
    | R8 | Every breaker declares open threshold, half-open probe rate and reset condition | table row |
 
@@ -52,7 +52,7 @@ Keep the system serving under attack, fault, surge and disaster, and make recove
 
 ## Output contract
 
-`docs/nfr/RESILIENCE.md`:
+`.dsh/docs/nfr/RESILIENCE.md`:
 
 ```
 # Resilience - <system>

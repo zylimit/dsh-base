@@ -80,7 +80,7 @@ test('NFR-MAINT-001 the engine imports only Node builtins and its own siblings',
   const libDir = path.join(REPO, '.dsh', 'base', 'lib')
   const files = fs.readdirSync(libDir).filter(f => f.endsWith('.mjs'))
     .map(f => path.join(libDir, f))
-    .concat([path.join(REPO, '.dsh', 'base', 'dsb.mjs')])
+    .concat([path.join(REPO, '.dsh', 'base', 'dsb.mjs'), path.join(REPO, '.dsh', 'base', 'install.mjs')])
   const re = /^\s*import\s+(?:[^'"]*?from\s+)?['"]([^'"]+)['"]/gm
   for (const file of files) {
     const text = fs.readFileSync(file, 'utf8')
@@ -95,7 +95,7 @@ test('NFR-MAINT-001 the engine imports only Node builtins and its own siblings',
 })
 
 test('NFR-MAINT-001 the audit scripts do not import the engine they audit', () => {
-  const dir = path.join(REPO, 'scripts')
+  const dir = path.join(REPO, '.dsh', 'base', 'audit')
   for (const f of fs.readdirSync(dir).filter(x => x.endsWith('.mjs'))) {
     const text = fs.readFileSync(path.join(dir, f), 'utf8')
     assert.equal(/\.dsh\/base\/lib/.test(text), false, f + ' must stay independent of the engine')

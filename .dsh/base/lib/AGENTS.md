@@ -54,7 +54,7 @@ check proved, and whether a claim still binds the current diff.
 
 ```sh
 node .dsh/base/dsb.mjs selftest      # 56+ assertions over pure functions, must exit 0
-node scripts/check-syntax.mjs        # every tracked .mjs parses
+node .dsh/base/audit/check-syntax.mjs        # every tracked .mjs parses
 node --test "tests/*.test.mjs"       # behavioural tests over the engine surface
 node .dsh/base/dsb.mjs arch-check    # layer direction and forbidden edges hold
 node .dsh/base/dsb.mjs fitness --all # anti-pattern scan over the engine itself

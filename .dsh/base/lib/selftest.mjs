@@ -10,9 +10,9 @@ import {
   CATCH_ALL_GLOBS, ATTRIBUTES, TIERS, PROTECTED_ATTRIBUTES, EMPTY_DIFF_HASH,
 } from './core.mjs'
 import { lintCatalog, computeImpact, resolveVerification, extractImports, resolveSpecifier, findCycles, trendGate } from './graph.mjs'
-import { aggregate, buildPlan, assessAttributes, validateWaiver, waiverContentHash, STATUS } from './quality.mjs'
+import { aggregate, buildPlan, assessAttributes, validateWaiver, waiverContentHash, syncCheck, STATUS } from './quality.mjs'
 import { parseFrontmatter, FITNESS_RULE_IDS, fitness as fitnessScan, skillsLint as skillsLintFn } from './scan.mjs'
-import { denied } from './context.mjs'
+import { denied, parseLedger, memoryConfig } from './context.mjs'
 
 function fixture () {
   return {
@@ -344,6 +344,43 @@ export function selftest () {
   t('context: runtime state never enters a pack', () => {
     ok(denied('.dsh/base/state/ledger.jsonl'))
     ok(denied('.dsh/base/receipts/t1.json'))
+  })
+
+  // ── project memory ────────────────────────────────────────────────────────
+  t('memory: a ledger splits into its sections in order', () => {
+    const s = parseLedger('# t\n\n## Pinned\n- a\n\n## Done\n- b\n- c\n')
+    eq(s.map(x => x.title), ['Pinned', 'Done'])
+    eq(s[1].lines.filter(l => l.startsWith('- ')).length, 2)
+  })
+  t('memory: budgets are configurable and defaulted', () => {
+    const d = memoryConfig(null)
+    ok(d.maxLedgerBytes > 0 && d.keepDone > 0 && d.recapBudget > 0)
+    eq(memoryConfig({ memory: { keepDone: 5 } }).keepDone, 5)
+  })
+  t('sync: code changed without the ledger is a violation', () => {
+    const c = fixture()
+    const r = syncCheck(c, { paths: ['src/api/a.ts'] })
+    ok(!r.ok, 'memory must not fall behind the code')
+    ok(r.findings.some(f => f.code === 'MEMORY_BEHIND_CODE'))
+  })
+  t('sync: code changed together with the ledger passes', () => {
+    const r = syncCheck(fixture(), { paths: ['src/api/a.ts', 'progress.md'] })
+    ok(r.ok, JSON.stringify(r.findings))
+  })
+  t('sync: a specification edit without its changelog is a violation', () => {
+    const r = syncCheck(fixture(), { paths: ['docs/requirements/PRODUCT-SPEC.md', 'progress.md'] })
+    ok(!r.ok)
+    ok(r.findings.some(f => f.code === 'SPEC_WITHOUT_CHANGELOG'))
+  })
+  t('sync: a paired specification edit passes', () => {
+    const r = syncCheck(fixture(), {
+      paths: ['docs/requirements/PRODUCT-SPEC.md', 'docs/requirements/PRODUCT-SPEC-CHANGELOG.md', 'progress.md'],
+    })
+    ok(r.ok, JSON.stringify(r.findings))
+  })
+  t('sync: a documentation-only change needs no ledger entry', () => {
+    const r = syncCheck(fixture(), { paths: ['docs/x.md'] })
+    ok(r.ok)
   })
 
   // ── misc invariants ───────────────────────────────────────────────────────

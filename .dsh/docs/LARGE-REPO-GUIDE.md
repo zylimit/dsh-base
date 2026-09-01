@@ -1,7 +1,7 @@
 # Large-repository guide
 
 Operating a repository of 1 000 000+ lines with the DeepSeek Harness and the `dsb` engine.
-Related: [nfr/RESILIENCE.md](./nfr/RESILIENCE.md) · [nfr/SECURITY.md](./nfr/SECURITY.md) · [nfr/SAFETY.md](./nfr/SAFETY.md) · [nfr/PRIVACY.md](./nfr/PRIVACY.md) · [nfr/RELIABILITY.md](./nfr/RELIABILITY.md) · [../AGENTS.md](../AGENTS.md)
+Related: [nfr/RESILIENCE.md](./nfr/RESILIENCE.md) · [nfr/SECURITY.md](./nfr/SECURITY.md) · [nfr/SAFETY.md](./nfr/SAFETY.md) · [nfr/PRIVACY.md](./nfr/PRIVACY.md) · [nfr/RELIABILITY.md](./nfr/RELIABILITY.md) · [../AGENTS.md](../../AGENTS.md)
 
 ## 1. Why a full scan is the wrong primitive
 
@@ -47,7 +47,7 @@ Rules:
 2. Keep each file small (the engine's `agentsMd.maxBytes` bound, 12 000 bytes in the shipped fixture). A contract nobody can read in one screen is not a contract.
 3. Write **invariants and prohibitions**, not tutorials. "Never import from `ui`", "every write goes through `repo.save`", "tenant id comes from the principal".
 4. Name the module's verification command so a delegate can prove its work without asking.
-5. Do not duplicate the root [../AGENTS.md](../AGENTS.md); a nested file adds local constraints only.
+5. Do not duplicate the root [../AGENTS.md](../../AGENTS.md); a nested file adds local constraints only.
 
 ## 5. Search discipline for agents
 
@@ -108,7 +108,7 @@ const brief = (id) => [
   'Goal: audit module ' + id + ' against its declared contract.',
   'Scope: files of module ' + id + ' only, plus its AGENTS.md and catalog entry.',
   'Out of scope: every other module; no edits.',
-  'Existing pattern: hard rules in docs/nfr/RELIABILITY.md section 7.',
+  'Existing pattern: hard rules in .dsh/docs/nfr/RELIABILITY.md section 7.',
   'Verification: node .dsh/base/dsb.mjs fitness --paths <files of ' + id + '>',
   'Escalation: return status BLOCKED with the missing input; never widen scope.'
 ].join('\n')

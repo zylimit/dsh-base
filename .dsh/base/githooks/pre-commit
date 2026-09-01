@@ -38,12 +38,13 @@ run () {
   rm -f /tmp/dsb-hook-err.$$
 }
 
-run secrets      node scripts/scan-secrets.mjs --staged
-run syntax       node scripts/check-syntax.mjs
+run secrets      node .dsh/base/audit/scan-secrets.mjs --staged
+run syntax       node .dsh/base/audit/check-syntax.mjs
 run catalog-lint node .dsh/base/dsb.mjs catalog-lint
 run skills-lint  node .dsh/base/dsb.mjs skills-lint
 run agents-lint  node .dsh/base/dsb.mjs agents-lint
 run fitness      node .dsh/base/dsb.mjs fitness --staged
+run sync-check   node .dsh/base/dsb.mjs sync-check --staged
 
 node .dsh/base/dsb.mjs budget --staged >/dev/null 2>&1 || \
   echo "deepseek-base: change budget exceeded. Split the change or record an explicit decision." >&2
