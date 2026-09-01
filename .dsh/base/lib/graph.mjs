@@ -106,6 +106,9 @@ export function lintCatalog (catalog) {
   let unmapped = 0
   const overlapSeen = new Map()
   if (t.available) {
+    if (paths.length === 0) {
+      add(WARN, 'NO_TRACKED_PATHS', 'the repository has no tracked files, so this classification proved nothing; stage the tree and run it again')
+    }
     if (t.truncated) add(WARN, 'TRUNCATED', 'tracked file list truncated at ' + catalog.maxTrackedPaths + ' of ' + t.total + '; coverage is incomplete and impact will expand conservatively')
     for (const p of paths) {
       const hits = []

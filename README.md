@@ -35,19 +35,37 @@ harder does not fix any of them. Each needs a mechanism.
 ## Install
 
 ```sh
-# from the root of the target repository
 git clone --depth 1 <this-repo> /tmp/deepseek-base
-sh /tmp/deepseek-base/setup.sh .          # or: pwsh /tmp/deepseek-base/setup.ps1 -Target .
+
+# one repository, wired and verified in a single step
+sh /tmp/deepseek-base/setup.sh /path/to/repo --hooks --enable --verify
+# Windows: pwsh -File C:\deepseek-base\setup.ps1 -Target C:\repo -Hooks -Enable -Verify
 ```
 
-Then:
+Batch adoption across many repositories:
 
 ```sh
-git config core.hooksPath .dsh/base/githooks
-cp .dsh/base/catalog.example.json .dsh/base/catalog.json   # then edit it
-node .dsh/base/dsb.mjs doctor
-node .dsh/base/dsb.mjs catalog-lint
+node /tmp/deepseek-base/scripts/install.mjs repo-a repo-b repo-c --hooks --enable --verify
+node /tmp/deepseek-base/scripts/install.mjs --targets-from repos.txt --hooks --enable --verify --json
 ```
+
+| Flag | Effect |
+|---|---|
+| *(none)* | copy the managed surface, seed project-owned files once |
+| `--dry-run` | report what would happen, write nothing |
+| `--enable` | seed `.dsh/base/catalog.json` from the example, switching governance on |
+| `--hooks` | set `core.hooksPath` and record the executable bit for the hooks |
+| `--stage` | `git add` the installation |
+| `--verify` | stage, then run doctor / selftest / skills-lint / catalog-lint in the installed copy |
+| `--targets-from FILE` | one target path per line |
+| `--json` | machine-readable output only |
+
+The run is idempotent: installing twice copies nothing. A managed file the project
+has edited is never overwritten — it is written beside the original as
+`<file>.deepseek-base-new` so the change is reviewed. Project-owned files
+(`AGENTS.md`, `progress.md`, `.editorconfig`, `.gitattributes`,
+`cordis.patch.yml`) are seeded once and then kept. Exit `0` means every target
+is clean, `1` that a target needs attention, `2` a usage error.
 
 Requires Node 20 or later and git. Nothing else. There is no install step and no
 package to add.

@@ -18,14 +18,41 @@ a small repository: skills, `AGENTS.md`, `skills-lint`, `selftest` and `doctor` 
 Copy the engine's referenced starting point, `.dsh/base/catalog.example.json`, to
 `.dsh/base/catalog.json` when you are ready to turn governance on.
 
-Git-ignore the runtime state before the first run:
-`.dsh/base/state/`, `.dsh/base/evidence/`, `.dsh/base/receipts/`, `.dsh/base/waivers/`,
-`.dsh/base/trend/` ([PROTOCOLS.md](PROTOCOLS.md) section 8).
+Runtime state is already ignored: the installer ships `.dsh/base/.gitignore` covering
+`state/`, `evidence/`, `receipts/` and `waivers/`. **`.dsh/base/trend/` is deliberately
+not ignored** — the architecture-debt ledger is a shared team fact, and a per-machine
+baseline would let every developer measure against a different best value, which
+disables the ratchet ([ADR-0007](adr/ADR-0007-debt-ratchets-one-way.md),
+[PROTOCOLS.md](PROTOCOLS.md) section 8).
+
+## A0. Batch adoption across many repositories
+
+One installer, one policy, run unattended:
+
+```sh
+node /path/to/deepseek-base/scripts/install.mjs --targets-from repos.txt --hooks --enable --verify --json
+```
+
+| Property | Behaviour | Why it matters in batch |
+|---|---|---|
+| Idempotent | a repeat run copies 0 files | re-running over 200 repositories is safe |
+| Never overwrites a project edit | writes `<file>.deepseek-base-new` beside it | one team's customisation is not silently reverted |
+| Line-ending blind | content identity is LF-normalised | a CRLF checkout does not stage all 74 managed files |
+| Excludes instance data | no `docs/requirements/**`, no `docs/adr/ADR-*.md` | a repository never inherits another project's specification |
+| Seeds memory from the template | `progress.md` from `.dsh/templates/PROGRESS.md` | no repository starts with someone else's Done list |
+| Records the hook mode | `git add --chmod=+x` | hooks stay executable when the repository is cloned on Linux |
+| Verifies after staging | `--verify` stages first, then lints | a classification over 0 tracked paths is reported as proving nothing |
+| Per-target isolation | one bad target does not stop the batch; exit 1 | a failed repository is visible in the JSON, not hidden |
+
+Read the JSON result rather than the console: each entry carries `copied`,
+`unchanged`, `staged`, `kept`, `warnings`, `errors` and a `verify` block with
+`trackedPaths` and `unmapped`. A target with a non-empty `staged` list has a local
+customisation waiting for review; a target with `errors` did not install.
 
 ## A. Brand-new project
 
-1. Copy `.dsh/` (engine + skills), `AGENTS.md`, `docs/` and the git hooks directory into the
-   empty repository; commit before writing any product code.
+1. Run the installer (above) against the empty repository; commit before writing any
+   product code.
 2. `git config core.hooksPath .dsh/base/githooks` — `doctor` check `git-hooks-installed`
    verifies exactly this value.
 3. Write `docs/requirements/PRODUCT-SPEC.md` first. `spec-lint` requires normative

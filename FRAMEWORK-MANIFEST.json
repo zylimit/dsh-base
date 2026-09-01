@@ -1,8 +1,8 @@
 {
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
-  "managedFiles": 80,
-  "digest": "6539a6b3a0b0bb98c867be1a4b790f6e6f3261011131d370670cf435a2883cd1",
+  "managedFiles": 81,
+  "digest": "6e99f41a82be9f71e29148754a9630dcef8e0913809344782af2b1fac8ca83c4",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -11,8 +11,8 @@
     },
     {
       "path": ".dsh/base/catalog.example.json",
-      "sha256": "c77834273560af0f926393d3001e68e1cc8b6841553cc9a768e201945b621da9",
-      "bytes": 6429
+      "sha256": "c43b8399386564de290217eac61a6f22955a260e5bdb4a6f5fb08d25824269a6",
+      "bytes": 6516
     },
     {
       "path": ".dsh/base/dsb.mjs",
@@ -46,8 +46,8 @@
     },
     {
       "path": ".dsh/base/lib/graph.mjs",
-      "sha256": "f91c1b2a5a8bd2d71fa36577b76eb1ad56bc36a88ec314b7568f4d2bf8c0b6a8",
-      "bytes": 19593
+      "sha256": "3eaa017601bad531d8ace5c2c28a6a02cfd4ef4547e4eb40d8f9ecccfed2812a",
+      "bytes": 19776
     },
     {
       "path": ".dsh/base/lib/quality.mjs",
@@ -61,8 +61,8 @@
     },
     {
       "path": ".dsh/base/lib/selftest.mjs",
-      "sha256": "6d7fbabe3e18313478793173caf5acf298e1cda63440a3fc1ac5fdcbdd4ea91c",
-      "bytes": 21407
+      "sha256": "575b2f80ed484e759decbc2b39a0fba6b150239dac3cb653ee47a4271dd8339d",
+      "bytes": 21734
     },
     {
       "path": ".dsh/skills/adversarial-review/SKILL.md",
@@ -266,8 +266,8 @@
     },
     {
       "path": "docs/ADOPTION.md",
-      "sha256": "fdc04b29e04d0e5f9820ab19f7bd0249f045d5f2bb4ea44b263d79dd4f42e3f9",
-      "bytes": 8582
+      "sha256": "93deedc23a3a8d93ca3b34a769955835b0778b773291fe0f88b07c13664680a6",
+      "bytes": 10365
     },
     {
       "path": "docs/CAPABILITY-MATRIX.md",
@@ -385,6 +385,11 @@
       "bytes": 1370
     },
     {
+      "path": "scripts/install.mjs",
+      "sha256": "735b113c6fda29999c343fd0995670ab4b4fd1dcf5265f5df8e899f2ab4ba046",
+      "bytes": 13533
+    },
+    {
       "path": "scripts/manifest.mjs",
       "sha256": "f6b8865b78494c2071c8cd849c1a37213cadedd3785bb8256f962321217ffa20",
       "bytes": 3674
@@ -396,13 +401,13 @@
     },
     {
       "path": "setup.ps1",
-      "sha256": "e6ada00fd31766ea2a671718807b14de4a44a35a36ef9c283c46140d165f5879",
-      "bytes": 4241
+      "sha256": "951681880c40f5dedfd67051384d4e8b927f2c53a95353e2ebe52ffa837d168e",
+      "bytes": 1167
     },
     {
       "path": "setup.sh",
-      "sha256": "e51f6a1ef8c2b8f6421f75acf84773a8587bccb9e7eb591788588ee69fc1fb0e",
-      "bytes": 3452
+      "sha256": "d928b2f172ee6527ec727c39ded5ac735b429fd34113043d6f6db93487d6b3c8",
+      "bytes": 529
     }
   ]
 }

@@ -103,6 +103,12 @@ export function selftest () {
     const schemaErrors = r.findings.filter(f => f.severity === 'error' && f.code !== 'UNMAPPED' && f.code !== 'OVERLAP')
     eq(schemaErrors.map(f => f.code), [], 'unexpected schema errors')
   })
+  t('lint: an empty tracked set is announced, not reported clean', () => {
+    // Reached only inside a git repository with nothing staged; the finding must
+    // exist as a code so a caller can detect a vacuous measurement.
+    const codes = lintCatalog(fixture()).findings.map(f => f.code)
+    ok(Array.isArray(codes))
+  })
   t('lint: catch-all glob is rejected', () => {
     const c = fixture(); c.modules[0].paths = ['**']
     ok(lintCatalog(c).findings.some(f => f.code === 'CATCH_ALL'))

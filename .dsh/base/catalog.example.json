@@ -118,6 +118,10 @@
       "reason": "vendored audit script"
     },
     {
+      "path": "scripts/install.mjs",
+      "reason": "vendored installer"
+    },
+    {
       "path": "scripts/AGENTS.md",
       "reason": "vendored script directory contract"
     }
