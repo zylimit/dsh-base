@@ -309,7 +309,11 @@ COMMANDS.task = async (args) => {
   return emit({ command: 'task', ok: false, reason: 'usage: task start|status|complete' }, EXIT.DEGRADED)
 }
 
-COMMANDS.ledger = () => {
+COMMANDS.ledger = (args) => {
+  const sub = args.positional[1]
+  if (sub !== undefined && sub !== 'verify') {
+    return emit({ command: 'ledger', ok: false, reason: 'usage: ledger [verify]' }, EXIT.DEGRADED)
+  }
   const r = verifyLedger()
   for (const b of r.breaks) note(' BREAK  entry ' + b.index + ' :: ' + b.reason)
   note(r.ok ? r.entries + ' ledger entries, chain intact' : 'ledger chain is broken; every prior verification must be treated as unproven')

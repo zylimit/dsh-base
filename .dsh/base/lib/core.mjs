@@ -319,6 +319,19 @@ export function diffHash (opts = {}) {
   return d === null ? null : sha256Lf(d)
 }
 
+/**
+ * True when the working tree carries no change against HEAD.
+ * Evidence can only bind a change; an empty tree has nothing to bind, which is
+ * a different condition from evidence that has gone stale.
+ */
+export function diffIsEmpty (opts = {}) {
+  const d = canonicalDiff(opts)
+  return d === null ? null : d.trim().length === 0
+}
+
+/** The identity of an empty canonical diff. A receipt carrying it proves nothing. */
+export const EMPTY_DIFF_HASH = sha256Lf('\n')
+
 // ── catalog ─────────────────────────────────────────────────────────────────
 
 export const CATALOG_DEFAULTS = Object.freeze({

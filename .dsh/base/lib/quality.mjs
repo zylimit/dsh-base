@@ -14,7 +14,8 @@ import { spawnSync } from 'node:child_process'
 import {
   BASE_DIR, ROOT, ATTRIBUTES, BLOCKING_TIERS, PROTECTED_ATTRIBUTES, PROTECTED_CLASSES,
   readJson, readText, writeJsonAtomic, writeAtomic, listFiles, rel, abs, exists,
-  sha256, sha256Lf, nowIso, diffHash, headCommit, changedPaths, git, isGitRepo,
+  sha256, sha256Lf, nowIso, diffHash, diffIsEmpty, EMPTY_DIFF_HASH,
+  headCommit, changedPaths, git, isGitRepo,
 } from './core.mjs'
 
 import { resolveVerification } from './graph.mjs'
@@ -344,6 +345,9 @@ export function writeReceipt (payload) {
   if (!['ACCEPT', 'FIX_REQUIRED', 'NEEDS_MORE_EVIDENCE'].includes(payload.verdict)) {
     throw new Error('verdict must be ACCEPT | FIX_REQUIRED | NEEDS_MORE_EVIDENCE')
   }
+  if (diffIsEmpty()) {
+    throw new Error('refusing to write a receipt for an empty diff: the working tree matches HEAD, so there is nothing to review')
+  }
   const record = {
     version: 1,
     taskId: safeTaskId(payload.taskId),
@@ -368,6 +372,16 @@ export function writeReceipt (payload) {
 export function verifyReceipts () {
   if (!isGitRepo()) return { ok: false, degraded: true, reason: 'not-a-git-repository' }
   const current = diffHash()
+  const head = headCommit()
+
+  // Nothing to bind is not the same as evidence gone stale. An empty tree has no
+  // change under review, so the engine renders no verdict rather than a green one:
+  // otherwise a receipt written against one empty tree would satisfy every later
+  // empty tree, and a commit would silently restore its own review.
+  if (diffIsEmpty()) {
+    return { ok: false, degraded: true, reason: 'no-change: the working tree matches HEAD, so no receipt can bind it', currentDiffHash: current, baseCommit: head }
+  }
+
   const dir = RECEIPT_DIR()
   if (!fs.existsSync(dir)) return { ok: false, stale: true, reason: 'no-receipt-recorded', currentDiffHash: current }
   const receipts = listFiles(rel(dir)).filter(p => p.endsWith('.json')).map(p => readJson(p, null)).filter(Boolean)
@@ -375,12 +389,22 @@ export function verifyReceipts () {
     const { contentHash, ...rest } = r
     return sha256Lf(JSON.stringify(rest)) !== contentHash
   })
-  const matching = receipts.filter(r => r.diffHash === current && r.verdict === 'ACCEPT' && !tampered.includes(r))
+  // A receipt recorded against the empty-diff identity reviewed nothing and can
+  // never be evidence, whatever the tree looks like later.
+  const vacuous = receipts.filter(r => r.diffHash === EMPTY_DIFF_HASH)
+  const matching = receipts.filter(r =>
+    r.diffHash === current &&
+    r.baseCommit === head &&
+    r.verdict === 'ACCEPT' &&
+    !tampered.includes(r) &&
+    !vacuous.includes(r))
   return {
     ok: matching.length > 0 && tampered.length === 0,
     stale: matching.length === 0,
     tampered: tampered.map(r => r.taskId),
+    vacuous: vacuous.map(r => r.taskId),
     currentDiffHash: current,
+    baseCommit: head,
     matching: matching.map(r => ({ taskId: r.taskId, reviewer: r.reviewer, createdAt: r.createdAt })),
     receipts: receipts.length,
   }

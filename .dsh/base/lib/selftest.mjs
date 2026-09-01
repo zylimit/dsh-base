@@ -7,7 +7,7 @@
 
 import {
   globToRegExp, globSpecificity, classifyPath, matchesAny, sha256Lf, stripJsonComments,
-  CATCH_ALL_GLOBS, ATTRIBUTES, TIERS, PROTECTED_ATTRIBUTES,
+  CATCH_ALL_GLOBS, ATTRIBUTES, TIERS, PROTECTED_ATTRIBUTES, EMPTY_DIFF_HASH,
 } from './core.mjs'
 import { lintCatalog, computeImpact, resolveVerification, extractImports, resolveSpecifier, findCycles, trendGate } from './graph.mjs'
 import { aggregate, buildPlan, assessAttributes, validateWaiver, waiverContentHash, STATUS } from './quality.mjs'
@@ -238,6 +238,14 @@ export function selftest () {
     ok(validateWaiver(w).ok)
     w.expiry = new Date(Date.now() + 999 * 86400000).toISOString()
     ok(!validateWaiver(w).ok)
+  })
+
+  t('receipt: the empty-diff identity is a known constant, not a coincidence', () => {
+    // A receipt carrying this hash reviewed nothing. It must be recognisable by
+    // value, because a commit returns the tree to exactly this state and would
+    // otherwise let an old receipt vouch for a new empty tree.
+    eq(EMPTY_DIFF_HASH, sha256Lf('\n'))
+    ok(/^[0-9a-f]{64}$/.test(EMPTY_DIFF_HASH))
   })
 
   // ── import extraction and resolution ──────────────────────────────────────
