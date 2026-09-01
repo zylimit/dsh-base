@@ -13,6 +13,8 @@ and hedged language is demoted to `Notes` as `Needs-Confirmation`.
 
 ## Decisions
 
+- 2026-09-01 | chose to keep the four hygiene lenses (architecture, maintainability, testing, performance) in the deep profiles over convening them at team level | they improve the code, they do not decide whether it may ship - and per the user they will not kill anyone; correctness never leaves any profile, and the deeper profiles still convene the full team | REVIEW_PROFILES, covered by selftest and review-team tests
+
 - 2026-09-01 | chose stage-gated review over a flat lens list | spending security review on code that has not passed correctness review is theatre, and the order IS the budget; a lens cannot report before its stage opens, so expensive lenses are never paid for on code the cheap ones already rejected | review, covered by tests/review-stages.test.mjs
 - 2026-09-01 | chose a nine-lens team convened by profile over always convening all of them | three agents in structured disagreement beat five in consensus, so the value is independence, not headcount; personal convenes one lens, regulated convenes nine, and attributes may only shrink the team, never grow it | review team, covered by tests/review-team.test.mjs
 - 2026-09-01 | chose a review round cap with a backlog over unlimited rounds | the two-hour lesson: seven rounds of FIX_REQUIRED on one change means the bar or the change is wrong and only a human can say which; a finding a human decides to carry becomes a dated backlog entry, and a security, safety or privacy finding is never backloggable | review maxRounds + backlog, covered by tests

@@ -303,6 +303,6 @@
   "review": {
     "profile": "team",
     "maxRounds": 3,
-    "//": "CHANGE-ME. personal = correctness only | team = + testing, architecture | production = + security, reliability, performance | regulated = all nine. A lens is dropped when no affected module declares its attribute above minimal, so attributes can only shrink the team, never grow it. catalog.review.lenses overrides the profile entirely. catalog.review.maxRounds (default 3) stops a review loop that keeps rejecting the same change."
+    "//": "CHANGE-ME. personal = correctness only | team = + testing, architecture | production = + security, reliability, performance | regulated = all nine (adds maintainability and the rest). Hygiene lenses sit deep: they improve the code, they do not decide whether it may ship. A lens is dropped when no affected module declares its attribute above minimal, so attributes can only shrink the team, never grow it. catalog.review.lenses overrides the profile entirely. catalog.review.maxRounds (default 3) stops a review loop that keeps rejecting the same change."
   }
 }

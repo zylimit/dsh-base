@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 89,
-  "digest": "6edb42284574a1c387c2d62eb6e9a91b9e09b76abc43265af84452c91d561f0d",
+  "digest": "58f5197abcd30b64f110a8ded86a0d7c4035f35cc6683c2dfca1b5ca746888e3",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -31,8 +31,8 @@
     },
     {
       "path": ".dsh/base/catalog.example.json",
-      "sha256": "b817612524bb70e8f04bc48e9ab0df1633f70f4faed4b9622026ac7a36bb43e4",
-      "bytes": 7567
+      "sha256": "47a605eb526097455cd34d449a4aa1addbdb0efc62a221840fdfef008c8c7180",
+      "bytes": 7691
     },
     {
       "path": ".dsh/base/dsb.mjs",
@@ -81,8 +81,8 @@
     },
     {
       "path": ".dsh/base/lib/quality.mjs",
-      "sha256": "e14df0c2ff6be2fdb005fc75c5d35cb4e8bf1a39be1b8135fa30596242d1d778",
-      "bytes": 50508
+      "sha256": "b4b5a291ebfd8f2098ca584d8f30fc74ceea1645d9c4bed1abca9b8c2b4ce882",
+      "bytes": 50742
     },
     {
       "path": ".dsh/base/lib/scan.mjs",
@@ -376,8 +376,8 @@
     },
     {
       "path": "AGENTS.md",
-      "sha256": "4f33f64251139c3d522064ba3ac67b9a8f7de5eca170423380a25c62fa6dbdbf",
-      "bytes": 17976
+      "sha256": "0dac78b3806e553a33b2db86c7fe5b5c8f02989dfef37cab5bfd3e9046899c13",
+      "bytes": 18119
     },
     {
       "path": "docs/adr/ADR-0001-zero-dependency-engine.md",

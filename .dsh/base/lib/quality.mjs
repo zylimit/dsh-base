@@ -729,6 +729,9 @@ export const LENS_LIBRARY = Object.freeze({
  */
 export const REVIEW_PROFILES = Object.freeze({
   personal:   ['correctness'],
+  // The four hygiene lenses - architecture, maintainability, testing and
+  // performance - sit in the deeper profiles on purpose: they improve the code,
+  // they do not decide whether it may ship. Correctness is what never leaves.
   team:       ['correctness', 'testing', 'architecture'],
   production: ['correctness', 'testing', 'architecture', 'security', 'reliability', 'performance'],
   regulated:  Object.keys(LENS_LIBRARY),
