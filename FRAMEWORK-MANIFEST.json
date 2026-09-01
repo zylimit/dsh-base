@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 80,
-  "digest": "0546a53032c57a7e4170d7fbf3458ebf0241df73d92f399e3ed36c69fda3403a",
+  "digest": "6539a6b3a0b0bb98c867be1a4b790f6e6f3261011131d370670cf435a2883cd1",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -11,8 +11,8 @@
     },
     {
       "path": ".dsh/base/catalog.example.json",
-      "sha256": "d70ae43ab739cd4a521f0a68fd9e8b5e54bcf7fae38f7fc004adec18cb190ef0",
-      "bytes": 6174
+      "sha256": "c77834273560af0f926393d3001e68e1cc8b6841553cc9a768e201945b621da9",
+      "bytes": 6429
     },
     {
       "path": ".dsh/base/dsb.mjs",

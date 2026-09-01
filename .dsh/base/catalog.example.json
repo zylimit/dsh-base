@@ -212,6 +212,7 @@
   "modules": [
     {
       "id": "example-api",
+      "//": "PLACEHOLDER. Replace with your real modules during the Design phase. Raising riskTier to high or critical also requires src/api/AGENTS.md with the four sections Purpose / Boundaries / Invariants / Verification; agents-lint enforces that.",
       "paths": [
         "src/api/**"
       ],
@@ -219,7 +220,7 @@
       "owners": [
         "@team-api"
       ],
-      "riskTier": "high",
+      "riskTier": "medium",
       "dependsOn": [
         "example-store"
       ],
