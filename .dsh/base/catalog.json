@@ -102,7 +102,7 @@
       ]
     },
     "unit": {
-      "command": "node --test \"tests/*.test.mjs\"",
+      "command": "node .dsh/base/audit/run-tests.mjs",
       "class": "test",
       "attributes": [
         "reliability"

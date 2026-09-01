@@ -112,6 +112,8 @@ Nothing.
 
 ## Notes
 
+- CI matrix caught a real portability defect: Node 20's test runner does not expand glob patterns, so `node --test "tests/*.test.mjs"` failed as a literal path on every Node 20 job while 22/24 passed. A version-safe launcher (`.dsh/base/audit/run-tests.mjs`) now expands the file list itself; the same command passes on 20, 22 and 24.
+
 - cochange accepted two more delivery-unit couplings (doctrine-docs with engine-cli and engine-selftest): documentation moves with the commands it describes, and no code edge exists or should exist.
 
 - The research brief is at `docs/research/ai-coding-agents-state-of-practice-2026.md`. It was built from search-snippet mining only, so every effect size is reported rather than reproduced; the delegate flagged the `Guardrails Beat Guidance` magnitudes as unread at source.
