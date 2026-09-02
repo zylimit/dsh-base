@@ -74,6 +74,7 @@ Nothing.
 
 ## Done
 
+- 2026-09-02 | #— Daily operations manual written: the exact commands, in order | evidence: `docs/OPERATIONS.md` created (5283 bytes) covering the unpoisoned-git prefix, the 5.3 s full gate vs the 1.9 s fast gate, the review protocol with both stdin formats, the release repayment checklist and a quick-reference table; README Documentation table links it
 - 2026-09-01 | #— Node 20 CI fix landed after one misfire | evidence: the first attempt added the launcher but missed one invocation string, so the Node 20 jobs kept failing on the literal glob; the workflow, package script and module contract now all point at `node .dsh/base/audit/run-tests.mjs`; `launcher exit 0`, `dod exit 0`, `sync-check exit 0`
 - 2026-09-01 | #— Commit-range receipts: the release-evidence gap closed | evidence: `receipt write --base <tag>` binds the commits being released; on a clean tree the range receipt validates while a moved HEAD renders no verdict (exit 3); an unresolvable ref and an empty range are refused. 5 tests in tests/range-receipt.test.mjs; the release fixture proves `dsb release` is READY on a clean tree once the range receipt exists
 - 2026-09-01 | #— `dsb release` added: nine conditions, never tags | evidence: 3 tests in tests/release.test.mjs; four defects found by the tests (three missing imports, backlogList missing `expired`) fixed with regressions

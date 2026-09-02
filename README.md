@@ -124,6 +124,7 @@ Exit codes: `0` clean, `1` rule violation, `2` blocking gate failure,
 | [.dsh/docs/LARGE-REPO-GUIDE.md](.dsh/docs/LARGE-REPO-GUIDE.md) | how does this work at 1,000,000+ lines? |
 | [.dsh/docs/ADOPTION.md](.dsh/docs/ADOPTION.md) | how do I turn this on in an existing repository? |
 | [.dsh/docs/CAPABILITY-MATRIX.md](.dsh/docs/CAPABILITY-MATRIX.md) | what was absorbed from prior scaffolds, and what was rejected? |
+| [docs/OPERATIONS.md](docs/OPERATIONS.md) | what do I type, in which order, day to day? |
 | [.dsh/docs/nfr/](.dsh/docs/nfr/) | resilience, security, safety, privacy, reliability tactics |
 
 ## What this is not
