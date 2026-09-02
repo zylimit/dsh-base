@@ -690,8 +690,9 @@
     "note": "null means advisory. Set a number to make rules-audit a gate once the ratio is where you want it."
   },
   "review": {
-    "profile": "production",
+    "profile": "personal",
+    "lenses": ["correctness"],
     "maxRounds": 3,
-    "//": "this scaffold gates other people's code, so a defect here is a defect everywhere it is installed"
+    "//": "fast-iteration mode (approved 2026-09-02): correctness-only review while prototyping quick deliverables. Security/reliability/privacy lenses are NOT convened while this stands; debt is a full-profile review plus a complete gate before any release"
   }
 }
