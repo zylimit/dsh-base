@@ -39,11 +39,13 @@ node .dsh/base/dsb.mjs gate
 ```
 
 The gate is impact-scoped: only checks that claim attributes of the changed
-modules run. Measured on a clean tree, all 14 checks: about 5.3 s total
-(`unit` 3.4 s, `syntax` 1.1 s). Exit `0` means PASS and the evidence is
-recorded under `.dsh/base/evidence/`. Exit `2` means a blocking gate failure -
-read the per-check lines, fix, and re-run the same command. Never re-run with
-different arguments to obtain a greener answer.
+modules run. With the gitleaks scanner wired in (2026-09-02) the repository has
+15 checks; measured on a full fan-out gate: about 42 s total (unit 32.5 s,
+gitleaks 3.7 s, syntax 2.3 s) - an impact-scoped run on a clean tree is
+faster. Exit `0` means PASS and the evidence is recorded under
+`.dsh/base/evidence/`. Exit `2` means a blocking gate failure - read the
+per-check lines, fix, and re-run the same command. Never re-run with different
+arguments to obtain a greener answer.
 
 ## 2. Deadline mode (fast mode)
 
@@ -67,11 +69,35 @@ Repay the debt before the window closes:
 ```sh
 node .dsh/base/dsb.mjs fast off
 export GIT_CONFIG_COUNT=0
-node .dsh/base/dsb.mjs gate           # full run, all 14 checks
+node .dsh/base/dsb.mjs gate           # full run, all 15 checks
 node .dsh/base/dsb.mjs fast status    # must say "fast mode is closed"
 ```
 
-## 3. Review (currently correctness-only)
+## 3. Security scanning and test-strength signal
+
+Since 2026-09-02 the gate runs a real secret scanner and CI runs a SAST gate,
+and the suite reports native coverage on demand:
+
+- **gitleaks (engine-native).** Install once locally (winget id
+  `Gitleaks.Gitleaks`, version pinned 8.30.1) so the local gate can execute
+  the `gitleaks` check: `gitleaks dir . --redact --no-banner` scans the
+  working tree. A machine without the binary gets an honest BLOCKED from the
+  gate, never a fake green. Pinned version: 8.30.1.
+- **semgrep (CI-only SAST).** CI job `security-scan` runs semgrep with
+  `p/ci` rules via `semgrep/semgrep-action@v1` and gitleaks 8.30.1 (linux
+  binary). semgrep is deliberately not engine-native: the development host has
+  no Python, so wiring it into the catalog would BLOCK every local gate
+  permanently. The decision and its rejected alternative are in
+  `progress.md`.
+- **Coverage (advisory).** `npm run coverage` runs the suite under Node's
+  native test coverage (`node --experimental-test-coverage
+  .dsh/base/audit/run-tests.mjs`); CI job `strength` reports it with
+  `continue-on-error`. Zero dependencies, consistent with NFR-MAINT-001.
+- **CI matrix.** Three OSes (ubuntu, windows, macos) x Node 22/24 with
+  `actions/checkout@v7` and `actions/setup-node@v7`, so the Node 20
+  deprecation annotations are gone.
+
+## 4. Review (currently correctness-only)
 
 ```sh
 export GIT_CONFIG_COUNT=0
@@ -95,7 +121,7 @@ stdin formats (the engine rejects anything else):
   finding means FIX_REQUIRED, four clean lenses cannot outvote it;
 - `maxRounds` is 3; at the limit the verdict reports `escalate` and stops.
 
-## 4. Before a release
+## 5. Before a release
 
 1. `node .dsh/base/dsb.mjs fast status` - must say closed.
 2. Revert `.dsh/base/catalog.json` review block to `"profile": "production"`
@@ -105,7 +131,7 @@ stdin formats (the engine rejects anything else):
    architecture, security, reliability, performance).
 5. `node .dsh/base/dsb.mjs release` - checks nine conditions and never tags.
 
-## 5. Quick reference
+## 6. Quick reference
 
 | Intent | Command |
 |---|---|
@@ -120,3 +146,5 @@ stdin formats (the engine rejects anything else):
 | Compute the verdict | `node .dsh/base/dsb.mjs review verdict` |
 | Where are we? | `node .dsh/base/dsb.mjs recap` |
 | What may never be traded away? | `node .dsh/base/dsb.mjs invariants` |
+| Local real secret scan | `gitleaks dir . --redact --no-banner` (engine check `gitleaks`, v8.30.1) |
+| Coverage signal (advisory) | `npm run coverage` |
