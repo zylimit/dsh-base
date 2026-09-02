@@ -1,8 +1,8 @@
 {
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
-  "managedFiles": 90,
-  "digest": "0a8ed8a028ac6393225ff090f045457ecedae0f3c34827a8214585a6c9bf3ca9",
+  "managedFiles": 91,
+  "digest": "640f271442ee96197501ed6a0de130a4057e53c36c64dabecc596b144e30cd07",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -383,6 +383,11 @@
       "path": "AGENTS.md",
       "sha256": "d2ddbe6c23e1e8da7cbeb84b74101ed6cec340d5aa49cc1aa927cb92a5f276b9",
       "bytes": 18114
+    },
+    {
+      "path": "docs/OPERATIONS.md",
+      "sha256": "62ab3c6e8ea37caf166c1adb41708e7e069cf831a4c3fdd3617cca92ae87e201",
+      "bytes": 5283
     },
     {
       "path": "docs/adr/ADR-0001-zero-dependency-engine.md",
