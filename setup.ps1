@@ -1,10 +1,17 @@
-# dsh-base installer (Windows wrapper, PowerShell 5.1 compatible, ASCII only).
+# dsh-base installer (Windows wrapper).
+#
+# Requires PowerShell 7. On Windows PowerShell 5.1 this script refuses to run
+# with a clear error rather than pretending compatibility: install PowerShell 7
+# (winget install Microsoft.PowerShell) or use the POSIX wrapper through
+# git-bash instead.
 #
 #   pwsh -File setup.ps1 -Target <dir> [-DryRun] [-Enable] [-Hooks] [-Verify]
 #   pwsh -File setup.ps1 <dir> <dir> ... -Verify
 #
 # The installation logic lives in .dsh/base/install.mjs so there is exactly one
 # implementation to maintain. This wrapper only locates it and checks for node.
+
+#requires -Version 7.0
 
 [CmdletBinding()]
 param(

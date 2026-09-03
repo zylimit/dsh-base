@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 91,
-  "digest": "ea4154b09ef4c75be597c85f62fe29e266b37475c8b61eb35c31af7870000170",
+  "digest": "2ee303aeea2208a25ddb3a1a86a70c352a21f10574bb5130c874be198d8d13c3",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -451,8 +451,8 @@
     },
     {
       "path": "setup.ps1",
-      "sha256": "1885d24b4a867243a2496943a6a0f0abdc4674e825004d843a868e6a1ce3469d",
-      "bytes": 1166
+      "sha256": "ae06aec8cd59f3f3b56dbf79cfc591d3ebf411db2e7a34f7b78dd9a50c72e62c",
+      "bytes": 1404
     },
     {
       "path": "setup.sh",

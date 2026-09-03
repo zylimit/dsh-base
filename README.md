@@ -39,7 +39,8 @@ git clone --depth 1 <this-repo> /tmp/dsh-base
 
 # one repository, wired and verified in a single step
 sh /tmp/dsh-base/setup.sh /path/to/repo --hooks --enable --verify
-# Windows: pwsh -File C:\dsh-base\setup.ps1 -Target C:\repo -Hooks -Enable -Verify
+# Windows: requires PowerShell 7 (winget install Microsoft.PowerShell)
+pwsh -File C:\dsh-base\setup.ps1 -Target C:\repo -Hooks -Enable -Verify
 ```
 
 Batch adoption across many repositories:
