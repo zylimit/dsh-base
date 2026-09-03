@@ -8,5 +8,7 @@
   { "name": "empty-diff-constant", "file": ".dsh/base/lib/core.mjs", "find": "export const EMPTY_DIFF_HASH = sha256Lf('\\n')", "replace": "export const EMPTY_DIFF_HASH = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'" },
   { "name": "waiver-protected-bypass", "file": ".dsh/base/lib/quality.mjs", "find": "if (isProtected) { blocked.push(e.checkId); continue }", "replace": "if (isProtected) { /* bypassed */ }" },
   { "name": "quarantine-rename-off", "file": ".dsh/base/lib/core.mjs", "find": "try { fs.renameSync(target, abs(renamed)) } catch { return { quarantined: false } }", "replace": "try { throw new Error('quarantine disabled') } catch { return { quarantined: false } }" },
-  { "name": "secret-scan-reports-zero", "file": ".dsh/base/audit/scan-secrets.mjs", "find": "scanned: files.length", "replace": "scanned: 0" }
+  { "name": "secret-scan-reports-zero", "file": ".dsh/base/audit/scan-secrets.mjs", "find": "scanned: files.length", "replace": "scanned: 0" },
+  { "name": "unreadable-receipts-vanish-again", "file": ".dsh/base/lib/quality.mjs", "find": "const unreadable = entries.filter(e => e.r === null)", "replace": "const unreadable = []" },
+  { "name": "trend-corrupt-check-disabled", "file": ".dsh/base/lib/graph.mjs", "find": "const corruptLines = (history.corrupt || 0) + (current.corrupt || 0)", "replace": "const corruptLines = 0" }
 ]

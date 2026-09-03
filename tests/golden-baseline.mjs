@@ -157,8 +157,12 @@ function scenarios () {
   }))
   fs.mkdirSync(path.join(debt, '.dsh', 'base', 'state'), { recursive: true })
   fs.writeFileSync(path.join(debt, '.dsh', 'base', 'state', 'task.json'), '{ corrupt')
+  fs.mkdirSync(path.join(debt, '.dsh', 'base', 'receipts'), { recursive: true })
+  fs.writeFileSync(path.join(debt, '.dsh', 'base', 'receipts', 'broken.json'), '{ not json')
+  fs.mkdirSync(path.join(debt, '.dsh', 'base', 'trend'), { recursive: true })
+  fs.writeFileSync(path.join(debt, '.dsh', 'base', 'trend', 'arch-trend.jsonl'), '{ corrupt history line')
   runE(['add', '-A']); runE(['commit', '-q', '-m', 'debt'])
-  out.governedDebt = { dir: debt, commands: S4_COMMANDS }
+  out.governedDebt = { dir: debt, commands: [...S4_COMMANDS, ['receipt', 'verify'], ['arch-trend', '--gate']] }
 
   return out
 }

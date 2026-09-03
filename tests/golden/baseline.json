@@ -1127,7 +1127,7 @@
             "error": 2,
             "warning": 0,
             "modules": 2,
-            "trackedPaths": 12,
+            "trackedPaths": 14,
             "unmapped": 1,
             "truncated": false
           }
@@ -1341,6 +1341,44 @@
             "error": 0,
             "warning": 1
           }
+        }
+      },
+      {
+        "cmd": "receipt verify",
+        "exit": 4,
+        "json": {
+          "command": "receipt",
+          "ok": false,
+          "stale": true,
+          "tampered": [],
+          "unreadable": [
+            ".dsh/base/receipts/broken.json"
+          ],
+          "vacuous": [],
+          "currentDiffHash": "3d9f3da1c38a1a5abf93081a44f3319d47cd1732cb15f6765714286994246f26",
+          "baseCommit": "<ENV>",
+          "matching": [],
+          "rangeMatching": [],
+          "receipts": 0
+        }
+      },
+      {
+        "cmd": "arch-trend --gate",
+        "exit": 1,
+        "json": {
+          "command": "arch-trend",
+          "ok": false,
+          "corruptLines": 1,
+          "reason": "the debt history has 1 corrupt line(s); a ratchet over a history with holes cannot tell new debt from forgotten debt",
+          "current": {
+            "forbidden": 0,
+            "layerViolations": 0,
+            "undeclared": 0,
+            "cycles": 0,
+            "unusedDeclarations": 2
+          },
+          "regressions": [],
+          "samples": 0
         }
       }
     ]
