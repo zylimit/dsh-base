@@ -145,6 +145,23 @@ function scenarios () {
   fs.appendFileSync(path.join(gate, 'src', 'core', 'a.mjs'), '// gate scenario change\n')
   out.governedGate = { dir: gate, commands: [['gate']] }
 
+  // The fast-mode loan: an open window must stamp the gate record, the
+  // skippable check must be SKIPPED with reason fast-mode, and risk must report
+  // FAST_MODE_DEBT until a full gate repays it.
+  const fast = tmpDir('fast')
+  const runF = gitInit(fast)
+  seedGoverned(fast, runF)
+  fs.writeFileSync(path.join(fast, '.dsh', 'base', 'catalog.json'), catalogJson({
+    riskChecks: { low: ['unit', 'hard'] },
+    checks: {
+      unit: { command: 'node -e "console.log(1)"', class: 'test', attributes: ['reliability'], allowFastSkip: true },
+      hard: { command: 'node -e "console.log(1)"', class: 'test', attributes: ['maintainability'] },
+    },
+  }))
+  runF(['add', '-A']); runF(['commit', '-q', '-m', 'fast fixture'])
+  fs.appendFileSync(path.join(fast, 'src', 'core', 'a.mjs'), '// fast scenario change\n')
+  out.governedFast = { dir: fast, commands: [['fast', 'on', '--minutes', '60', '--reason', 'golden fast window'], ['gate'], ['risk']] }
+
   const debt = tmpDir('debt')
   const runE = gitInit(debt)
   seedGoverned(debt, runE)
@@ -170,7 +187,7 @@ function scenarios () {
 // ── normalization (field-name-keyed; digests and counts verbatim) ──────────
 
 const TS_KEYS = /(^|_)(at|createdAt|completedAt|startedAt|endedAt|until|durationMs|elapsed|timestamp)(_|$)/i
-const ENV_KEYS = /^(node|platform|root|headCommit|baseCommit|version|arch|homedir|user|tmpdir|os|renamedTo|packPath|evidence)$/i
+const ENV_KEYS = /^(node|platform|root|headCommit|baseCommit|version|arch|homedir|user|by|tmpdir|os|renamedTo|packPath|evidence)$/i
 
 function normalize (value, key, fixtureDir) {
   if (value === null || value === undefined) return value

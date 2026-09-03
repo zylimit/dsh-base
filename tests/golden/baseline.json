@@ -1103,6 +1103,111 @@
         }
       }
     ],
+    "governedFast": [
+      {
+        "cmd": "fast on --minutes 60 --reason golden fast window",
+        "exit": 0,
+        "json": {
+          "command": "fast",
+          "sub": "on",
+          "ok": true,
+          "active": true,
+          "record": {
+            "version": 1,
+            "reason": "golden fast window",
+            "by": "<ENV>",
+            "minutes": 60,
+            "createdAt": "<TS>",
+            "until": "<TS>"
+          },
+          "skippable": [
+            "unit"
+          ]
+        }
+      },
+      {
+        "cmd": "gate",
+        "exit": 0,
+        "json": {
+          "command": "gate",
+          "at": "<TS>",
+          "gate": "PASS",
+          "reason": "all-executed-checks-passed",
+          "fastMode": true,
+          "fastReason": "golden fast window",
+          "fastUntil": "<ISO>",
+          "skippedByFastMode": [
+            "unit"
+          ],
+          "baseCommit": "<ENV>",
+          "diffHash": "2580847c0257eaae95fbb8aab4c5aa6c1507d8330db2c78d8f9d85f07bd164fc",
+          "planHash": "d78ee38271ea44dc5afff5d8e66ce8da27ce8a3d112d26762d514a600b80ee67",
+          "modules": [
+            "api",
+            "core"
+          ],
+          "degraded": false,
+          "results": [
+            {
+              "id": "hard",
+              "status": "PASS",
+              "durationMs": "<NUM>",
+              "evidence": "<ENV>",
+              "evidenceSha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+            },
+            {
+              "id": "unit",
+              "status": "SKIPPED",
+              "reason": "fast-mode",
+              "durationMs": "<NUM>"
+            }
+          ],
+          "attributeCoverage": [
+            {
+              "module": "core",
+              "attribute": "reliability",
+              "tier": "low",
+              "claiming": [
+                "unit"
+              ],
+              "executed": [
+                "unit"
+              ],
+              "passing": [],
+              "contradicting": [],
+              "covered": false
+            }
+          ],
+          "attributeGaps": [],
+          "waivers": [],
+          "waiversBlocked": []
+        }
+      },
+      {
+        "cmd": "risk",
+        "exit": 1,
+        "json": {
+          "command": "risk",
+          "ok": false,
+          "findings": [
+            {
+              "severity": "warning",
+              "code": "FAST_MODE_OPEN",
+              "message": "fast mode is open until <ISO> (golden fast window); evidence is being deferred, not waived"
+            },
+            {
+              "severity": "error",
+              "code": "FAST_MODE_DEBT",
+              "message": "the newest gate ran in fast mode and skipped [unit]; that evidence has not been produced. Run \"dsb fast off\" then \"dsb gate\" before releasing."
+            }
+          ],
+          "counts": {
+            "error": 1,
+            "warning": 1
+          }
+        }
+      }
+    ],
     "governedDebt": [
       {
         "cmd": "catalog-lint",

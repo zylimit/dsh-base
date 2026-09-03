@@ -10,5 +10,6 @@
   { "name": "quarantine-rename-off", "file": ".dsh/base/lib/core.mjs", "find": "try { fs.renameSync(target, abs(renamed)) } catch { return { quarantined: false } }", "replace": "try { throw new Error('quarantine disabled') } catch { return { quarantined: false } }" },
   { "name": "secret-scan-reports-zero", "file": ".dsh/base/audit/scan-secrets.mjs", "find": "scanned: files.length", "replace": "scanned: 0" },
   { "name": "unreadable-receipts-vanish-again", "file": ".dsh/base/lib/quality.mjs", "find": "const unreadable = entries.filter(e => e.r === null)", "replace": "const unreadable = []" },
-  { "name": "trend-corrupt-check-disabled", "file": ".dsh/base/lib/graph.mjs", "find": "const corruptLines = (history.corrupt || 0) + (current.corrupt || 0)", "replace": "const corruptLines = 0" }
+  { "name": "trend-corrupt-check-disabled", "file": ".dsh/base/lib/graph.mjs", "find": "const corruptLines = (history.corrupt || 0) + (current.corrupt || 0)", "replace": "const corruptLines = 0" },
+  { "name": "fast-loan-skip-disabled", "file": ".dsh/base/lib/quality.mjs", "find": "if (fastMode && def.allowFastSkip && !protectedCheck) {", "replace": "if (false && def.allowFastSkip && !protectedCheck) {" }
 ]
