@@ -560,7 +560,7 @@
           "danglingInDocsCount": 0,
           "rows": [
             {
-              "id": "REQ-GOLDEN-001",
+              "id": "<REQ>",
               "definedIn": "docs/requirements/PRODUCT-SPEC.md",
               "adrs": [],
               "tests": [
@@ -587,7 +587,7 @@
           "files": 2,
           "ids": [
             {
-              "id": "REQ-GOLDEN-001",
+              "id": "<REQ>",
               "file": "docs/requirements/PRODUCT-SPEC.md",
               "line": 3
             }
@@ -639,7 +639,7 @@
           "ok": true,
           "total": 1,
           "selected": [
-            "REQ-GOLDEN-001"
+            "<REQ>"
           ],
           "rendered": 1,
           "omitted": 0,
@@ -648,7 +648,7 @@
           "chars": 258,
           "budget": 6000,
           "withinBudget": true,
-          "text": "# Requirements in scope (all)\n\n1 of 1 declared requirement(s) touch this change; 1 rendered, 0 omitted for budget.\n### REQ-GOLDEN-001 - one\n\nWHEN the program runs, the system SHALL return one.\n\nAcceptance: the value is 1.\n\n_verified by: src/core/a.test.mjs_\n"
+          "text": "# Requirements in scope (all)\n\n1 of 1 declared requirement(s) touch this change; 1 rendered, 0 omitted for budget.\n### <REQ> - one\n\nWHEN the program runs, the system SHALL return one.\n\nAcceptance: the value is 1.\n\n_verified by: src/core/a.test.mjs_\n"
         }
       },
       {
@@ -995,7 +995,7 @@
           "ok": true,
           "total": 1,
           "selected": [
-            "REQ-GOLDEN-001"
+            "<REQ>"
           ],
           "rendered": 1,
           "omitted": 0,
@@ -1007,7 +1007,7 @@
           "chars": 268,
           "budget": 6000,
           "withinBudget": true,
-          "text": "# Requirements in scope for [api, core]\n\n1 of 1 declared requirement(s) touch this change; 1 rendered, 0 omitted for budget.\n### REQ-GOLDEN-001 - one\n\nWHEN the program runs, the system SHALL return one.\n\nAcceptance: the value is 1.\n\n_verified by: src/core/a.test.mjs_\n"
+          "text": "# Requirements in scope for [api, core]\n\n1 of 1 declared requirement(s) touch this change; 1 rendered, 0 omitted for budget.\n### <REQ> - one\n\nWHEN the program runs, the system SHALL return one.\n\nAcceptance: the value is 1.\n\n_verified by: src/core/a.test.mjs_\n"
         }
       },
       {
@@ -1088,7 +1088,7 @@
           "danglingInDocsCount": 0,
           "rows": [
             {
-              "id": "REQ-GOLDEN-001",
+              "id": "<REQ>",
               "definedIn": "docs/requirements/PRODUCT-SPEC.md",
               "adrs": [],
               "tests": [

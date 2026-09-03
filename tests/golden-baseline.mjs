@@ -158,6 +158,10 @@ function normalize (value, key, fixtureDir) {
       .split(fixtureDir).join('<FIXTURE>')
       .replace(/node v?\d+\.\d+\.\d+/gi, 'node <VER>')
       .replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z?/g, '<ISO>')
+      // The fixture requirement id is an artifact of the fixture, not of the
+      // engine; echoing it into the baseline would also trip the host repo's
+      // own trace scan (tests/** is a test glob).
+      .split(RC).join('<REQ>')
   }
   if (Array.isArray(value)) return value.map(v => normalize(v, key, fixtureDir))
   if (typeof value === 'object') {
