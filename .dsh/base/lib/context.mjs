@@ -26,6 +26,8 @@ export const CONTEXT_DENY = Object.freeze([
   '**/id_rsa*', '**/id_ed25519*', '**/.ssh/**', '**/.aws/**', '**/.azure/**', '**/.gnupg/**',
   '**/.kube/**', '**/*secret*', '**/*credential*', '**/*.keystore',
   '.dsh/base/state/**', '.dsh/base/evidence/**', '.dsh/base/receipts/**', '.dsh/base/waivers/**',
+  // trend is deliberately absent here: see the cross-table contract on
+  // DIFF_EXCLUDED in core.mjs, guarded by tests/table-consistency.test.mjs.
   '**/*.lock', '**/package-lock.json', '**/pnpm-lock.yaml', '**/yarn.lock',
 ])
 

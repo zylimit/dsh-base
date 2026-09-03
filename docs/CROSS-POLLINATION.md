@@ -95,6 +95,8 @@ are fixed with tests:
 | 9063663 | "implemented but unguarded" pattern x3 (release exclusion rules had no test that reddened when deleted) | already have | the golden mutation ruler + red-first tests are the machine form of this guard; their release.mjs exclusion table has no dsh counterpart - every releaseReadiness condition has tests |
 | bbbae36 | Windows CI was running a form that does not exist on Windows | note | dsh CI runs the real suite on windows-latest; no counterpart needed |
 | 75fd0b0, 53fdcb0 | progress bookkeeping for the CI five-layer green | note | no mechanism |
+| 9063663 #19g | engine outputs mixed absolute and relative paths for the same field | already clean | audited dsh libs: every abs() call is internal filesystem access, no absolute path enters stdout JSON; outputs use rel() throughout |
+| 9063663 #27 | four copies of one exclusion table drifted apart | guarded | dsh has two runtime tables (DIFF_EXCLUDED, CONTEXT_DENY); their one deliberate difference (trend packable) is now documented at both sites and pinned by tests/table-consistency.test.mjs - moving anything between the sets requires editing the test in the same commit |
 
 ## Watching
 

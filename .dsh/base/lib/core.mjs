@@ -290,7 +290,16 @@ export function changedPaths ({ baseline = null, staged = false } = {}) {
   return { paths: [...set].sort(), available: r.ok }
 }
 
-/** Runtime files that must never enter a diff fingerprint. */
+/**
+ * Runtime files that must never enter a diff fingerprint.
+ *
+ * Cross-table contract (guarded by tests/table-consistency.test.mjs): the four
+ * runtime dirs - state, receipts, waivers, evidence - are excluded here AND
+ * denied from context packs. trend is deliberately DIFFERENT: it is the
+ * committed architecture-debt ledger, shared on purpose, and a delegate doing
+ * arch work may legitimately pack it. Move a dir between these sets only by
+ * changing the guard test in the same commit.
+ */
 export const DIFF_EXCLUDED = Object.freeze([
   '.dsh/base/state/**',
   '.dsh/base/receipts/**',
