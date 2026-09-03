@@ -1,8 +1,8 @@
 {
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
-  "managedFiles": 91,
-  "digest": "f572dd48bb9b75a5809bca84af7a9126b9dc844e344f42527d5e04db63f7925c",
+  "managedFiles": 92,
+  "digest": "c3592ffa409d0d8e3ecd535638df3514521aa869a38c8c5e84b3b7c1bbbe6452",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -98,6 +98,11 @@
       "path": ".dsh/base/lib/selftest.mjs",
       "sha256": "c09075ccf480d5626186b8ef9911c7651dc252151247f64ccee2a102886069c4",
       "bytes": 35879
+    },
+    {
+      "path": ".dsh/base/supervisor.mjs",
+      "sha256": "0995659b78f84d3eedbcbc34d542758325c3b5b1ae5071b6303f9e425ffc4807",
+      "bytes": 5684
     },
     {
       "path": ".dsh/docs/ADOPTION.md",
