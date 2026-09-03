@@ -85,7 +85,13 @@ export const STATE_DIR = path.join(BASE_DIR, 'state')
 export const CATALOG_PATH = path.join(BASE_DIR, 'catalog.json')
 
 export function rel (p) {
-  return path.relative(ROOT, path.resolve(p)).split(path.sep).join('/')
+  const r = path.relative(ROOT, path.resolve(p))
+  // The path contract: a path inside the repository renders repo-relative; a
+  // path outside keeps its original spelling. path.relative of an outside
+  // path is a '../etc/nope' artifact that means nothing to anyone, and
+  // emitting it into stdout JSON is a silent lie about where a finding lives.
+  if (r.startsWith('..' + path.sep) || r === '..') return path.resolve(p)
+  return r.split(path.sep).join('/')
 }
 
 export function abs (p) {

@@ -82,6 +82,8 @@ Nothing.
 
 ## Done
 
+- 2026-09-03 | #— the path contract is pinned: rel() never emits '../..' garbage for out-of-repo paths | evidence: cc-base 3eb1948 fixed the same disease in their engine (path.relative artifacts for outside paths); dsh rel() now keeps the original spelling for out-of-repo absolute paths and stays repo-relative inside (red-first tests/path-contract.test.mjs); their adr-check --dir false green has no surface in dsh (no --dir flag exists) and their doctor random-sample manifest check has no counterpart (ours walks the full list); all four verdicts recorded in the ledger
+
 - 2026-09-03 | #— the ruler pins the fast-mode loan: the last un-pinned engine surface is now part of the contract | evidence: new governedFast scenario (52 rows, 6 states) runs fast on + gate + risk - an open window must stamp the gate record, the skippable check must be SKIPPED with reason fast-mode, and risk must report FAST_MODE_DEBT; a 13th mutant disabling the fast-skip path is killed by that scenario alone (skippedByFastMode length 1 vs 0); battery 13/13; the fast record's by field joined the mask set so the loan window cannot drift across runner usernames
 
 - 2026-09-03 | #— documentation drift audit: one stale claim found and fixed | evidence: README, .dsh/docs, PRODUCT-SPEC and ADRs audited for stale numeric claims (test counts, assertion counts, subcommand counts) - all clean; the cross-pollination ledger's margins line still said 155 behavioural tests after the suite grew to 157, corrected; the installer was confirmed manifest-driven so supervisor.mjs is already on the distribution surface
