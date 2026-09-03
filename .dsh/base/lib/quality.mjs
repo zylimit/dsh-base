@@ -185,7 +185,15 @@ export function listWaivers () {
   return listFiles(rel(dir))
     .filter(p => p.endsWith('.json'))
     .map(p => ({ path: p, waiver: readJson(p, null) }))
-    .filter(x => x.waiver)
+    .filter(x => {
+      if (x.waiver) return true
+      // An unreadable waiver is treated as absent - the check it might have
+      // excused runs anyway - and the bytes are quarantined, never silently
+      // dropped: a waiver that vanished without a trace would be an excuse
+      // nobody can audit.
+      quarantine(x.path, 'unreadable waiver')
+      return false
+    })
 }
 
 export function validateWaiver (w) {

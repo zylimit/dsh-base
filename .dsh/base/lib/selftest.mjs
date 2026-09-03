@@ -319,6 +319,13 @@ export function selftest () {
     ok(!worse.ok, 'undeclared 13 exceeds the best ever recorded of 12')
     eq(worse.regressions.map(r => r.metric), ['undeclared'])
   })
+  t('ratchet: corrupt history lines fail closed', () => {
+    const h = [{ metrics: { forbidden: 0, layerViolations: 0, undeclared: 1, cycles: 0 } }]
+    h.corrupt = 1
+    const r = trendGate({ metrics: { forbidden: 0, layerViolations: 0, undeclared: 1, cycles: 0 } }, h)
+    ok(!r.ok, 'holes in the history cannot certify new debt')
+    eq(r.corruptLines, 1)
+  })
   t('ratchet: per-edge identities catch a swap the count ratchet misses', () => {
     const history = [{ metrics: { forbidden: 0, layerViolations: 0, undeclared: 1, cycles: 0 }, edges: { forbidden: [], layerViolations: [], undeclared: ['a->b'], cycles: [] } }]
     const swapped = trendGate({ metrics: { forbidden: 0, layerViolations: 0, undeclared: 1, cycles: 0 }, edges: { forbidden: [], layerViolations: [], undeclared: ['c->d'], cycles: [] } }, history)

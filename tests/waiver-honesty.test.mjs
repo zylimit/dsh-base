@@ -70,6 +70,22 @@ test('a protected check runs despite a waiver and its failure fails the gate', (
   } finally { rmDir(dir) }
 })
 
+test('a corrupt waiver file is quarantined and the check it might have excused runs anyway', () => {
+  const { dir } = repo(CHECKS, ['unit', 'flaky'])
+  try {
+    fs.mkdirSync(path.join(dir, '.dsh', 'base', 'waivers'), { recursive: true })
+    fs.writeFileSync(path.join(dir, '.dsh', 'base', 'waivers', 'flaky.json'), '{ not json')
+    fs.writeFileSync(path.join(dir, 'src', 'a.mjs'), 'export const a = 2\n')
+    const r = dsb(['gate'], { cwd: dir })
+    assert.equal(r.code, 2, 'no waiver applies, so the failing check runs and fails: ' + JSON.stringify(r.json))
+    assert.equal(r.json.results.find(x => x.id === 'flaky').status, 'FAIL')
+    const q = fs.readFileSync(path.join(dir, '.dsh', 'base', 'state', 'quarantine.jsonl'), 'utf8')
+    assert.match(q, /unreadable waiver/)
+    const leftovers = fs.readdirSync(path.join(dir, '.dsh', 'base', 'waivers')).filter(f => f.startsWith('flaky.json.corrupt-'))
+    assert.equal(leftovers.length, 1, 'the corrupt waiver is moved aside, not deleted')
+  } finally { rmDir(dir) }
+})
+
 test('a waiver never masks an executed failure elsewhere', () => {
   const { dir } = repo({ ...CHECKS, unit: { command: 'node fail.mjs', class: 'test', attributes: ['reliability'] } }, ['unit', 'flaky', 'sast'])
   try {

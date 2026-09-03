@@ -82,6 +82,8 @@ Nothing.
 
 ## Done
 
+- 2026-09-03 | #— the corrupt-state line is now complete: waivers and the debt history joined receipts | evidence: listWaivers quarantines an unreadable waiver instead of dropping it (the check it might have excused runs anyway - fail closed with a trace); readTrend counts corrupt lines on the array and trendGate fails the verdict on any nonzero count (a ratchet over a history with holes cannot tell new debt from forgotten debt); the ledger was audited and already fails closed on unparseable lines; red-first tests in waiver-honesty and architecture, selftest 95/95
+
 - 2026-09-03 | #— unreadable receipts now fail closed and are quarantined instead of silently vanishing | evidence: verifyReceipts treated an unparseable receipt as if it did not exist - with a valid receipt present the verdict stayed green and the evidence loss left no trace; it now reports the unreadable file, refuses the verdict, and quarantines the bytes (rename aside + quarantine.jsonl); red-first test in tests/receipt-integrity.test.mjs (its own assertion bug - Array.includes is equality, not substring - was found and fixed during the red phase); 153 behavioural tests exit 0, mutation battery rerun on the clean tree
 
 - 2026-09-03 | #— the golden ruler now pins a REAL gate run, not just dry-run | evidence: new governedGate scenario (47 rows across 5 states) runs the gate end-to-end - command spawning, evidence capture, the ledger append and the attribute-coverage rows are now part of the byte-stable contract; check commands use the cross-platform-deterministic form the siblings' npm-baseline lesson prescribed (node -e with fixed stdout, never tool versions); double replay zero drift locally, mutation battery still 10/10

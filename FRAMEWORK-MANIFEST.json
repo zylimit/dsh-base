@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 93,
-  "digest": "6fef93eff5f9904fd6b068565eacbbf0c835c0dd1f8c3f40aad2cda08e531876",
+  "digest": "dfb0d4405c0a3e8652220d10b70c3e36d1aadc375f5f8212832572f6dd6567bb",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -81,13 +81,13 @@
     },
     {
       "path": ".dsh/base/lib/graph.mjs",
-      "sha256": "f109afb848d420f22f125a76b05bcb354d4edab3d9140c61ad0c24a96ff3df94",
-      "bytes": 46664
+      "sha256": "d9726ebd44370224c89a6b6db268d372462047896527d24e0a19ef87caea6b53",
+      "bytes": 47253
     },
     {
       "path": ".dsh/base/lib/quality.mjs",
-      "sha256": "975a98a85d4f1b5f665456f2875d9c6d045c27ecd172bfdfc8627d390d8a6762",
-      "bytes": 55317
+      "sha256": "5ae58862e8b09ea18f6a6661be35be4f4355ec4c685b33682cf4bb3bc73dbabc",
+      "bytes": 55670
     },
     {
       "path": ".dsh/base/lib/scan.mjs",
@@ -96,8 +96,8 @@
     },
     {
       "path": ".dsh/base/lib/selftest.mjs",
-      "sha256": "c09075ccf480d5626186b8ef9911c7651dc252151247f64ccee2a102886069c4",
-      "bytes": 35879
+      "sha256": "582bb48f3f915f33711e78a3a3d5b6ace84e82635853b4dc5f71178438126897",
+      "bytes": 36244
     },
     {
       "path": ".dsh/base/supervisor.mjs",

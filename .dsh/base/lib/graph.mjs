@@ -462,9 +462,15 @@ export function recordTrend (result) {
 export function readTrend () {
   const raw = readText(rel(TREND_PATH()), '')
   if (!raw) return []
-  return raw.split('\n').filter(Boolean)
-    .map(l => { try { return JSON.parse(l) } catch { return null } })
-    .filter(Boolean)
+  const entries = []
+  let corrupt = 0
+  for (const l of raw.split('\n').filter(Boolean)) {
+    try { entries.push(JSON.parse(l)) } catch { corrupt++ }
+  }
+  // Rides on the array so existing callers keep their shape; trendGate turns
+  // any nonzero count into a failed verdict.
+  entries.corrupt = corrupt
+  return entries
 }
 
 /**
@@ -485,6 +491,17 @@ export function trendGate (current, history = readTrend()) {
       reason: 'forbidden dependency edges violate the declared architecture, not debt: the ratchet cannot baseline them',
       current: current.metrics,
       regressions: [{ metric: 'forbidden', best: 0, now: forbiddenNow }],
+      samples: history.length,
+    }
+  }
+  const corruptLines = (history.corrupt || 0) + (current.corrupt || 0)
+  if (corruptLines > 0) {
+    return {
+      ok: false,
+      corruptLines,
+      reason: 'the debt history has ' + corruptLines + ' corrupt line(s); a ratchet over a history with holes cannot tell new debt from forgotten debt',
+      current: current.metrics,
+      regressions: [],
       samples: history.length,
     }
   }

@@ -103,6 +103,14 @@ test('REQ-ARC-005 legacy count-based snapshots keep the old ratchet', () => {
   assert.equal(trendGate({ metrics: { forbidden: 0, layerViolations: 0, undeclared: 1, cycles: 0 } }, history).ok, true)
 })
 
+test('REQ-ARC-005 a debt history with corrupt lines cannot certify new debt', () => {
+  const history = [{ at: 'x', metrics: { forbidden: 0, layerViolations: 0, undeclared: 1, cycles: 0 } }]
+  history.corrupt = 1
+  const r = trendGate({ metrics: { forbidden: 0, layerViolations: 0, undeclared: 1, cycles: 0 } }, history)
+  assert.equal(r.ok, false, 'holes in the history mean the ratchet cannot tell new debt from forgotten debt')
+  assert.equal(r.corruptLines, 1)
+})
+
 test('REQ-ARC-006 a live ADR without a resolvable enforcement fails', () => {
   const r = dsb(['adr-check'])
   assert.equal(r.code, 0, 'every live ADR in this repository must name a real enforcement point')
