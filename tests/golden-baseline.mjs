@@ -227,6 +227,14 @@ function loadBaseline () {
 
 function mutate () {
   const mutants = JSON.parse(fs.readFileSync(MUTANTS, 'utf8'))
+  // Every applied mutation is backed up in memory and restored on process exit,
+  // so even a hard crash cannot leave a mutant inside the engine.
+  const backups = new Map()
+  process.on('exit', () => {
+    for (const [file, original] of backups) {
+      try { fs.writeFileSync(file, original) } catch { /* best effort */ }
+    }
+  })
   // Only the mutant's own target must be clean: untracked new files elsewhere
   // are none of our business, and a mutation must never clobber someone's
   // uncommitted edit to the file it rewrites.
@@ -247,6 +255,7 @@ function mutate () {
     const original = fs.readFileSync(file, 'utf8')
     if (!original.includes(m.find)) { results.push({ name: m.name, outcome: 'not-applied', note: 'find string missing' }); continue }
     const mutated = original.replace(m.find, m.replace)
+    backups.set(file, original)
     fs.writeFileSync(file, mutated)
     let killed = false
     let issue = ''
@@ -256,6 +265,7 @@ function mutate () {
       issue = c.drift[0] ? c.drift[0].scenario + '/' + c.drift[0].cmd + ': ' + c.drift[0].issue : ''
     } finally {
       fs.writeFileSync(file, original)
+      backups.delete(file)
     }
     results.push({ name: m.name, outcome: killed ? 'killed' : 'SURVIVED', issue })
   }
