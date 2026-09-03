@@ -79,6 +79,11 @@
               "detail": "0 module(s) declare quality attributes"
             },
             {
+              "id": "manifest-intact",
+              "ok": false,
+              "detail": "distribution integrity drift: "
+            },
+            {
               "id": "fast-mode",
               "ok": true,
               "detail": "closed"
@@ -89,7 +94,8 @@
             "catalog-present",
             "root-agents-md",
             "skills-present",
-            "git-hooks-installed"
+            "git-hooks-installed",
+            "manifest-intact"
           ]
         }
       },
@@ -238,6 +244,11 @@
               "detail": "1 module(s) declare quality attributes"
             },
             {
+              "id": "manifest-intact",
+              "ok": false,
+              "detail": "distribution integrity drift: "
+            },
+            {
               "id": "fast-mode",
               "ok": true,
               "detail": "closed"
@@ -245,7 +256,8 @@
           ],
           "failing": [
             "skills-present",
-            "git-hooks-installed"
+            "git-hooks-installed",
+            "manifest-intact"
           ]
         }
       },

@@ -6,6 +6,7 @@
 
 import path from 'node:path'
 import fs from 'node:fs'
+import { spawnSync } from 'node:child_process'
 import {
   BASE_DIR, ROOT, ATTRIBUTES, readText, readJson, writeAtomic, listFiles, rel, abs, exists,
   matchesAny, trackedFiles, canonicalDiff, diffHash, headCommit, isGitRepo, sha256Lf,
@@ -148,6 +149,21 @@ export function doctor (catalogState) {
   const modulesWithAttributes = catalog ? (catalog.modules || []).filter(m => Object.keys(m.attributes || {}).length).length : 0
   const forbiddenEdges = catalog ? (catalog.modules || []).reduce((n, m) => n + (m.forbiddenDependencies || []).length, 0) : 0
   const hooksPath = (git(['config', '--get', 'core.hooksPath']).stdout || '').trim()
+  // The audit script is the independent observer; doctor only reports its
+  // verdict, so a defect inside the engine cannot silence the check. A missing
+  // manifest is a warn, never a block: doctor always exits 0 (diagnosis must
+  // never block work), but the diagnosis says what is not being tracked.
+  const manifestIntact = (() => {
+    try {
+      const r = spawnSync(process.execPath, [path.join(BASE_DIR, 'audit', 'manifest.mjs'), '--check'], { cwd: ROOT, encoding: 'utf8', windowsHide: true, timeout: 30000 })
+      let out = '(no output)'
+      try {
+        const j = JSON.parse(r.stdout)
+        out = j.ok ? 'ok' : ((j.changed || []).concat(j.added || []).concat(j.removed || []).join(', ') || 'drift')
+      } catch { out = (r.stdout || '').trim().slice(0, 100) }
+      return { ok: r.status === 0, out }
+    } catch (e) { return { ok: false, out: 'could not run: ' + e.message } }
+  })()
 
   const checks = [
     { id: 'node-version', ok: nodeMajor >= 20, detail: 'node ' + process.versions.node + ' (requires >= 20)' },
@@ -158,6 +174,13 @@ export function doctor (catalogState) {
     { id: 'ledger-intact', ok: ledger.ok, detail: ledger.ok ? ledger.entries + ' ledger entries, chain intact' : ledger.breaks.length + ' chain break(s); prior evidence is untrusted' },
     { id: 'git-hooks-installed', ok: hooksPath === '.dsh/base/githooks', detail: 'core.hooksPath = ' + (hooksPath || '(unset)') },
     { id: 'attributes-declared', ok: modulesWithAttributes > 0 || !catalog, detail: modulesWithAttributes + ' module(s) declare quality attributes' },
+    {
+      id: 'manifest-intact',
+      ok: manifestIntact.ok,
+      detail: manifestIntact.ok
+        ? 'FRAMEWORK-MANIFEST.json matches the distributed surface (full-list check, nothing sampled)'
+        : 'distribution integrity drift: ' + manifestIntact.out,
+    },
     { id: 'fast-mode', ok: !fastState().active, detail: fastState().active ? 'OPEN until ' + fastState().until + ' - evidence is being deferred' : 'closed' },
   ]
 

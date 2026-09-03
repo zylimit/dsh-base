@@ -80,6 +80,14 @@ test('NFR-AVAIL-001 doctor always exits 0 so diagnosis never blocks work', () =>
   assert.ok(Array.isArray(r.json.checks) && r.json.checks.length > 0)
 })
 
+test('doctor reports distribution integrity with a full-list manifest check, never a sample', () => {
+  const r = dsb(['doctor'])
+  assert.equal(r.code, 0)
+  const m = r.json.checks.find(c => c.id === 'manifest-intact')
+  assert.ok(m, 'doctor must name the distributed-surface check: ' + JSON.stringify(r.json.checks.map(c => c.id)))
+  assert.equal(m.ok, true, 'the host repo manifest must be intact when the suite runs')
+})
+
 test('an unknown subcommand degrades instead of crashing', () => {
   const r = dsb(['not-a-subcommand'])
   assert.equal(r.code, 3)
