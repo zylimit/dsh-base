@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 93,
-  "digest": "507027d241e8b1b1b18c6e0d5e8af9989f8f2969cb7909bea2d997341e9e6c83",
+  "digest": "346841d1570a69844ba11cbef75cc25b76a5eb40bdf5dd0451eb5a41fce5a3a6",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -391,8 +391,8 @@
     },
     {
       "path": "docs/CROSS-POLLINATION.md",
-      "sha256": "c986b2734d455240dee68e4a9140c27cccd4bb60ed878ae4a5ac0ec71142b619",
-      "bytes": 12001
+      "sha256": "90ed97b84f3c79712e9b5dde68f65f30619759bc391447c987ece11f7d8225a8",
+      "bytes": 13131
     },
     {
       "path": "docs/OPERATIONS.md",

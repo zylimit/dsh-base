@@ -82,6 +82,8 @@ Nothing.
 
 ## Done
 
+- 2026-09-03 | #— no-complacency round: both siblings moved again, and their newest lessons were mined the same day | evidence: cc-base 9c5cc2e admits their own path-contract fix caused a relative-input regression (reported path != opened file) and their six-table guard gave false security; dsh is immune to the regression by construction (rel resolves against cwd first, pinned by a new test) and the table guard was hardened to iterate both tables exhaustively so a one-sided addition fails; setup.ps1 confirmed a thin wrapper so their installer-fork disease cannot exist here; codex pushed 4 more wip commits on the assurance refactor - watching until it merges; all verdicts in the ledger
+
 - 2026-09-03 | #— observation: codex is working on a refactor branch, and its new main commits are echoes of dsh | evidence: refactor/codex-base-v5 is their cautious workspace; ba153ed (spec trace + release readiness binding) re-implements the dsh spec/trace/releaseReadiness trio that is wired, tested and ruler-pinned here; verdict recorded in the ledger as watching until their wiring lands; doctor's full-list manifest check landed this round (4fe1ad8), 160/160 tests, battery 13/13
 
 - 2026-09-03 | #— doctor now diagnoses distribution integrity with the full-list manifest check, nothing sampled | evidence: new manifest-intact check spawns the independent audit script (a defect inside the engine cannot silence it), reports the exact drifted/added/removed files, and never blocks - doctor still exits 0; the check immediately caught the drift of the very edit that added it; behavioural test pins the host manifest intact at suite time; golden ruler re-recorded (61 rows, doctor row now carries the check), zero drift

@@ -19,3 +19,12 @@ test('an in-repo path still renders repo-relative', () => {
   assert.equal(rel(path.join(ROOT, 'src', 'x.ts')), 'src/x.ts')
   assert.equal(rel(ROOT), '')
 })
+
+test('a relative input resolves against cwd before classification - the reported path is the file actually opened', () => {
+  // The sibling lesson (their 9c5cc2e): returning a relative input verbatim
+  // reports a repo-root path while fs opens a cwd-relative one. rel() must
+  // resolve first, so the output always names the real file.
+  assert.equal(rel('src/x.ts'), 'src/x.ts')
+  assert.equal(rel('./src/x.ts'), 'src/x.ts')
+  assert.equal(rel('.dsh/base/catalog.json'), '.dsh/base/catalog.json')
+})

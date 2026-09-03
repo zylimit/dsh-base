@@ -115,6 +115,10 @@ are fixed with tests:
 | 48-hour Rapid Mode window | rejected | dsh fast mode caps at 8 hours: a loan without a tight deadline is a discount; their own ADR-0002 said rapid must expire absolutely |
 | execpolicy-check adapter (Codex CLI bridge) | no surface | dsh has no Codex execpolicy host; the engine's own gate is the policy surface |
 | ba153ed (spec trace + release readiness binding) | their echo of dsh spec/trace/releaseReadiness | we hold the wired original: spec-lint + trace + the release conditions are tested and pinned by the 61-row ruler; theirs is still wip on a refactor branch (main untouched) - watching |
+| 9c5cc2e P2-1/2 relative-input regression | their own path-contract fix returned relative inputs verbatim, so the reported path was not the file fs opened | immune by construction | dsh rel() resolves against cwd FIRST then classifies; pinned by a relative-input test so the regression cannot return silently |
+| 9c5cc2e P2-3 guard false security | their six-table guard grepped arm names in the whole file, so an arm mentioned anywhere bypassed the check | hardened | our table-consistency test now iterates both tables exhaustively - a one-sided addition fails, and the same lesson is quoted in the test comment |
+| 9c5cc2e P2-4 setup.ps1 semantic fork | their ps1 had its own leaf-name copy logic, 16/34 arms non-equivalent, silent install gaps | immune by design | dsh setup.ps1 is a thin wrapper; install.mjs is the single implementation (the comment says exactly one to maintain) |
+| codex f4e8790..2b07971 (4 wip commits) | assurance workflow alignment, installer docs, manifest/package surface closure | watching | still wip; nothing wired beyond their earlier checkpoint; re-evaluate when their refactor branch merges |
 
 ## Watching
 
