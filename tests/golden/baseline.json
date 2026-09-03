@@ -1041,6 +1041,68 @@
         }
       }
     ],
+    "governedGate": [
+      {
+        "cmd": "gate",
+        "exit": 2,
+        "json": {
+          "command": "gate",
+          "at": "<TS>",
+          "gate": "FAIL",
+          "reason": "at-least-one-check-failed",
+          "fastMode": false,
+          "fastReason": null,
+          "fastUntil": null,
+          "skippedByFastMode": [],
+          "baseCommit": "<ENV>",
+          "diffHash": "e305b4e94e4e72a46b2b8ce91e8036203e0636105a6ebae5d3412db5ccf2d6b0",
+          "planHash": "a31b3899a14dc820a6ceafe12e032bf7807a87bcabe0c19b7391889079d65544",
+          "modules": [
+            "api",
+            "core"
+          ],
+          "degraded": false,
+          "results": [
+            {
+              "id": "fail",
+              "status": "FAIL",
+              "reason": "exit:9",
+              "durationMs": "<NUM>",
+              "evidence": "<ENV>",
+              "evidenceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "id": "ok",
+              "status": "PASS",
+              "durationMs": "<NUM>",
+              "evidence": "<ENV>",
+              "evidenceSha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+            }
+          ],
+          "attributeCoverage": [
+            {
+              "module": "core",
+              "attribute": "reliability",
+              "tier": "low",
+              "claiming": [
+                "ok"
+              ],
+              "executed": [
+                "ok"
+              ],
+              "passing": [
+                "ok"
+              ],
+              "contradicting": [],
+              "covered": true
+            }
+          ],
+          "attributeGaps": [],
+          "waivers": [],
+          "waiversBlocked": []
+        }
+      }
+    ],
     "governedDebt": [
       {
         "cmd": "catalog-lint",

@@ -127,6 +127,24 @@ function scenarios () {
   fs.appendFileSync(path.join(dirty, 'progress.md'), '\n## Done\n\n- entry\n')
   out.governedDirty = { dir: dirty, commands: S3_COMMANDS }
 
+  // A REAL gate run, not a dry-run: the ruler must pin the execution paths
+  // dry-run skips - command spawning, evidence capture, the ledger append, the
+  // attribute coverage rows. The check commands are chosen for cross-platform
+  // determinism: node -e with fixed stdout, never tool versions.
+  const gate = tmpDir('gate')
+  const runG = gitInit(gate)
+  seedGoverned(gate, runG)
+  fs.writeFileSync(path.join(gate, '.dsh', 'base', 'catalog.json'), catalogJson({
+    riskChecks: { low: ['ok', 'fail'] },
+    checks: {
+      ok: { command: 'node -e "console.log(1)"', class: 'test', attributes: ['reliability'] },
+      fail: { command: 'node -e "process.exit(9)"', class: 'test', attributes: ['maintainability'] },
+    },
+  }))
+  runG(['add', '-A']); runG(['commit', '-q', '-m', 'gate fixture'])
+  fs.appendFileSync(path.join(gate, 'src', 'core', 'a.mjs'), '// gate scenario change\n')
+  out.governedGate = { dir: gate, commands: [['gate']] }
+
   const debt = tmpDir('debt')
   const runE = gitInit(debt)
   seedGoverned(debt, runE)
