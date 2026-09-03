@@ -67,6 +67,7 @@ const AGENTS_MD = [
   '## Rules', '',
   '- A real reference: \x60dsb gate\x60 exists.',
   '- A phantom reference: \x60.dsh/base/audit/ghost.mjs\x60 does not.',
+  '- A phantom script name: \x60ghost.mjs\x60 does not exist.',
 ].join('\n')
 
 function seedGoverned (dir, run) {

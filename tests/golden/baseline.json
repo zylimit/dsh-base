@@ -215,7 +215,7 @@
             {
               "id": "root-agents-md",
               "ok": true,
-              "detail": "231 bytes"
+              "detail": "284 bytes"
             },
             {
               "id": "skills-present",
@@ -363,14 +363,14 @@
           "command": "rules-audit",
           "ok": true,
           "counts": {
-            "total": 2,
+            "total": 3,
             "enforced": 1,
             "declaredUnenforced": 0,
             "unenforced": 0,
-            "phantom": 1,
+            "phantom": 2,
             "maxUnenforced": null
           },
-          "enforcementRatio": 0.5,
+          "enforcementRatio": 0.333,
           "rows": [
             {
               "file": "AGENTS.md",
@@ -393,6 +393,17 @@
                 ".dsh/base/audit/ghost.mjs"
               ],
               "text": "- A phantom reference: `.dsh/base/audit/ghost.mjs` does not."
+            },
+            {
+              "file": "AGENTS.md",
+              "line": 19,
+              "section": "Rules",
+              "state": "phantom",
+              "enforcedBy": [],
+              "phantoms": [
+                "ghost.mjs"
+              ],
+              "text": "- A phantom script name: `ghost.mjs` does not exist."
             }
           ],
           "findings": [
@@ -402,6 +413,13 @@
               "file": "AGENTS.md",
               "line": 18,
               "message": "rule names \".dsh/base/audit/ghost.mjs\" as its enforcement, but nothing by that name exists: \"- A phantom reference: `.dsh/base/audit/ghost.mjs` does not.\". A phantom reads as enforced while enforcing nothing - fix the reference, build the command, or mark the rule prompt-only."
+            },
+            {
+              "severity": "error",
+              "code": "RULE_PHANTOM",
+              "file": "AGENTS.md",
+              "line": 19,
+              "message": "rule names \"ghost.mjs\" as its enforcement, but nothing by that name exists: \"- A phantom script name: `ghost.mjs` does not exist.\". A phantom reads as enforced while enforcing nothing - fix the reference, build the command, or mark the rule prompt-only."
             }
           ],
           "advice": "every rule either names its enforcement or admits it has none."
@@ -677,7 +695,7 @@
             "progress.md",
             "docs/requirements/PRODUCT-SPEC.md"
           ],
-          "text": "# Recap - <ISO>\n\n## Position\n- branch main at 51244fc4c78d6431393853b943ec42fbfc9d54c1, 1 uncommitted path(s)\n- active task: none\n- last gate: never run\n- requirements: 1 declared, test coverage 100 %\n"
+          "text": "# Recap - <ISO>\n\n## Position\n- branch main at e832c60cb0e256df2b99dfde5d27ac54d9c73996, 1 uncommitted path(s)\n- active task: none\n- last gate: never run\n- requirements: 1 declared, test coverage 100 %\n"
         }
       },
       {
@@ -1145,14 +1163,14 @@
           "command": "rules-audit",
           "ok": true,
           "counts": {
-            "total": 2,
+            "total": 3,
             "enforced": 1,
             "declaredUnenforced": 0,
             "unenforced": 0,
-            "phantom": 1,
+            "phantom": 2,
             "maxUnenforced": null
           },
-          "enforcementRatio": 0.5,
+          "enforcementRatio": 0.333,
           "rows": [
             {
               "file": "AGENTS.md",
@@ -1175,6 +1193,17 @@
                 ".dsh/base/audit/ghost.mjs"
               ],
               "text": "- A phantom reference: `.dsh/base/audit/ghost.mjs` does not."
+            },
+            {
+              "file": "AGENTS.md",
+              "line": 19,
+              "section": "Rules",
+              "state": "phantom",
+              "enforcedBy": [],
+              "phantoms": [
+                "ghost.mjs"
+              ],
+              "text": "- A phantom script name: `ghost.mjs` does not exist."
             }
           ],
           "findings": [
@@ -1184,6 +1213,13 @@
               "file": "AGENTS.md",
               "line": 18,
               "message": "rule names \".dsh/base/audit/ghost.mjs\" as its enforcement, but nothing by that name exists: \"- A phantom reference: `.dsh/base/audit/ghost.mjs` does not.\". A phantom reads as enforced while enforcing nothing - fix the reference, build the command, or mark the rule prompt-only."
+            },
+            {
+              "severity": "error",
+              "code": "RULE_PHANTOM",
+              "file": "AGENTS.md",
+              "line": 19,
+              "message": "rule names \"ghost.mjs\" as its enforcement, but nothing by that name exists: \"- A phantom script name: `ghost.mjs` does not exist.\". A phantom reads as enforced while enforcing nothing - fix the reference, build the command, or mark the rule prompt-only."
             }
           ],
           "advice": "every rule either names its enforcement or admits it has none."
