@@ -13,6 +13,8 @@ and hedged language is demoted to `Notes` as `Needs-Confirmation`.
 
 ## Decisions
 
+- 2026-09-02 | chose to search package-manager shim directories over reporting BLOCKED on a stale PATH | a tool installed by winget/scoop/choco is real evidence the machine can produce; where.exe failing inside an old shell is a PATH-snapshot artifact, not a missing tool - so the engine repairs visibility by prepending the shim directory to the check's PATH instead of degrading the gate | commandExecutable/winShimDirs/findShim in quality.mjs, covered by selftest and a live stripped-PATH probe
+
 - 2026-09-01 | chose to drop Node 20 from the CI matrix over keeping it | GitHub has deprecated the Node 20 runtime for actions and is forcing checkout/setup-node onto 24, so the 20 job measures an environment nobody will actually run; the engine still declares Node >= 20 support, it is simply no longer CI-proven | gate.yml matrix, manual:maintainers
 
 - 2026-09-01 | chose to keep the four hygiene lenses (architecture, maintainability, testing, performance) in the deep profiles over convening them at team level | they improve the code, they do not decide whether it may ship - and per the user they will not kill anyone; correctness never leaves any profile, and the deeper profiles still convene the full team | REVIEW_PROFILES, covered by selftest and review-team tests
@@ -76,6 +78,8 @@ and hedged language is demoted to `Notes` as `Needs-Confirmation`.
 Nothing.
 
 ## Done
+
+- 2026-09-02 | #— tool discovery survives a stale PATH: WinGet/scoop/choco shims found and injected | evidence: commandExecutable probes where.exe first, then searches WinGet Links/Packages, scoop shims and chocolatey bin and prepends the directory that actually contains the executable to the check's own PATH; the first push attempt was blocked by our own pre-push gate - gitleaks ran but cmd.exe could not resolve it because findShim had returned the parent Packages dir instead of the versioned package dir; the gate caught its own engine's defect; fixed to return the containing directory; selftest 88/88, run-tests.mjs exit 0, dod exit 0, FRAMEWORK-MANIFEST.json regenerated (91 entries)
 
 - 2026-09-01 | #— setup.ps1 declares PowerShell 7 instead of pretending 5.1 compatibility | evidence: `#requires -Version 7.0` added so Windows PowerShell 5.1 fails with a clear error; the fleet runs PowerShell 7, so the old self-imposed 5.1 constraint was cost without a customer
 - 2026-09-02 | #001 CI testing strengthened: real scanners gated, matrix widened | evidence: `dsb gate` exit 0 with the `gitleaks` check PASS (3.7 s, evidence .dsh/base/evidence/gitleaks-1788351166856.log); catalog check `gitleaks` (`gitleaks dir . --redact --no-banner`, v8.30.1, allowFastSkip false) wired into engine-quality/engine-scan/engine-context/engine-cli/tooling verification; gate.yml adds security-scan job (semgrep/semgrep-action@v1 p/ci + gitleaks 8.30.1 linux binary), strength job (node --experimental-test-coverage advisory) and macos-latest to the matrix, actions upgraded checkout/setup-node v4 to v7 (Node 20 deprecation annotations gone); unit tests 123 pass exit 0; NFR-MAINT-001 re-proven with empty dependency fields restored

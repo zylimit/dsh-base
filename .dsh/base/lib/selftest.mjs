@@ -13,10 +13,14 @@ import { lintCatalog, computeImpact, resolveVerification, extractImports, resolv
 import {
   aggregate, buildPlan, assessAttributes, validateWaiver, waiverContentHash, syncCheck,
   reviewLenses, lensExclusions, fastSkippable, LENS_LIBRARY, REVIEW_PROFILES, STATUS,
+  winShimDirs, findShim,
 } from './quality.mjs'
 import { parseFrontmatter, FITNESS_RULE_IDS, fitness as fitnessScan, skillsLint as skillsLintFn, rulesAudit } from './scan.mjs'
 import { denied, parseLedger, memoryConfig } from './context.mjs'
 import { fleetLint, fleetImpact, contractCycles } from './fleet.mjs'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 
 function fixture () {
   return {
@@ -547,6 +551,27 @@ export function selftest () {
     const r = fleetImpact(fleetFixture(), 'nope')
     ok(r.degraded)
     ok(r.known.includes('orders.api'))
+  })
+
+  // ── tool discovery ────────────────────────────────────────────────────────
+  t('tools: a shim is found under a package-manager directory, case-insensitive', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dsb-shim-'))
+    const sub = path.join(dir, 'Links')
+    fs.mkdirSync(sub)
+    fs.writeFileSync(path.join(sub, 'gitleaks.exe'), 'shim')
+    eq(findShim('gitleaks', [sub]), sub)
+    eq(findShim('GITLEAKS', [sub]), sub)
+    eq(findShim('gitleaks', [path.join(dir, 'nope')]), null)
+    const pkg = path.join(dir, 'Packages', 'Gitleaks-8.30.1')
+    fs.mkdirSync(pkg, { recursive: true })
+    fs.writeFileSync(path.join(pkg, 'gitleaks.exe'), 'shim')
+    eq(findShim('gitleaks', [path.join(dir, 'Packages')]), pkg)
+    fs.rmSync(dir, { recursive: true, force: true })
+  })
+  t('tools: an empty user profile yields no per-user shim directories', () => {
+    const dirs = winShimDirs({ USERPROFILE: '', LOCALAPPDATA: '' })
+    const names = dirs.map(d => d.toLowerCase())
+    ok(!names.some(d => d.includes('scoop') || d.includes('winget')), 'got: ' + JSON.stringify(dirs))
   })
 
   // ── scale smoke ───────────────────────────────────────────────────────────

@@ -19,4 +19,5 @@ Initial release for the configuration repository.
 - Instruction-file security scanning: AGENTS.md and SKILL.md are treated as untrusted input.
 - Release readiness (`dsb release`) assembles nine conditions and never tags.
 - One-directory copy surface (`.dsh/` + `AGENTS.md`), idempotent batch installer, private or vendored modes.
-- 86 engine self-test assertions and 123 behavioural tests; the scaffold governs itself.
+- Stale-PATH tool discovery: when where.exe cannot see a tool installed by WinGet, scoop or chocolatey (a PATH snapshot artifact, not a missing tool), the engine finds the directory that actually contains the executable and prepends it to the check's own PATH instead of reporting a false BLOCKED.
+- 88 engine self-test assertions and 123 behavioural tests; the scaffold governs itself.

@@ -34,14 +34,61 @@ const MAX_EVIDENCE_INLINE = 4000
 
 // ── check execution ─────────────────────────────────────────────────────────
 
-function commandExecutable (command) {
+/**
+ * Directories where Windows package managers drop shims that land on PATH only
+ * for shells started after the install. A shell that is already running keeps
+ * the old PATH snapshot, so `where` cannot see the tool and a check would be
+ * reported BLOCKED through no fault of the project. env is injectable for tests.
+ */
+export function winShimDirs (env = process.env) {
+  if (process.platform !== 'win32') return []
+  const home = env.USERPROFILE || ''
+  const local = env.LOCALAPPDATA || ''
+  const dirs = [
+    local && local + '\\Microsoft\\WinGet\\Links',
+    local && local + '\\Microsoft\\WinGet\\Packages',
+    home && home + '\\scoop\\shims',
+    'C:\\ProgramData\\chocolatey\\bin',
+  ].filter(Boolean)
+  return dirs.filter(d => { try { return fs.statSync(d).isDirectory() } catch { return false } })
+}
+
+/**
+ * The directory that actually contains <exe>.exe (case-insensitive), or null.
+ * Returns the containing directory, not the searched root: WinGet stores each
+ * package inside its own versioned subdirectory, and a PATH entry pointing at
+ * the parent resolves nothing. Depth is capped at 2 so the scan stays cheap.
+ */
+export function findShim (exe, dirs) {
+  if (!exe) return null
+  const want = exe.toLowerCase() + '.exe'
+  const walk = (dir, level) => {
+    let entries
+    try { entries = fs.readdirSync(dir, { withFileTypes: true }) } catch { return null }
+    for (const e of entries) {
+      const full = path.join(dir, e.name)
+      if (e.isDirectory()) {
+        if (level < 2) { const hit = walk(full, level + 1); if (hit) return hit }
+      } else if (e.isFile() && e.name.toLowerCase() === want) {
+        return dir
+      }
+    }
+    return null
+  }
+  for (const dir of dirs) { const hit = walk(dir, 0); if (hit) return hit }
+  return null
+}
+
+export function commandExecutable (command) {
   const exe = String(command).trim().split(/\s+/)[0]
   if (!exe) return { ok: false, exe }
   if (exe.includes('/') || exe.includes('\\')) return { ok: exists(exe) || fs.existsSync(exe), exe }
   const probe = process.platform === 'win32'
     ? spawnSync('where', [exe], { encoding: 'utf8', windowsHide: true })
     : spawnSync('sh', ['-lc', 'command -v ' + JSON.stringify(exe)], { encoding: 'utf8' })
-  return { ok: probe.status === 0, exe }
+  if (probe.status === 0) return { ok: true, exe }
+  const shim = process.platform === 'win32' ? findShim(exe, winShimDirs()) : null
+  return shim ? { ok: true, exe, pathDir: shim } : { ok: false, exe }
 }
 
 /**
@@ -69,10 +116,12 @@ export function runCheck (id, def, { fastMode = false, timeoutMs = null, dryRun 
   }
 
   const limit = timeoutMs || def.timeoutMs || 900000
+  const env = { ...process.env, DSB_CHECK_ID: id, CI: process.env.CI || '' }
+  if (probe.pathDir) env.PATH = probe.pathDir + ';' + (env.PATH || '')
   const r = spawnSync(def.command, {
     cwd: ROOT, shell: true, encoding: 'utf8', timeout: limit,
     maxBuffer: 32 * 1024 * 1024, windowsHide: true,
-    env: { ...process.env, DSB_CHECK_ID: id, CI: process.env.CI || '' },
+    env,
   })
   const durationMs = Date.now() - started
   const output = (r.stdout || '') + (r.stderr ? '\n--- stderr ---\n' + r.stderr : '')
