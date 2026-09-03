@@ -9,8 +9,8 @@
         "json": {
           "command": "selftest",
           "ok": true,
-          "total": 94,
-          "passed": 94,
+          "total": 95,
+          "passed": 95,
           "failed": 0,
           "failures": []
         }
@@ -168,8 +168,8 @@
         "json": {
           "command": "selftest",
           "ok": true,
-          "total": 94,
-          "passed": 94,
+          "total": 95,
+          "passed": 95,
           "failed": 0,
           "failures": []
         }
