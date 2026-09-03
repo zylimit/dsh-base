@@ -427,10 +427,10 @@
       },
       {
         "cmd": "dod",
-        "exit": 2,
+        "exit": 0,
         "json": {
           "command": "dod",
-          "ok": false,
+          "ok": true,
           "steps": [
             {
               "id": "catalog-lint",
@@ -452,9 +452,9 @@
             },
             {
               "id": "spec-lint",
-              "status": "FAIL",
+              "status": "PASS",
               "blocking": true,
-              "reason": "{\"error\":5,\"warning\":0,\"requirements\":1}"
+              "reason": "{\"error\":0,\"warning\":0,\"requirements\":1}"
             },
             {
               "id": "adr-check",
@@ -501,9 +501,7 @@
               "blocking": false
             }
           ],
-          "blockingFailures": [
-            "spec-lint"
-          ]
+          "blockingFailures": []
         }
       },
       {
@@ -580,10 +578,10 @@
       },
       {
         "cmd": "spec-lint",
-        "exit": 1,
+        "exit": 0,
         "json": {
           "command": "spec-lint",
-          "ok": false,
+          "ok": true,
           "files": 2,
           "ids": [
             {
@@ -592,40 +590,9 @@
               "line": 3
             }
           ],
-          "findings": [
-            {
-              "severity": "error",
-              "code": "ATTRIBUTE_UNADDRESSED",
-              "attribute": "resilience",
-              "message": "no requirement addresses \"resilience\"; each key attribute must be stated, or declared out of scope with a written reason"
-            },
-            {
-              "severity": "error",
-              "code": "ATTRIBUTE_UNADDRESSED",
-              "attribute": "security",
-              "message": "no requirement addresses \"security\"; each key attribute must be stated, or declared out of scope with a written reason"
-            },
-            {
-              "severity": "error",
-              "code": "ATTRIBUTE_UNADDRESSED",
-              "attribute": "safety",
-              "message": "no requirement addresses \"safety\"; each key attribute must be stated, or declared out of scope with a written reason"
-            },
-            {
-              "severity": "error",
-              "code": "ATTRIBUTE_UNADDRESSED",
-              "attribute": "privacy",
-              "message": "no requirement addresses \"privacy\"; each key attribute must be stated, or declared out of scope with a written reason"
-            },
-            {
-              "severity": "error",
-              "code": "ATTRIBUTE_UNADDRESSED",
-              "attribute": "reliability",
-              "message": "no requirement addresses \"reliability\"; each key attribute must be stated, or declared out of scope with a written reason"
-            }
-          ],
+          "findings": [],
           "counts": {
-            "error": 5,
+            "error": 0,
             "warning": 0,
             "requirements": 1
           }
@@ -645,10 +612,10 @@
           "omitted": 0,
           "affectedModules": null,
           "noLink": false,
-          "chars": 258,
+          "chars": 340,
           "budget": 6000,
           "withinBudget": true,
-          "text": "# Requirements in scope (all)\n\n1 of 1 declared requirement(s) touch this change; 1 rendered, 0 omitted for budget.\n### <REQ> - one\n\nWHEN the program runs, the system SHALL return one.\n\nAcceptance: the value is 1.\n\n_verified by: src/core/a.test.mjs_\n"
+          "text": "# Requirements in scope (all)\n\n1 of 1 declared requirement(s) touch this change; 1 rendered, 0 omitted for budget.\n### <REQ> - one\n\nWHEN the program runs, the system SHALL return one.\n\nAcceptance: the value is 1.\n\nresilience security safety privacy reliability are declared in scope with tests.\n\n_verified by: src/core/a.test.mjs_\n"
         }
       },
       {
@@ -695,7 +662,7 @@
             "progress.md",
             "docs/requirements/PRODUCT-SPEC.md"
           ],
-          "text": "# Recap - <ISO>\n\n## Position\n- branch main at e832c60cb0e256df2b99dfde5d27ac54d9c73996, 1 uncommitted path(s)\n- active task: none\n- last gate: never run\n- requirements: 1 declared, test coverage 100 %\n"
+          "text": "# Recap - <ISO>\n\n## Position\n- branch main at f09c88631a26b6c8a11d7cff2aaa53b72a24e1b6, 1 uncommitted path(s)\n- active task: none\n- last gate: never run\n- requirements: 1 declared, test coverage 100 %\n"
         }
       },
       {
@@ -748,7 +715,6 @@
           "ok": false,
           "ready": false,
           "blockers": [
-            "dod-static",
             "receipt-fresh",
             "review-depth",
             "gate-fresh"
@@ -757,9 +723,9 @@
           "items": [
             {
               "id": "dod-static",
-              "ok": false,
+              "ok": true,
               "blocking": true,
-              "detail": "failing: spec"
+              "detail": null
             },
             {
               "id": "trace-coverage",
@@ -822,10 +788,10 @@
               "detail": "0 governed file(s) changed this commit-window"
             }
           ],
-          "chars": 980,
+          "chars": 964,
           "budget": 3000,
           "truncated": false,
-          "text": "# Release readiness - <ISO>\n\nTagging, pushing and deploying are HIGH-tier human acts. This command never performs them.\nIt assembles the evidence; the human makes the decision on these facts.\n\n## Conditions\n- [ ] dod-static (blocking) - failing: spec\n- [x] trace-coverage (blocking) - coverage 100 %\n- [x] ledger-intact (blocking) - 0 entries\n- [ ] receipt-fresh (blocking) - no-change: the working tree matches HEAD, so no receipt can bind it\n- [ ] review-depth (blocking) - no fresh receipt to judge depth against\n- [ ] gate-fresh (blocking) - no gate has ever run here; a release is the evidence the gate produced\n- [x] fast-mode-closed (blocking) - closed\n- [x] fast-debt-repaid (blocking) - last gate was a full run\n- [x] review-backlog - 0 open entry(ies), 0 expired\n- [x] decay-signals - 0 error(s), 0 warning(s)\n- [x] sync-clean (blocking) - 0 governed file(s) changed this commit-window\n\n## NOT READY - blocking conditions above must be repaired first."
+          "text": "# Release readiness - <ISO>\n\nTagging, pushing and deploying are HIGH-tier human acts. This command never performs them.\nIt assembles the evidence; the human makes the decision on these facts.\n\n## Conditions\n- [x] dod-static (blocking)\n- [x] trace-coverage (blocking) - coverage 100 %\n- [x] ledger-intact (blocking) - 0 entries\n- [ ] receipt-fresh (blocking) - no-change: the working tree matches HEAD, so no receipt can bind it\n- [ ] review-depth (blocking) - no fresh receipt to judge depth against\n- [ ] gate-fresh (blocking) - no gate has ever run here; a release is the evidence the gate produced\n- [x] fast-mode-closed (blocking) - closed\n- [x] fast-debt-repaid (blocking) - last gate was a full run\n- [x] review-backlog - 0 open entry(ies), 0 expired\n- [x] decay-signals - 0 error(s), 0 warning(s)\n- [x] sync-clean (blocking) - 0 governed file(s) changed this commit-window\n\n## NOT READY - blocking conditions above must be repaired first."
         }
       },
       {
@@ -1004,10 +970,10 @@
             "core"
           ],
           "noLink": false,
-          "chars": 268,
+          "chars": 350,
           "budget": 6000,
           "withinBudget": true,
-          "text": "# Requirements in scope for [api, core]\n\n1 of 1 declared requirement(s) touch this change; 1 rendered, 0 omitted for budget.\n### <REQ> - one\n\nWHEN the program runs, the system SHALL return one.\n\nAcceptance: the value is 1.\n\n_verified by: src/core/a.test.mjs_\n"
+          "text": "# Requirements in scope for [api, core]\n\n1 of 1 declared requirement(s) touch this change; 1 rendered, 0 omitted for budget.\n### <REQ> - one\n\nWHEN the program runs, the system SHALL return one.\n\nAcceptance: the value is 1.\n\nresilience security safety privacy reliability are declared in scope with tests.\n\n_verified by: src/core/a.test.mjs_\n"
         }
       },
       {
@@ -1343,6 +1309,181 @@
           ],
           "rangeMatching": [],
           "receipts": 1
+        }
+      }
+    ],
+    "governedRelease": [
+      {
+        "cmd": "receipt write --base HEAD~1 <stdin>",
+        "exit": 0,
+        "json": {
+          "command": "receipt",
+          "ok": true,
+          "receipt": {
+            "version": 1,
+            "taskId": "REL-1",
+            "reviewer": "me",
+            "verdict": "ACCEPT",
+            "scope": "the release",
+            "notes": "",
+            "lenses": [
+              "correctness",
+              "testing",
+              "architecture",
+              "security",
+              "reliability",
+              "performance"
+            ],
+            "baseCommit": "<ENV>",
+            "diffHash": "af9c920c73a5198825fdf6ec0ef324c0b823c4374617f491bc81c0f06d79b40d",
+            "createdAt": "<TS>",
+            "range": {
+              "base": "HEAD~1",
+              "head": "72604844dcae5a436e0a711a103d4f4e5e62d7b7",
+              "hash": "af9c920c73a5198825fdf6ec0ef324c0b823c4374617f491bc81c0f06d79b40d"
+            },
+            "contentHash": "<ENV>"
+          }
+        }
+      },
+      {
+        "cmd": "gate --baseline HEAD~1",
+        "exit": 0,
+        "json": {
+          "command": "gate",
+          "at": "<TS>",
+          "gate": "PASS",
+          "reason": "all-executed-checks-passed",
+          "fastMode": false,
+          "fastReason": null,
+          "fastUntil": null,
+          "skippedByFastMode": [],
+          "baseCommit": "<ENV>",
+          "diffHash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "planHash": "042e2343918e5e6812ddbb76468c81b95a79eacd8c231dd3ab113b1ed87554d9",
+          "modules": [
+            "api",
+            "core"
+          ],
+          "degraded": false,
+          "results": [
+            {
+              "id": "ok",
+              "status": "PASS",
+              "durationMs": "<NUM>",
+              "evidence": "<ENV>",
+              "evidenceSha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+            }
+          ],
+          "attributeCoverage": [
+            {
+              "module": "core",
+              "attribute": "reliability",
+              "tier": "low",
+              "claiming": [
+                "ok"
+              ],
+              "executed": [
+                "ok"
+              ],
+              "passing": [
+                "ok"
+              ],
+              "contradicting": [],
+              "covered": true
+            }
+          ],
+          "attributeGaps": [],
+          "waivers": [],
+          "waiversBlocked": [],
+          "range": {
+            "base": "HEAD~1",
+            "head": "72604844dcae5a436e0a711a103d4f4e5e62d7b7",
+            "hash": "af9c920c73a5198825fdf6ec0ef324c0b823c4374617f491bc81c0f06d79b40d"
+          }
+        }
+      },
+      {
+        "cmd": "release",
+        "exit": 0,
+        "json": {
+          "command": "release",
+          "ok": true,
+          "ready": true,
+          "blockers": [],
+          "warnings": [],
+          "items": [
+            {
+              "id": "dod-static",
+              "ok": true,
+              "blocking": true,
+              "detail": null
+            },
+            {
+              "id": "trace-coverage",
+              "ok": true,
+              "blocking": true,
+              "detail": "coverage 100 %"
+            },
+            {
+              "id": "ledger-intact",
+              "ok": true,
+              "blocking": true,
+              "detail": "2 entries"
+            },
+            {
+              "id": "receipt-fresh",
+              "ok": true,
+              "blocking": true,
+              "detail": "0 fresh ACCEPT receipt(s)"
+            },
+            {
+              "id": "review-depth",
+              "ok": true,
+              "blocking": true,
+              "detail": "receipt lens coverage satisfies the release floor (production)"
+            },
+            {
+              "id": "gate-fresh",
+              "ok": true,
+              "blocking": true,
+              "detail": "gate PASS bound to range HEAD~1..HEAD"
+            },
+            {
+              "id": "fast-mode-closed",
+              "ok": true,
+              "blocking": true,
+              "detail": "closed"
+            },
+            {
+              "id": "fast-debt-repaid",
+              "ok": true,
+              "blocking": true,
+              "detail": "last gate was a full run"
+            },
+            {
+              "id": "review-backlog",
+              "ok": true,
+              "blocking": false,
+              "detail": "0 open entry(ies), 0 expired"
+            },
+            {
+              "id": "decay-signals",
+              "ok": true,
+              "blocking": false,
+              "detail": "0 error(s), 0 warning(s)"
+            },
+            {
+              "id": "sync-clean",
+              "ok": true,
+              "blocking": true,
+              "detail": "0 governed file(s) changed this commit-window"
+            }
+          ],
+          "chars": 923,
+          "budget": 3000,
+          "truncated": false,
+          "text": "# Release readiness - <ISO>\n\nTagging, pushing and deploying are HIGH-tier human acts. This command never performs them.\nIt assembles the evidence; the human makes the decision on these facts.\n\n## Conditions\n- [x] dod-static (blocking)\n- [x] trace-coverage (blocking) - coverage 100 %\n- [x] ledger-intact (blocking) - 2 entries\n- [x] receipt-fresh (blocking) - 0 fresh ACCEPT receipt(s)\n- [x] review-depth (blocking) - receipt lens coverage satisfies the release floor (production)\n- [x] gate-fresh (blocking) - gate PASS bound to range HEAD~1..HEAD\n- [x] fast-mode-closed (blocking) - closed\n- [x] fast-debt-repaid (blocking) - last gate was a full run\n- [x] review-backlog - 0 open entry(ies), 0 expired\n- [x] decay-signals - 0 error(s), 0 warning(s)\n- [x] sync-clean (blocking) - 0 governed file(s) changed this commit-window\n\n## READY - every blocking condition holds. A human may now tag and publish."
         }
       }
     ],

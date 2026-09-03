@@ -106,6 +106,15 @@ are fixed with tests:
 | 9063663 #19g | engine outputs mixed absolute and relative paths for the same field | already clean | audited dsh libs: every abs() call is internal filesystem access, no absolute path enters stdout JSON; outputs use rel() throughout |
 | 9063663 #27 | four copies of one exclusion table drifted apart | guarded | dsh has two runtime tables (DIFF_EXCLUDED, CONTEXT_DENY); their one deliberate difference (trend packable) is now documented at both sites and pinned by tests/table-consistency.test.mjs - moving anything between the sets requires editing the test in the same commit |
 
+### New commit 2026-09-03 (6810530, codex v5 assurance checkpoint)
+
+| Mechanism | Verdict | Why |
+|---|---|---|
+| rule-registry (411 lines) + schema | their echo of dsh rules-audit | our M/P/phantom taxonomy is wired, tested and dogfooded (phantom=0); theirs is a WIP checkpoint with P4/P5 unfinished - watching |
+| review-receipt / review-report schemas | their echo of dsh review receipts | ours carry lens coverage and are pinned by the 61-row ruler; watching until their wiring lands |
+| 48-hour Rapid Mode window | rejected | dsh fast mode caps at 8 hours: a loan without a tight deadline is a discount; their own ADR-0002 said rapid must expire absolutely |
+| execpolicy-check adapter (Codex CLI bridge) | no surface | dsh has no Codex execpolicy host; the engine's own gate is the policy surface |
+
 ## Watching
 
 - cc-base and codex-base are checked for new commits every round; new candidate

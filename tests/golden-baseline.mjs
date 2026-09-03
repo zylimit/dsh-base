@@ -80,7 +80,7 @@ function seedGoverned (dir, run) {
   fs.writeFileSync(path.join(dir, 'src', 'core', 'a.test.mjs'), '// verifies ' + RC + '\nexport const t = 1\n')
   fs.writeFileSync(path.join(dir, 'src', 'store', 's.mjs'), 'export const s = 1\n')
   fs.writeFileSync(path.join(dir, 'src', 'api', 'p.mjs'), 'export const p = 1\n')
-  fs.writeFileSync(path.join(dir, 'docs', 'requirements', 'PRODUCT-SPEC.md'), '# spec\n\n### ' + RC + ' - one\n\nWHEN the program runs, the system SHALL return one.\n\nAcceptance: the value is 1.\n')
+  fs.writeFileSync(path.join(dir, 'docs', 'requirements', 'PRODUCT-SPEC.md'), '# spec\n\n### ' + RC + ' - one\n\nWHEN the program runs, the system SHALL return one.\n\nAcceptance: the value is 1.\n\nresilience security safety privacy reliability are declared in scope with tests.\n')
   fs.writeFileSync(path.join(dir, 'docs', 'requirements', 'PRODUCT-SPEC-CHANGELOG.md'), '# changelog\n')
   fs.writeFileSync(path.join(dir, 'docs', 'adr', '0001-start.md'), '# ADR 1 - start\n\nEnforced-by: selftest\n')
   fs.writeFileSync(path.join(dir, 'AGENTS.md'), AGENTS_MD)
@@ -177,6 +177,30 @@ function scenarios () {
       { cmd: ['review', 'lens', 'testing'], input: '{"findings":[]}' },
       ['review', 'verdict'],
       ['receipt', 'verify'],
+    ],
+  }
+
+  // The full release loop on a clean tree: a range receipt with production
+  // lens coverage, a gate bound to the range, and every release condition
+  // assembled into READY. This is the surface the release false-green fix
+  // (commit 689899a) exists to protect.
+  const rel = tmpDir('rel')
+  const runL = gitInit(rel)
+  seedGoverned(rel, runL)
+  fs.writeFileSync(path.join(rel, '.dsh', 'base', 'catalog.json'), catalogJson({
+    riskChecks: { low: ['ok'] },
+    checks: { ok: { command: 'node -e "console.log(1)"', class: 'test', attributes: ['reliability'] } },
+  }))
+  runL(['add', '-A']); runL(['commit', '-q', '-m', 'release base'])
+  fs.appendFileSync(path.join(rel, 'src', 'core', 'a.mjs'), '// release range change\n')
+  fs.appendFileSync(path.join(rel, 'progress.md'), '\n## Done\n\n- release entry\n')
+  runL(['add', '-A']); runL(['commit', '-q', '-m', 'release work'])
+  out.governedRelease = {
+    dir: rel,
+    commands: [
+      { cmd: ['receipt', 'write', '--base', 'HEAD~1'], input: '{"taskId":"REL-1","reviewer":"me","verdict":"ACCEPT","scope":"the release","lenses":["correctness","testing","architecture","security","reliability","performance"]}' },
+      ['gate', '--baseline', 'HEAD~1'],
+      ['release'],
     ],
   }
 
