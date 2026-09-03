@@ -86,6 +86,16 @@ are fixed with tests:
 | waiver rewrites an executed FAIL into SKIPPED | waivers pre-declare skips; executed results immutable | tests/waiver-honesty.test.mjs, selftest, commit 689899a |
 | secret-scan gaps (unquoted assignments, URL userinfo) | two new patterns with firing/non-firing tests | tests/audit-scripts.test.mjs, commit 689899a |
 
+### New commits 2026-09-03 (26f5af5..9063663)
+
+| Commit | Mechanism | Verdict | Where it landed / why |
+|---|---|---|---|
+| c006985 | supervisor stop lied on Windows: SIGTERM to the supervisor froze state at running, status inferred an abnormal death | adapted | dsh never signals the supervisor - stop writes the flag and kills the child, the parent's own exit handler finishes the stop; reading their fix exposed a dsh hole, that stop during the backoff window was ignored (the relaunch timer never checked the flag) - fixed with a red-first regression test |
+| c006985 | Git Bash kill cannot signal native Windows node in tests | rejected | dsh tests drive process.kill from node, immune; CI-proven on windows-latest |
+| 9063663 | "implemented but unguarded" pattern x3 (release exclusion rules had no test that reddened when deleted) | already have | the golden mutation ruler + red-first tests are the machine form of this guard; their release.mjs exclusion table has no dsh counterpart - every releaseReadiness condition has tests |
+| bbbae36 | Windows CI was running a form that does not exist on Windows | note | dsh CI runs the real suite on windows-latest; no counterpart needed |
+| 75fd0b0, 53fdcb0 | progress bookkeeping for the CI five-layer green | note | no mechanism |
+
 ## Watching
 
 - cc-base and codex-base are checked for new commits every round; new candidate

@@ -48,6 +48,33 @@ test('a wedged-but-alive child is killed by the health probe', () => {
   } finally { rmDir(dir) }
 })
 
+test('stop during the backoff window is honoured: no relaunch after the flag lands', async () => {
+  const dir = fixture('process.exit(1)\n')
+  try {
+    const p = spawn(process.execPath, [SUP, 'start', '--name', 'bw', '--max-restarts', '5', '--backoff-ms', '2000', '--', process.execPath, 'child.mjs'], { cwd: dir, windowsHide: true, stdio: ['ignore', 'ignore', 'ignore'] })
+    let state = null
+    for (let i = 0; i < 200 && !(state && state.restarts >= 1); i++) {
+      await new Promise(r => setTimeout(r, 25))
+      try { state = JSON.parse(fs.readFileSync(path.join(dir, '.dsh', 'base', 'state', 'supervisor-bw.json'), 'utf8')) } catch { state = null }
+    }
+    assert.ok(state && state.restarts >= 1, 'the child must have crashed once: ' + JSON.stringify(state))
+    const pidAfterFirstCrash = state.pid
+    const st = sup(dir, ['stop', '--name', 'bw'])
+    assert.equal(st.status, 0, st.stdout + st.stderr)
+    const code = await new Promise(resolve => {
+      const t = setTimeout(() => resolve('timeout'), 8000)
+      p.on('exit', (c) => { clearTimeout(t); resolve(c) })
+    })
+    assert.equal(code, 0, 'stop must win over the pending backoff timer')
+    const after = JSON.parse(fs.readFileSync(path.join(dir, '.dsh', 'base', 'state', 'supervisor-bw.json'), 'utf8'))
+    assert.equal(after.state, 'stopped')
+    assert.equal(after.pid, pidAfterFirstCrash, 'the backoff timer must not have relaunched the child after the stop flag landed')
+  } finally {
+    sup(dir, ['stop', '--name', 'bw'])
+    rmDir(dir)
+  }
+})
+
 test('stop terminates the child and the supervisor exits cleanly', async () => {
   const dir = fixture('setInterval(() => {}, 1000)\n')
   try {

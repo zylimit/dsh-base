@@ -118,7 +118,17 @@ if (cmd === 'start') {
         process.exit(1)
       }
       const delay = Math.min(30000, backoffMs * Math.pow(2, restarts - 1))
-      setTimeout(() => launch(), delay)
+      setTimeout(() => {
+        // A stop request that lands during the backoff window wins over the
+        // relaunch: without this check the flag kills a child that is already
+        // dead, the timer relaunches anyway, and stop never completes.
+        if (fs.existsSync(stopPath(name))) {
+          writeState(name, { ...readState(name), state: 'stopped', lastExit })
+          if (probeTimer) clearInterval(probeTimer)
+          process.exit(0)
+        }
+        launch()
+      }, delay)
     })
     return child
   }
