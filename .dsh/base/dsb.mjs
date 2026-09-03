@@ -83,7 +83,14 @@ function changedFor (flags) {
   // --baseline <ref> judges the range <ref>..HEAD instead of the working tree,
   // which is what a push needs: the commits being published, not the desk state.
   const baseline = typeof flags.baseline === 'string' ? flags.baseline : null
-  return changedPaths({ staged: !!flags.staged, baseline }).paths
+  const r = changedPaths({ staged: !!flags.staged, baseline })
+  if (!r.available) {
+    degraded('changed-paths', 'git could not measure the changed file set; the gate fans out conservatively instead of trusting an empty list')
+    // A sentinel no real path can equal (NUL is illegal in file names) forces
+    // the conservative full fan-out the engine promises for a failed measure.
+    return ['\u0000git-measurement-failed']
+  }
+  return r.paths
 }
 
 // ── commands ────────────────────────────────────────────────────────────────

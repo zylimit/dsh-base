@@ -284,7 +284,10 @@ export function changedPaths ({ baseline = null, staged = false } = {}) {
     const c = git(['-c', 'core.quotePath=false', 'diff', '--name-only', '-z', '--cached'])
     if (c.ok) for (const p of c.stdout.split('\0').filter(Boolean)) set.add(p)
   }
-  return { paths: [...set].sort(), available: true }
+  // A failed measurement is not a partial measurement: if the primary diff
+  // could not be read, the path set is incomplete and every consumer must fan
+  // out conservatively instead of trusting an empty list as "nothing changed".
+  return { paths: [...set].sort(), available: r.ok }
 }
 
 /** Runtime files that must never enter a diff fingerprint. */
@@ -303,21 +306,35 @@ export const DIFF_EXCLUDED = Object.freeze([
  */
 export function canonicalDiff ({ staged = false } = {}) {
   if (!isGitRepo()) return null
-  const args = ['-c', 'core.quotePath=false', 'diff', '--no-color', '--no-ext-diff', '--unified=3']
+  const args = ['-c', 'core.quotePath=false', 'diff', '--no-color', '--no-ext-diff', '--unified=3', '--no-renames']
   if (staged) args.push('--cached')
   // The default identity is the whole working tree against HEAD, staged and
   // unstaged alike. A bare `git diff` sees only unstaged content, so a fully
   // staged change would hash as "nothing changed" and a receipt would bind
   // nothing. On an unborn branch there is no HEAD to compare against.
   else if (headCommit()) args.push('HEAD')
-  const tracked = git(args).stdout
+  // Rename detection is disabled so a rename renders as delete+add and can
+  // never collapse to a header whose body disappears: a pure rename across an
+  // excluded boundary must still change the fingerprint.
+  const r = git(args)
+  // A truncated or failed measurement is loud (null), never hashed: evidence
+  // identity is exact or absent. Hashing a partial diff would make every
+  // change beyond the truncation point invisible to receipt freshness.
+  if (!r.ok) return null
+  const tracked = r.stdout
   const u = git(['-c', 'core.quotePath=false', 'ls-files', '-z', '--others', '--exclude-standard'])
   const extras = []
   if (u.ok) {
     for (const p of u.stdout.split('\0').filter(Boolean).sort()) {
       if (matchesAny(p, DIFF_EXCLUDED)) continue
-      const content = readText(p, '')
-      extras.push(`untracked ${p} ${sha256Lf(content ?? '')}`)
+      try {
+        const st = fs.lstatSync(abs(p))
+        if (st.isSymbolicLink()) { extras.push(`untracked-symlink ${p}`); continue }
+        const content = sha256Lf(fs.readFileSync(abs(p), 'utf8'))
+        extras.push(`untracked ${p} ${content}`)
+      } catch {
+        extras.push(`untracked-unreadable ${p}`)
+      }
     }
   }
   const filtered = tracked
@@ -347,6 +364,26 @@ export function diffIsEmpty (opts = {}) {
 
 /** The identity of an empty canonical diff. A receipt carrying it proves nothing. */
 export const EMPTY_DIFF_HASH = sha256Lf('\n')
+
+/**
+ * Corrupt runtime state is never silently rebuilt and never silently kept:
+ * the offending file is renamed aside with a timestamp and the event lands in
+ * state/quarantine.jsonl. Callers continue from the default state; `risk`
+ * reports the quarantine so the loss is visible, and the original bytes stay
+ * on disk for the human who must explain what happened.
+ */
+export function quarantine (p, reason) {
+  const target = abs(p)
+  if (!fs.existsSync(target)) return { quarantined: false }
+  const renamed = p + '.corrupt-' + Date.now()
+  try { fs.renameSync(target, abs(renamed)) } catch { return { quarantined: false } }
+  try {
+    const dir = path.join(BASE_DIR, 'state')
+    fs.mkdirSync(dir, { recursive: true })
+    fs.appendFileSync(path.join(dir, 'quarantine.jsonl'), JSON.stringify({ at: nowIso(), path: p, reason, renamedTo: renamed }) + '\n')
+  } catch { /* the rename already happened; the record is best-effort */ }
+  return { quarantined: true, renamedTo: renamed }
+}
 
 // ── catalog ─────────────────────────────────────────────────────────────────
 

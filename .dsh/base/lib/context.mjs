@@ -235,6 +235,16 @@ export function riskScan (catalog) {
     })
   }
 
+  const qPath = '.dsh/base/state/quarantine.jsonl'
+  if (exists(qPath)) {
+    const qLines = readText(qPath, '').split('\n').filter(Boolean)
+    if (qLines.length) {
+      let info = 'unparseable record'
+      try { const j = JSON.parse(qLines[qLines.length - 1]); info = j.path + ' (' + j.reason + ')' } catch { /* keep the fallback */ }
+      findings.push({ severity: 'warning', code: 'QUARANTINED_STATE', message: qLines.length + ' runtime state file(s) quarantined; most recent: ' + info })
+    }
+  }
+
   const waiverDir = '.dsh/base/waivers'
   if (exists(waiverDir)) {
     for (const p of listFiles(waiverDir).filter(x => x.endsWith('.json'))) {

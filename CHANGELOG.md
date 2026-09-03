@@ -23,4 +23,6 @@ Initial release for the configuration repository.
 - Gate-bound release readiness: a release is READY only when a full, passing gate is bound to exactly the release surface (a range recorded by `gate --baseline <ref>`, or the current diff) — a review receipt alone no longer closes the gap.
 - Honest waivers: a waiver pre-declares a skip before a check runs; an executed FAIL or BLOCKED is an immutable ledger fact no waiver rewrites, and protected checks run regardless.
 - Secret scanning catches unquoted credential assignments and URL userinfo, not just quoted literals.
-- 90 engine self-test assertions and 128 behavioural tests; the scaffold governs itself.
+- Deterministic evidence fingerprints: rename detection is disabled in canonical and range diffs so the hash cannot depend on a machine's `diff.renames` setting; a failed or truncated git measurement is loud (no hash is produced); untracked symlinks and unreadable files are named instead of followed; and a failed changed-file measurement fans the gate out conservatively instead of reading as "nothing changed".
+- Quarantined state: a corrupt task, fast-mode or review state file is moved aside with a timestamp and recorded in `state/quarantine.jsonl`; `risk` reports the quarantine, the engine continues from defaults, and nothing is silently rebuilt.
+- 90 engine self-test assertions and 133 behavioural tests; the scaffold governs itself.

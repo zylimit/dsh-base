@@ -15,7 +15,7 @@ import {
   BASE_DIR, ROOT, ATTRIBUTES, BLOCKING_TIERS, PROTECTED_ATTRIBUTES, PROTECTED_CLASSES,
   readJson, readText, writeJsonAtomic, writeAtomic, listFiles, rel, abs, exists,
   sha256, sha256Lf, nowIso, diffHash, diffIsEmpty, EMPTY_DIFF_HASH,
-  headCommit, changedPaths, git, isGitRepo, classifyPath,
+  headCommit, changedPaths, git, isGitRepo, classifyPath, quarantine,
 } from './core.mjs'
 
 import { resolveVerification } from './graph.mjs'
@@ -431,7 +431,7 @@ export function safeTaskId (id) {
  * but the commits that will be tagged are exactly what the lenses judged.
  */
 export function rangeDiffHash (base) {
-  const r = git(['-c', 'core.quotePath=false', 'diff', '--no-color', '--no-ext-diff', String(base)])
+  const r = git(['-c', 'core.quotePath=false', 'diff', '--no-color', '--no-ext-diff', '--no-renames', String(base)])
   if (!r.ok) return null
   // The identity must agree with canonicalDiff's shape, including the case where
   // the range is empty: that hash is a named constant, not a coincidence.
@@ -602,7 +602,12 @@ export function startTask (envelope) {
   return record
 }
 
-export function readTask () { return readJson(rel(TASK_PATH()), null) }
+export function readTask () {
+  const p = rel(TASK_PATH())
+  const t = readJson(p, null)
+  if (t === null && exists(p)) quarantine(p, 'corrupt task state; a fresh task envelope must be opened')
+  return t
+}
 
 export function completeTask (catalog, impact) {
   const task = readTask()
@@ -715,7 +720,9 @@ export function syncCheck (catalog, { staged = false, paths = null } = {}) {
 const FAST_PATH = () => path.join(BASE_DIR, 'state', 'fast-mode.json')
 
 export function fastState () {
-  const raw = readJson(rel(FAST_PATH()), null)
+  const p = rel(FAST_PATH())
+  const raw = readJson(p, null)
+  if (raw === null && exists(p)) quarantine(p, 'corrupt fast-mode state; the window is treated as closed')
   if (!raw || !raw.until) return { active: false, expired: false, record: null }
   const until = new Date(raw.until)
   const expired = !(until > new Date())
@@ -858,7 +865,12 @@ export function lensExclusions (catalog, affected) {
   }))
 }
 
-export function readReview () { return readJson(rel(REVIEW_PATH()), null) }
+export function readReview () {
+  const p = rel(REVIEW_PATH())
+  const s = readJson(p, null)
+  if (s === null && exists(p)) quarantine(p, 'corrupt review session; the session is treated as never opened')
+  return s
+}
 
 function saveReview (s) { writeJsonAtomic(rel(REVIEW_PATH()), s); return s }
 
