@@ -103,7 +103,7 @@ test('release is ready on a clean tree once a range receipt exists', () => {
         { path: '.dsh/**', reason: 'x' }, { path: 'progress.md', reason: 'm' },
         { path: 'docs/**', reason: 'prose' }, { path: 'AGENTS.md', reason: 'constitution' },
       ],
-      riskChecks: { low: [] }, checks: {},
+      riskChecks: { low: ['unit'] }, checks: { unit: { command: 'node --version', class: 'test', attributes: ['reliability'] } },
       modules: [{ id: 'core', paths: ['*.mjs'], riskTier: 'low' }],
       trace: { requirementDirs: ['docs/requirements'], testGlobs: ['**/*.test.mjs'], minCoverage: 1 },
     }, null, 2))
@@ -111,6 +111,11 @@ test('release is ready on a clean tree once a range receipt exists', () => {
     run(['add', '-A']); run(['commit', '-q', '-m', 'govern'])
 
     assert.equal(dsb(['receipt', 'write', '--base', base], { cwd: dir, input: payload }).code, 0)
+    const blocked = dsb(['release'], { cwd: dir })
+    assert.equal(blocked.code, 2)
+    assert.ok(blocked.json.blockers.includes('gate-fresh'), JSON.stringify(blocked.json.blockers))
+    const g = dsb(['gate', '--baseline', base], { cwd: dir })
+    assert.equal(g.code, 0, JSON.stringify(g.json))
     const r = dsb(['release'], { cwd: dir })
     assert.equal(r.code, 0, JSON.stringify(r.json.blockers))
     assert.equal(r.json.ready, true)

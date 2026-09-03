@@ -20,4 +20,7 @@ Initial release for the configuration repository.
 - Release readiness (`dsb release`) assembles nine conditions and never tags.
 - One-directory copy surface (`.dsh/` + `AGENTS.md`), idempotent batch installer, private or vendored modes.
 - Stale-PATH tool discovery: when where.exe cannot see a tool installed by WinGet, scoop or chocolatey (a PATH snapshot artifact, not a missing tool), the engine finds the directory that actually contains the executable and prepends it to the check's own PATH instead of reporting a false BLOCKED.
-- 88 engine self-test assertions and 123 behavioural tests; the scaffold governs itself.
+- Gate-bound release readiness: a release is READY only when a full, passing gate is bound to exactly the release surface (a range recorded by `gate --baseline <ref>`, or the current diff) — a review receipt alone no longer closes the gap.
+- Honest waivers: a waiver pre-declares a skip before a check runs; an executed FAIL or BLOCKED is an immutable ledger fact no waiver rewrites, and protected checks run regardless.
+- Secret scanning catches unquoted credential assignments and URL userinfo, not just quoted literals.
+- 90 engine self-test assertions and 128 behavioural tests; the scaffold governs itself.

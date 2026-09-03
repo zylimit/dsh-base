@@ -15,6 +15,30 @@ test('NFR-SEC-001 the tracked tree contains no committed secret material', () =>
   assert.ok(r.json.scanned > 0, 'the audit must actually read files')
 })
 
+test('NFR-SEC-001 unquoted assignments and URL userinfo are caught, placeholder forms are not', () => {
+  const dir = tempDir('secrets')
+  try {
+    const run = (a) => spawnSync('git', a, { cwd: dir, encoding: 'utf8', windowsHide: true })
+    run(['init', '-q', '-b', 'main'])
+    fs.writeFileSync(path.join(dir, 'real.mjs'), 'const c = { password: hunter2hunter2 }\nconst u = "https://alice:s3cretpass@corp.invalid/x"\n') // scan-secrets:ignore - synthetic secrets that exist only to prove the scanner fires
+    run(['add', '-A'])
+    const r = spawnSync(process.execPath, [path.join(REPO, '.dsh', 'base', 'audit', 'scan-secrets.mjs')], { cwd: dir, encoding: 'utf8', windowsHide: true })
+    assert.equal(r.status, 1)
+    const json = JSON.parse(r.stdout)
+    assert.ok(json.findings.some(f => f.rule === 'generic-assignment-unquoted'), JSON.stringify(json.findings))
+    assert.ok(json.findings.some(f => f.rule === 'url-userinfo'), JSON.stringify(json.findings))
+    const dir2 = tempDir('secrets-clean')
+    try {
+      const run2 = (a) => spawnSync('git', a, { cwd: dir2, encoding: 'utf8', windowsHide: true })
+      run2(['init', '-q', '-b', 'main'])
+      fs.writeFileSync(path.join(dir2, 'clean.mjs'), 'const c = { password: "<your-password>" }\nconst u = "https://<user>:<pass>@example.com/x"\n')
+      run2(['add', '-A'])
+      const r2 = spawnSync(process.execPath, [path.join(REPO, '.dsh', 'base', 'audit', 'scan-secrets.mjs')], { cwd: dir2, encoding: 'utf8', windowsHide: true })
+      assert.equal(r2.status, 0, r2.stdout + r2.stderr)
+    } finally { rmDir(dir2) }
+  } finally { rmDir(dir) }
+})
+
 test('NFR-SEC-002 a check claiming a protected attribute cannot opt into fast-skip', () => {
   const catalog = {
     modules: [{ id: 'a', paths: ['src/a/**'], riskTier: 'low' }],

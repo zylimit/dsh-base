@@ -13,6 +13,9 @@ and hedged language is demoted to `Notes` as `Needs-Confirmation`.
 
 ## Decisions
 
+- 2026-09-03 | chose pre-declared waivers over post-hoc FAIL rewriting | both sibling scaffolds name "rewriting an executed FAIL into SKIPPED" as an anti-pattern they refuse to copy; an executed result is an immutable ledger fact, so the waiver now resolves before the check runs and a protected check runs regardless | waivePlan, covered by tests/waiver-honesty.test.mjs and selftest
+- 2026-09-03 | chose gate-fresh as a blocking release condition over receipt-only readiness | a review receipt proves lenses reported, not that checks passed; release now demands a full, passing gate bound to exactly the release surface | release gate-fresh, covered by tests/release.test.mjs and tests/range-receipt.test.mjs
+
 - 2026-09-02 | chose to search package-manager shim directories over reporting BLOCKED on a stale PATH | a tool installed by winget/scoop/choco is real evidence the machine can produce; where.exe failing inside an old shell is a PATH-snapshot artifact, not a missing tool - so the engine repairs visibility by prepending the shim directory to the check's PATH instead of degrading the gate | commandExecutable/winShimDirs/findShim in quality.mjs, covered by selftest and a live stripped-PATH probe
 
 - 2026-09-01 | chose to drop Node 20 from the CI matrix over keeping it | GitHub has deprecated the Node 20 runtime for actions and is forcing checkout/setup-node onto 24, so the 20 job measures an environment nobody will actually run; the engine still declares Node >= 20 support, it is simply no longer CI-proven | gate.yml matrix, manual:maintainers
@@ -78,6 +81,8 @@ and hedged language is demoted to `Notes` as `Needs-Confirmation`.
 Nothing.
 
 ## Done
+
+- 2026-09-03 | #— three defects the sibling scaffolds' v5 audit named in dsh-base are fixed: release false-green, waiver rewriting executed FAILs, secret-scan gaps | evidence: release adds a blocking gate-fresh condition (a full passing gate bound to exactly the release surface - a range recorded by gate --baseline <ref>, or the current diff); waivePlan pre-declares skips before a check runs and an executed FAIL/BLOCKED is never rewritten; scan-secrets gains generic-assignment-unquoted and url-userinfo; selftest 90/90, behavioural suite exit 0, scan-secrets 0 findings, dod exit 0
 
 - 2026-09-02 | #— tool discovery survives a stale PATH: WinGet/scoop/choco shims found and injected | evidence: commandExecutable probes where.exe first, then searches WinGet Links/Packages, scoop shims and chocolatey bin and prepends the directory that actually contains the executable to the check's own PATH; the first push attempt was blocked by our own pre-push gate - gitleaks ran but cmd.exe could not resolve it because findShim had returned the parent Packages dir instead of the versioned package dir; the gate caught its own engine's defect; fixed to return the containing directory; selftest 88/88, run-tests.mjs exit 0, dod exit 0, FRAMEWORK-MANIFEST.json regenerated (91 entries)
 

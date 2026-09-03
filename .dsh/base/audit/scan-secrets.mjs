@@ -26,6 +26,8 @@ const SECRET_PATTERNS = [
   { id: 'aws-access-key-id', re: /\bAKIA[0-9A-Z]{16}\b/ },
   { id: 'slack-token', re: /\bxox[abprs]-[A-Za-z0-9-]{10,}/ },
   { id: 'generic-assignment', re: /(?:password|passwd|secret|api[_-]?key|access[_-]?token|client[_-]?secret)\s*[:=]\s*["'][^"'\s]{12,}["']/i },
+  { id: 'generic-assignment-unquoted', re: /(?:password|passwd|secret|api[_-]?key|access[_-]?token|client[_-]?secret)\s*[:=]\s*[^\s"'<>]{12,}/i },
+  { id: 'url-userinfo', re: /\bhttps?:\/\/[^/\s@:"]+:[^/\s@"]+@/i },
 ]
 
 const ALLOW_CONTEXT = /(example|sample|placeholder|dummy|redacted|xxxx|your[-_]|<[^>]+>|process\.env|os\.environ|getenv|interpolated|env:)/i

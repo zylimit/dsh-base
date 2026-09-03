@@ -668,6 +668,18 @@ export function releaseReadiness (catalog, { budget = 3000 } = {}) {
       if (r.degraded) return { ok: false, reason: r.reason }
       return { ok: r.ok, reason: r.matching ? r.matching.length + ' fresh ACCEPT receipt(s)' : 'stale' }
     }), true),
+    cond('gate-fresh', run(() => {
+      const gates = readLedger().filter(x => x.gate && !x.kind)
+      const latest = gates.slice(-1)[0]
+      if (!latest) return { ok: false, reason: 'no gate has ever run here; a release is the evidence the gate produced' }
+      if (latest.gate !== 'PASS') return { ok: false, reason: 'latest gate was ' + latest.gate + (latest.reason ? ' - ' + latest.reason : '') }
+      if (latest.fastMode) return { ok: false, reason: 'latest gate ran in fast mode; a full gate is required' }
+      const head = headCommit()
+      const rangeBound = latest.range && latest.range.head === head
+      const diffBound = !latest.range && latest.diffHash === diffHash()
+      if (!rangeBound && !diffBound) return { ok: false, reason: 'the gate is not bound to this release surface (run: dsb gate, or dsb gate --baseline <ref> for a range)' }
+      return { ok: true, reason: latest.range ? 'gate PASS bound to range ' + latest.range.base + '..HEAD' : 'gate PASS bound to the current diff' }
+    }), true),
     cond('fast-mode-closed', run(() => { const s = fastState(); return { ok: !s.active, reason: s.active ? 'open until ' + s.until : 'closed' } }), true),
     cond('fast-debt-repaid', run(() => {
       const last = readLedger().filter(e => e.gate).slice(-1)[0]

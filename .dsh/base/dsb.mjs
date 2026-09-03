@@ -127,6 +127,7 @@ COMMANDS.gate = (args) => {
     fastMode: !!args.flags.fast,
     dryRun: !!args.flags['dry-run'],
     timeoutMs: args.flags.timeout ? Number(args.flags.timeout) : null,
+    baseline: typeof args.flags.baseline === 'string' ? args.flags.baseline : null,
   })
   for (const c of r.results) note(' ' + c.status.padEnd(8) + c.id + (c.reason ? ' :: ' + c.reason : ''))
   for (const g of r.attributeGaps) note(' GAP     ' + g.module + '/' + g.attribute + ' (' + g.tier + ') :: ' + g.why)

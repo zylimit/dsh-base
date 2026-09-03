@@ -106,7 +106,7 @@ Consensus is the failure mode, so review here is an engine gate, not a habit.
 2. An unmapped path, a global path, a truncated file list or a non-git tree forces a conservative full fan-out marked `degraded`. Over-testing is cheap; a missed regression is not.
 3. Review is bound to a diff. `receipt write` records the verdict against `diffHash`; one byte of change stales it and re-review is required (exit 4).
 4. The ledger is hash-chained. A broken chain fails closed: every prior verification is treated as unproven until re-run.
-5. Never re-run a check with different arguments to obtain a greener answer. Never delete evidence. Never edit a receipt or waiver by hand.
+5. Never re-run a check with different arguments to obtain a greener answer. Never delete evidence. Never edit a receipt or waiver by hand. A waiver pre-declares a skip before a check runs; once a check has executed, its FAIL or BLOCKED is an immutable ledger fact that no waiver rewrites.
 
 ## 7. Security, privacy and safety floor
 

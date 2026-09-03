@@ -203,23 +203,27 @@ export function validateWaiver (w) {
   return { ok: errors.length === 0, errors }
 }
 
-/** A waiver can only downgrade FAIL/BLOCKED on a non-protected check. */
-export function applyWaivers (results, catalog) {
-  const waivers = listWaivers()
+/**
+ * A waiver pre-declares a skip. It is resolved BEFORE anything runs: a valid
+ * waiver for a non-protected check turns that check into SKIPPED(waiver) and
+ * the command never executes. An executed result is an immutable ledger fact -
+ * a waiver that arrives after a check ran and failed rewrites nothing.
+ * `waivers` is injectable so the resolver stays a pure function for selftest.
+ */
+export function waivePlan (catalog, plan, waivers = listWaivers()) {
+  const skippable = new Set()
   const applied = []
-  return {
-    results: results.map(r => {
-      if (r.status !== STATUS.FAIL && r.status !== STATUS.BLOCKED) return r
-      const def = (catalog.checks || {})[r.id] || {}
-      const isProtected = PROTECTED_CLASSES.has(def.class) || (def.attributes || []).some(a => PROTECTED_ATTRIBUTES.has(a))
-      if (isProtected) return r
-      const hit = waivers.find(w => w.waiver.scope === r.id && validateWaiver(w.waiver).ok)
-      if (!hit) return r
-      applied.push({ check: r.id, waiver: hit.path, expiry: hit.waiver.expiry })
-      return { ...r, status: STATUS.SKIPPED, reason: 'waiver:' + r.id, waivedFrom: r.status }
-    }),
-    applied,
+  const blocked = []
+  for (const e of plan.entries) {
+    const def = (catalog.checks || {})[e.checkId] || {}
+    const isProtected = PROTECTED_CLASSES.has(def.class) || (def.attributes || []).some(a => PROTECTED_ATTRIBUTES.has(a))
+    const hit = waivers.find(w => w.waiver.scope === e.checkId && validateWaiver(w.waiver).ok)
+    if (!hit) continue
+    if (isProtected) { blocked.push(e.checkId); continue }
+    skippable.add(e.checkId)
+    applied.push({ check: e.checkId, waiver: hit.path, expiry: hit.waiver.expiry })
   }
+  return { skippable, applied, blocked }
 }
 
 // ── attribute coverage ──────────────────────────────────────────────────────
@@ -283,9 +287,23 @@ export function runGate (catalog, impact, opts = {}) {
   // window was open whether or not they did.
   const fast = fastState()
   const fastMode = opts.fastMode || fast.active
-  const raw = plan.entries.map(e => runCheck(e.checkId, (catalog.checks || {})[e.checkId], { ...opts, fastMode }))
-  const waived = applyWaivers(raw, catalog)
-  const results = waived.results
+  const waive = waivePlan(catalog, plan)
+  const raw = plan.entries.map(e => {
+    if (waive.skippable.has(e.checkId)) {
+      const def = (catalog.checks || {})[e.checkId] || {}
+      return {
+        id: e.checkId,
+        class: def.class || 'unclassified',
+        attributes: def.attributes || [],
+        status: STATUS.SKIPPED,
+        reason: 'waiver:' + e.checkId,
+        durationMs: 0,
+        command: def.command,
+      }
+    }
+    return runCheck(e.checkId, (catalog.checks || {})[e.checkId], { ...opts, fastMode })
+  })
+  const results = raw
   const agg = aggregate(results, plan)
   const attrs = assessAttributes(catalog, impact.affected, results)
 
@@ -313,7 +331,15 @@ export function runGate (catalog, impact, opts = {}) {
     results: results.map(r => ({ id: r.id, status: r.status, reason: r.reason, durationMs: r.durationMs, evidence: r.evidence, evidenceSha256: r.evidenceSha256 })),
     attributeCoverage: attrs.coverage,
     attributeGaps: attrs.gaps,
-    waivers: waived.applied,
+    waivers: waive.applied,
+    waiversBlocked: waive.blocked,
+  }
+  if (opts.baseline) {
+    const hash = rangeDiffHash(opts.baseline)
+    const head = headCommit()
+    if (head && hash !== null && hash !== EMPTY_DIFF_HASH) {
+      record.range = { base: String(opts.baseline), head, hash }
+    }
   }
   appendLedger(record)
   appendGateLog({ at: record.at, kind: 'gate', gate, checks: results.length, gaps: attrs.gaps.length })

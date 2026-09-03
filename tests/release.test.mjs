@@ -40,7 +40,7 @@ function repo () {
   fs.writeFileSync(path.join(dir, '.dsh', 'base', 'catalog.json'), JSON.stringify({
     version: 1,
     global: [], ignored: [{ path: '.dsh/**', reason: 'x' }, { path: 'progress.md', reason: 'm' }, { path: 'docs/**', reason: 'prose' }, { path: 'AGENTS.md', reason: 'constitution' }],
-    riskChecks: { low: [] }, checks: {},
+    riskChecks: { low: ['unit'] }, checks: { unit: { command: 'node --version', class: 'test', attributes: ['reliability'] } },
     modules: [{ id: 'core', paths: ['src/**'], riskTier: 'low' }],
     trace: { requirementDirs: ['docs/requirements'], testGlobs: ['**/*.test.mjs'], minCoverage: 1 },
   }, null, 2))
@@ -62,6 +62,24 @@ test('release is blocked while no fresh receipt binds the tree', () => {
   } finally { rmDir(dir) }
 })
 
+test('release is blocked while the gate has not run on this surface', () => {
+  const { dir } = repo()
+  try {
+    fs.writeFileSync(path.join(dir, 'src', 'a.mjs'), 'export const a = 2\n')
+    fs.appendFileSync(path.join(dir, 'progress.md'), '\n')
+    const w = dsb(['receipt', 'write'], { cwd: dir, input: JSON.stringify({ taskId: 'T-1', reviewer: 'me', verdict: 'ACCEPT', scope: 'src' }) })
+    assert.equal(w.code, 0)
+    const r = dsb(['release'], { cwd: dir })
+    assert.equal(r.code, 2)
+    assert.ok(r.json.blockers.includes('gate-fresh'), JSON.stringify(r.json.blockers))
+    const g = dsb(['gate'], { cwd: dir })
+    assert.equal(g.code, 0, JSON.stringify(g.json))
+    const r2 = dsb(['release'], { cwd: dir })
+    assert.equal(r2.json.ready, true, JSON.stringify(r2.json.blockers))
+    assert.equal(r2.code, 0)
+  } finally { rmDir(dir) }
+})
+
 test('release is ready once a fresh ACCEPT receipt exists and the gate passes', () => {
   const { dir } = repo()
   try {
@@ -69,6 +87,8 @@ test('release is ready once a fresh ACCEPT receipt exists and the gate passes', 
     fs.appendFileSync(path.join(dir, 'progress.md'), '\n')
     const w = dsb(['receipt', 'write'], { cwd: dir, input: JSON.stringify({ taskId: 'T-1', reviewer: 'me', verdict: 'ACCEPT', scope: 'src' }) })
     assert.equal(w.code, 0)
+    const g = dsb(['gate'], { cwd: dir })
+    assert.equal(g.code, 0, JSON.stringify(g.json))
     const r = dsb(['release'], { cwd: dir })
     assert.equal(r.json.ready, true, JSON.stringify(r.json.blockers))
     assert.equal(r.code, 0)

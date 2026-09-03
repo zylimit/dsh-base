@@ -13,7 +13,7 @@ import { lintCatalog, computeImpact, resolveVerification, extractImports, resolv
 import {
   aggregate, buildPlan, assessAttributes, validateWaiver, waiverContentHash, syncCheck,
   reviewLenses, lensExclusions, fastSkippable, LENS_LIBRARY, REVIEW_PROFILES, STATUS,
-  winShimDirs, findShim,
+  winShimDirs, findShim, waivePlan,
 } from './quality.mjs'
 import { parseFrontmatter, FITNESS_RULE_IDS, fitness as fitnessScan, skillsLint as skillsLintFn, rulesAudit } from './scan.mjs'
 import { denied, parseLedger, memoryConfig } from './context.mjs'
@@ -364,6 +364,28 @@ export function selftest () {
     const d = memoryConfig(null)
     ok(d.maxLedgerBytes > 0 && d.keepDone > 0 && d.recapBudget > 0)
     eq(memoryConfig({ memory: { keepDone: 5 } }).keepDone, 5)
+  })
+  t('waiver: a plan is pre-declared skippable before anything runs', () => {
+    const c = fixture()
+    const plan = { entries: [{ checkId: 'unit' }, { checkId: 'lint' }, { checkId: 'sast' }] }
+    const fake = [
+      { path: 'w/flaky.json', waiver: { version: 1, owner: 'o', reason: 'r', scope: 'lint', expiry: '2099-01-01T00:00:00.000Z', compensation: 'c' } },
+      { path: 'w/sast.json', waiver: { version: 1, owner: 'o', reason: 'r', scope: 'sast', expiry: '2099-01-01T00:00:00.000Z', compensation: 'c' } },
+    ]
+    const w = waivePlan(c, plan, fake)
+    ok(w.skippable.has('lint'), 'a valid non-protected waiver pre-declares the skip')
+    ok(!w.skippable.has('unit'), 'no waiver, no skip')
+    ok(w.blocked.includes('sast'), 'a protected check runs no matter what a waiver says')
+    eq(w.applied.filter(a => a.check === 'lint').length, 1)
+  })
+  t('waiver: an executed result is never a candidate for rewriting', () => {
+    const c = fixture()
+    const plan = { entries: [{ checkId: 'lint' }] }
+    const w = waivePlan(c, plan, [{ path: 'w/flaky.json', waiver: { version: 1, owner: 'o', reason: 'r', scope: 'lint', expiry: '2099-01-01T00:00:00.000Z', compensation: 'c' } }])
+    // The resolver only names plan entries; it carries no post-hoc rewrite path,
+    // so a FAIL that already ran cannot be touched by any waiver.
+    eq(w.skippable.size, 1)
+    ok(!w.blocked.includes('lint'))
   })
   t('sync: code changed without the ledger is a violation', () => {
     const c = fixture()
