@@ -82,6 +82,8 @@ Nothing.
 
 ## Done
 
+- 2026-09-03 | #— the state-lie family is closed: a corrupt supervisor state and corrupt gate-log lines can no longer read as clean | evidence: supervisor status quarantined an unparseable state file and reports state=corrupt exit 1 instead of absent (the lie that would invite a second supervisor onto a running child); gate-audit counts corrupt gate-log lines and says so in its advice (a log with holes is how a guard that crashed reads as a guard that never fired); red-first tests in supervisor and gate-log-integrity; selftest 95/95
+
 - 2026-09-03 | #— the golden ruler now guards the newest integrity code independently of its behavioural tests | evidence: governedDebt scenario gained a corrupt receipt and a corrupt trend line plus receipt verify and arch-trend --gate rows (49 rows total); two new mutants target the unreadable-receipt handler and the trend corrupt check; battery 12/12, with unreadable-receipts-vanish-again killed by the new scenario row alone
 
 - 2026-09-03 | #— the corrupt-state line is now complete: waivers and the debt history joined receipts | evidence: listWaivers quarantines an unreadable waiver instead of dropping it (the check it might have excused runs anyway - fail closed with a trace); readTrend counts corrupt lines on the array and trendGate fails the verdict on any nonzero count (a ratchet over a history with holes cannot tell new debt from forgotten debt); the ledger was audited and already fails closed on unparseable lines; red-first tests in waiver-honesty and architecture, selftest 95/95; the golden baseline followed in its own commit (the ruler's drift test caught the selftest count the moment it moved)

@@ -48,7 +48,20 @@ const statePath = (n) => path.join(STATE_DIR, 'supervisor-' + n + '.json')
 const stopPath = (n) => path.join(STATE_DIR, 'supervisor-' + n + '.stop')
 
 function readState (n) {
-  try { return JSON.parse(fs.readFileSync(statePath(n), 'utf8')) } catch { return null }
+  const p = statePath(n)
+  if (!fs.existsSync(p)) return null
+  try { return JSON.parse(fs.readFileSync(p, 'utf8')) } catch {
+    // A corrupt state must never read as a clean absence: a supervisor that is
+    // running while its state file is unreadable would otherwise invite a
+    // second supervisor onto the same child. Quarantine the bytes and report.
+    const renamed = p + '.corrupt-' + Date.now()
+    try { fs.renameSync(p, renamed) } catch { /* best effort */ }
+    try {
+      fs.appendFileSync(path.join(STATE_DIR, 'quarantine.jsonl'),
+        JSON.stringify({ at: new Date().toISOString(), path: p, reason: 'corrupt supervisor state', renamedTo: renamed }) + '\n')
+    } catch { /* the rename is the important part */ }
+    return { corrupt: true }
+  }
 }
 function writeState (n, s) {
   fs.mkdirSync(STATE_DIR, { recursive: true })
@@ -71,6 +84,7 @@ function out (obj) { process.stdout.write(JSON.stringify(obj) + '\n') }
 if (cmd === 'status') {
   const s = readState(name)
   if (!s) { out({ command: 'supervisor', name, running: false, state: 'absent' }); process.exit(0) }
+  if (s.corrupt) { out({ command: 'supervisor', name, running: false, state: 'corrupt' }); process.exit(1) }
   const running = s.state === 'running' && alive(s.pid)
   out({ command: 'supervisor', name, running, state: running ? 'running' : (s.state || 'stopped'), pid: s.pid, restarts: s.restarts, probeKills: s.probeKills || 0, lastExit: s.lastExit ?? null, cmd: s.cmd })
   process.exit(running || s.state === 'stopped' ? 0 : 1)

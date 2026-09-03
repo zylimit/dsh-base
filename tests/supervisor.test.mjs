@@ -21,6 +21,23 @@ function sup (dir, args, opts = {}) {
   return spawnSync(process.execPath, [SUP, ...args], { cwd: dir, encoding: 'utf8', windowsHide: true, ...opts })
 }
 
+test('a corrupt supervisor state file is quarantined and reported, never read as absent', () => {
+  const dir = fixture('setInterval(() => {}, 1000)\n')
+  try {
+    fs.mkdirSync(path.join(dir, '.dsh', 'base', 'state'), { recursive: true })
+    fs.writeFileSync(path.join(dir, '.dsh', 'base', 'state', 'supervisor-z.json'), '{ not json')
+    const r = sup(dir, ['status', '--name', 'z'])
+    assert.equal(r.status, 1, 'a corrupt state must not read as a clean absence: ' + r.stdout + r.stderr)
+    const json = JSON.parse(r.stdout)
+    assert.equal(json.state, 'corrupt')
+    assert.equal(json.running, false)
+    const leftovers = fs.readdirSync(path.join(dir, '.dsh', 'base', 'state')).filter(f => f.startsWith('supervisor-z.json.corrupt-'))
+    assert.equal(leftovers.length, 1, 'the corrupt state is moved aside, not deleted')
+    const q = fs.readFileSync(path.join(dir, '.dsh', 'base', 'state', 'quarantine.jsonl'), 'utf8')
+    assert.match(q, /corrupt supervisor state/)
+  } finally { rmDir(dir) }
+})
+
 test('a crashing child restarts with backoff and the storm breaker fails visibly', () => {
   const dir = fixture('process.exit(1)\n')
   try {

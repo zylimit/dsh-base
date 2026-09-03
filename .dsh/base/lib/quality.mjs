@@ -399,7 +399,15 @@ export function appendGateLog (entry) {
 export function readGateLog () {
   const raw = readText(rel(GATELOG_PATH()), '')
   if (!raw) return []
-  return raw.split('\n').filter(Boolean).map(l => { try { return JSON.parse(l) } catch { return null } }).filter(Boolean)
+  const entries = []
+  let corrupt = 0
+  for (const l of raw.split('\n').filter(Boolean)) {
+    try { entries.push(JSON.parse(l)) } catch { corrupt++ }
+  }
+  // A log line that cannot be read is an interception record that cannot be
+  // read; the audit must count it, not pretend it never happened.
+  entries.corrupt = corrupt
+  return entries
 }
 
 /** A control that has never intervened is cost plus false confidence. */
@@ -420,9 +428,15 @@ export function gateAudit (catalog) {
     gateRuns: gateRuns.length,
     interventions: Object.fromEntries(fired),
     neverIntervenedChecks: neverFailed,
-    advice: neverFailed.length
-      ? 'These checks have never failed. Either they are genuinely stable, or they never actually run. Confirm with evidence before keeping them.'
-      : 'Every configured check has intervened at least once.',
+    corruptLines: log.corrupt || 0,
+    advice: [
+      neverFailed.length
+        ? 'These checks have never failed. Either they are genuinely stable, or they never actually run. Confirm with evidence before keeping them.'
+        : 'Every configured check has intervened at least once.',
+      (log.corrupt || 0) > 0
+        ? log.corrupt + ' gate-log line(s) are unreadable; a log with holes is how a guard that crashed reads as a guard that never fired.'
+        : null,
+    ].filter(Boolean).join(' '),
   }
 }
 

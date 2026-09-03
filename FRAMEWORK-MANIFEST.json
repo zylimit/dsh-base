@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 93,
-  "digest": "4686b15928224bdb061fe7a07851ce392a5c6313598b23f92cf470b5f72ede9b",
+  "digest": "d0530fa6002e6e33f4f89c6aaf94a7f70b8fdff70a4a115b737824d3cf9a5217",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -86,8 +86,8 @@
     },
     {
       "path": ".dsh/base/lib/quality.mjs",
-      "sha256": "5ae58862e8b09ea18f6a6661be35be4f4355ec4c685b33682cf4bb3bc73dbabc",
-      "bytes": 55670
+      "sha256": "5ecd31cd7bebcc9560bc27ced434d6a9b63b27e051fffc03b822d44508baf438",
+      "bytes": 56159
     },
     {
       "path": ".dsh/base/lib/scan.mjs",
@@ -101,8 +101,8 @@
     },
     {
       "path": ".dsh/base/supervisor.mjs",
-      "sha256": "c4ee1efc5e14a8cc2e080ab3a2e04f82063f8f98c66ef098561f88cbe0892761",
-      "bytes": 6142
+      "sha256": "6d2f0667c208e0e41f3d69a607a5ba5ac9f3b0b8021ca2b1c972a7387f2ba816",
+      "bytes": 6931
     },
     {
       "path": ".dsh/docs/ADOPTION.md",
