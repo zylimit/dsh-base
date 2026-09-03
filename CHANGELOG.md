@@ -25,4 +25,6 @@ Initial release for the configuration repository.
 - Secret scanning catches unquoted credential assignments and URL userinfo, not just quoted literals.
 - Deterministic evidence fingerprints: rename detection is disabled in canonical and range diffs so the hash cannot depend on a machine's `diff.renames` setting; a failed or truncated git measurement is loud (no hash is produced); untracked symlinks and unreadable files are named instead of followed; and a failed changed-file measurement fans the gate out conservatively instead of reading as "nothing changed".
 - Quarantined state: a corrupt task, fast-mode or review state file is moved aside with a timestamp and recorded in `state/quarantine.jsonl`; `risk` reports the quarantine, the engine continues from defaults, and nothing is silently rebuilt.
-- 90 engine self-test assertions and 133 behavioural tests; the scaffold governs itself.
+- Window-bound instruction exemptions: a `scan-instructions:ignore` marker can carry the sha256 of the marker line and its two neighbours (`--hash` computes it); editing the exempted content or either neighbour voids the exemption with a `suppression-stale` finding instead of silently widening it.
+- Phantom rule detection: `rules-audit` classifies enforcement-shaped tokens that resolve to nothing (`dsb phantasm`, a missing script) as phantoms - a reference that reads as enforced while enforcing nothing - and reports them separately from silent rules.
+- 91 engine self-test assertions and 136 behavioural tests; the scaffold governs itself.

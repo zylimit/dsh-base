@@ -13,6 +13,7 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
+import crypto from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import process from 'node:process'
 
@@ -82,7 +83,26 @@ const RULES = [
 ]
 
 const SUPPRESS = /scan-instructions:ignore/
+const BOUND = /scan-instructions:ignore\s+sha256:([0-9a-fA-F]{64})/
+const HASH_TOKEN = /\ssha256:[0-9a-fA-F]{64}/g
+const hashOnly = process.argv.includes('--hash')
 const staged = process.argv.includes('--staged')
+
+const stripCr = (s) => String(s == null ? '' : s).replace(/\r/g, '')
+
+/**
+ * The window a bound exemption covers: the marker line plus both neighbours.
+ * The marker's own hash token is stripped before hashing, so writing the token
+ * cannot break the hash it carries; editing any other byte of the window (the
+ * exempted content or its context) voids the exemption.
+ */
+function windowHash (lines, i) {
+  const win = [lines[i - 1], lines[i], lines[i + 1]].map(l => {
+    const t = stripCr(l)
+    return SUPPRESS.test(t) ? t.replace(HASH_TOKEN, '') : t
+  })
+  return crypto.createHash('sha256').update(win.join('\n')).digest('hex')
+}
 
 function fileList () {
   const args = staged
@@ -102,6 +122,7 @@ if (all === null) {
 
 const targets = all.filter(f => INSTRUCTION_PATTERNS.some(re => re.test(f)))
 const findings = []
+const hashes = []
 
 for (const f of targets) {
   let text
@@ -116,7 +137,28 @@ for (const f of targets) {
   const lines = text.split('\n')
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
-    if (SUPPRESS.test(line) || (i > 0 && SUPPRESS.test(lines[i - 1]))) continue
+    const markerHere = SUPPRESS.test(line)
+    const markerAbove = i > 0 && SUPPRESS.test(lines[i - 1])
+    if (hashOnly) {
+      if (markerHere && !BOUND.test(line)) hashes.push({ file: f, line: i + 1, sha256: windowHash(lines, i) })
+      continue
+    }
+    if (markerHere || markerAbove) {
+      let voided = false
+      for (const ml of [i, i - 1]) {
+        if (ml < 0 || !SUPPRESS.test(lines[ml])) continue
+        const bm = BOUND.exec(lines[ml])
+        if (bm && windowHash(lines, ml) !== bm[1].toLowerCase()) {
+          voided = true
+          findings.push({
+            file: f, line: ml + 1, rule: 'suppression-stale', severity: 'error',
+            message: 'the ignored content or one of its neighbours changed since this exemption was bound; the exemption is void - re-review the line and re-bind it with "node .dsh/base/audit/scan-instructions.mjs --hash"',
+            excerpt: lines[ml].trim().slice(0, 120),
+          })
+        }
+      }
+      if (!voided) continue
+    }
     for (const rule of RULES) {
       if (!rule.re.test(line)) continue
       findings.push({
@@ -141,6 +183,7 @@ process.stdout.write(JSON.stringify({
   scanned: targets.length,
   staged,
   findings: findings.slice(0, 100),
+  hashes,
   counts: { error: errors.length, warning: findings.length - errors.length },
 }) + '\n')
 process.stderr.write('scan-instructions: ' + targets.length + ' instruction file(s), ' +

@@ -15,7 +15,7 @@ import {
   reviewLenses, lensExclusions, fastSkippable, LENS_LIBRARY, REVIEW_PROFILES, STATUS,
   winShimDirs, findShim, waivePlan,
 } from './quality.mjs'
-import { parseFrontmatter, FITNESS_RULE_IDS, fitness as fitnessScan, skillsLint as skillsLintFn, rulesAudit } from './scan.mjs'
+import { parseFrontmatter, FITNESS_RULE_IDS, fitness as fitnessScan, skillsLint as skillsLintFn, rulesAudit, phantomTokens } from './scan.mjs'
 import { denied, parseLedger, memoryConfig } from './context.mjs'
 import { fleetLint, fleetImpact, contractCycles } from './fleet.mjs'
 import fs from 'node:fs'
@@ -386,6 +386,14 @@ export function selftest () {
     // so a FAIL that already ran cannot be touched by any waiver.
     eq(w.skippable.size, 1)
     ok(!w.blocked.includes('lint'))
+  })
+  t('rules-audit: an enforcement-shaped token that resolves to nothing is a phantom', () => {
+    const known = new Set(['gate', 'fast', 'sync-check'])
+    eq(phantomTokens('Every decision is enforced by \x60dsb phantasm\x60.', known), ['dsb phantasm'])
+    eq(phantomTokens('Every decision is enforced by \x60dsb gate\x60.', known), [])
+    eq(phantomTokens('Declared in \x60fleet.json\x60.', known), [], 'data files are named, not enforcement claims')
+    eq(phantomTokens('Run \x60dsb fast on --minutes 30\x60.', known), [], 'flags and metavariables are not phantoms')
+    eq(phantomTokens('See \x60tests/helpers.mjs\x60.', known), [], 'a real file is enforcement, not a phantom')
   })
   t('sync: code changed without the ledger is a violation', () => {
     const c = fixture()

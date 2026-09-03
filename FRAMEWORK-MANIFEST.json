@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 91,
-  "digest": "4619ba25cd0d309e3a98ff0c7e949e12f4b150b00d1310fa2c37f3889a1db905",
+  "digest": "88baeb1bd8eab114b42d2dd4194ab1ba6aae6c0d690bce5be721aef77a7abbb6",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -26,8 +26,8 @@
     },
     {
       "path": ".dsh/base/audit/scan-instructions.mjs",
-      "sha256": "2b2df97c593f4f60b567c3c22befcc8ff05bb95b6200fd88bff8b4eb3fc2d68a",
-      "bytes": 6253
+      "sha256": "f635322ff0fa54991b7b44878993091625aa8e657c757818ff8c3423e681d3de",
+      "bytes": 8028
     },
     {
       "path": ".dsh/base/audit/scan-secrets.mjs",
@@ -91,13 +91,13 @@
     },
     {
       "path": ".dsh/base/lib/scan.mjs",
-      "sha256": "9ed6aed59ae20d76faab3ea6ff4b0c17445586c7577953092f4c920ab9b1294e",
-      "bytes": 37712
+      "sha256": "a5c0d90a08bf9cd8ad20f3434b4efa79f2d02bc7009d2c45b750d6d3dd1539a9",
+      "bytes": 39554
     },
     {
       "path": ".dsh/base/lib/selftest.mjs",
-      "sha256": "46383955496bd7c0231ffe047aed034adffa2bbfc9bc24a4b129411435377861",
-      "bytes": 33386
+      "sha256": "075f8e712fc4519e65b8c88d741579af2f2f8999e820219b7c0e2b6d879ceee5",
+      "bytes": 34090
     },
     {
       "path": ".dsh/docs/ADOPTION.md",

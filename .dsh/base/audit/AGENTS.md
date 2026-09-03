@@ -47,3 +47,8 @@ node --test "tests/*.test.mjs"
 is present in tracked text; it does not prove that no secret exists. Wire a real
 scanner from `.dsh/base/adapters.json` (`gitleaks`, `trufflehog`) as an additional
 check claiming `security` before treating this as sufficient for a high-risk module.
+
+scan-instructions.mjs suppressions are line markers. Append sha256:<window-hash>
+(from "node .dsh/base/audit/scan-instructions.mjs --hash") to the marker to bind
+the exemption to the marker line and its two neighbours: editing any of them voids
+the exemption with a suppression-stale finding instead of silently widening it.

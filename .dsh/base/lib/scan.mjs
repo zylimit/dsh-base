@@ -663,6 +663,31 @@ function enforcementTokens (line, known) {
   return found
 }
 
+/**
+ * An enforcement-shaped reference that resolves to nothing is a phantom: it
+ * reads as enforced while enforcing nothing, which is worse than admitting to
+ * being unenforced. A token escapes the phantom label when it names a known
+ * command, a real file, a metavariable (<...>), or carries flags.
+ */
+export function phantomTokens (line, known) {
+  const phantoms = []
+  const re = /\x60([^\x60]{2,80})\x60/g
+  let m
+  while ((m = re.exec(line)) !== null) {
+    const raw = m[1].trim()
+    const bare = raw.replace(/^node \.dsh\/base\/dsb\.mjs\s+/, '').replace(/^dsb\s+/, '').replace(/^\.\//, '').split(/[\s|]/)[0]
+    if (!bare || bare.includes('<') || bare.includes('--')) continue
+    if (known.has(bare)) continue
+    if (exists(bare) || exists('.dsh/' + bare) || exists('.github/' + bare) || exists('scripts/' + bare)) continue
+    if (/^dsb\s+[a-z0-9-]+$/i.test(raw)) { phantoms.push(raw); continue }
+    if (/^(githooks?|scripts|\.dsh|\.github)\//.test(bare)) { phantoms.push(raw); continue }
+    // Scripts are enforcement points; .json/.md files are data or prose and a
+    // rule may name them without claiming they enforce anything.
+    if (/\.(sh|ps1|mjs|js|ya?ml)$/.test(bare)) { phantoms.push(raw); continue }
+  }
+  return phantoms
+}
+
 export function rulesAudit (catalog, { files = null } = {}) {
   const known = new Set([
     ...Object.keys((catalog && catalog.checks) || {}),
@@ -686,13 +711,15 @@ export function rulesAudit (catalog, { files = null } = {}) {
       if (!RULE_LINE.test(line)) continue
       if (line.trim().length < 25) continue
       const tokens = enforcementTokens(line, known)
+      const phantoms = phantomTokens(line, known)
       const declared = PROMPT_ONLY.test(line) || PROMPT_ONLY.test(lines[i + 1] || '') || PROMPT_ONLY.test(section)
       rows.push({
         file: f,
         line: i + 1,
         section,
-        state: tokens.length ? 'enforced' : (declared ? 'declared-unenforced' : 'unenforced'),
+        state: tokens.length ? 'enforced' : (phantoms.length ? 'phantom' : (declared ? 'declared-unenforced' : 'unenforced')),
         enforcedBy: tokens,
+        phantoms,
         text: line.trim().slice(0, 140),
       })
     }
@@ -701,6 +728,7 @@ export function rulesAudit (catalog, { files = null } = {}) {
   const enforced = rows.filter(r => r.state === 'enforced')
   const declared = rows.filter(r => r.state === 'declared-unenforced')
   const silent = rows.filter(r => r.state === 'unenforced')
+  const phantom = rows.filter(r => r.state === 'phantom')
   // Advisory by default. This measures honesty, not correctness: a project may
   // legitimately keep unenforced rules, and turning that into a blocking gate on
   // day one would be a rule with nothing behind it, which is the exact failure
@@ -714,15 +742,22 @@ export function rulesAudit (catalog, { files = null } = {}) {
     file: r.file,
     line: r.line,
     message: 'rule names no enforcement and does not admit to being unenforced: "' + r.text + '". Bind it to a command, mark it prompt-only, or delete it - an unenforced rule competes with the enforced ones.',
-  }))
+  })).concat(phantom.map(r => ({
+    severity: 'error',
+    code: 'RULE_PHANTOM',
+    file: r.file,
+    line: r.line,
+    message: 'rule names ' + JSON.stringify(r.phantoms[0]) + ' as its enforcement, but nothing by that name exists: "' + r.text + '". A phantom reads as enforced while enforcing nothing - fix the reference, build the command, or mark the rule prompt-only.',
+  })))
 
   return {
-    ok: silent.length <= max,
+    ok: (silent.length + phantom.length) <= max,
     counts: {
       total: rows.length,
       enforced: enforced.length,
       declaredUnenforced: declared.length,
       unenforced: silent.length,
+      phantom: phantom.length,
       maxUnenforced: max,
     },
     enforcementRatio: rows.length ? Number((enforced.length / rows.length).toFixed(3)) : 1,
