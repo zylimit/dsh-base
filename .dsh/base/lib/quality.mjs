@@ -483,9 +483,15 @@ export function verifyReceipts () {
   const head = headCommit()
 
   const dir = RECEIPT_DIR()
-  const receipts = fs.existsSync(dir)
-    ? listFiles(rel(dir)).filter(p => p.endsWith('.json')).map(p => readJson(p, null)).filter(Boolean)
+  const entries = fs.existsSync(dir)
+    ? listFiles(rel(dir)).filter(p => p.endsWith('.json')).map(p => ({ p, r: readJson(p, null) }))
     : []
+  // A receipt that cannot be parsed is evidence loss, not evidence absence:
+  // it fails the verdict, and the file is quarantined (moved aside, recorded)
+  // so the human who must explain what happened still has the bytes.
+  const unreadable = entries.filter(e => e.r === null)
+  for (const e of unreadable) quarantine(e.p, 'unreadable receipt')
+  const receipts = entries.filter(e => e.r !== null).map(e => e.r)
   const tampered = receipts.filter(r => {
     const { contentHash, ...rest } = r
     return sha256Lf(JSON.stringify(rest)) !== contentHash
@@ -509,14 +515,14 @@ export function verifyReceipts () {
   if (diffIsEmpty()) {
     if (rangeValid.length > 0) {
       return {
-        ok: true, stale: false, tampered: [], vacuous: vacuous.map(r => r.taskId),
+        ok: unreadable.length === 0, stale: false, tampered: [], unreadable: unreadable.map(e => e.p), vacuous: vacuous.map(r => r.taskId),
         currentDiffHash: current, baseCommit: head,
         matching: [],
         rangeMatching: rangeValid.map(r => ({ taskId: r.taskId, reviewer: r.reviewer, createdAt: r.createdAt, lenses: r.lenses || null, kind: 'range', range: r.range })),
         receipts: receipts.length,
       }
     }
-    return { ok: false, degraded: true, rangeMatching: [], reason: 'no-change: the working tree matches HEAD, so no receipt can bind it', currentDiffHash: current, baseCommit: head }
+    return { ok: false, degraded: true, rangeMatching: [], unreadable: unreadable.map(e => e.p), reason: 'no-change: the working tree matches HEAD, so no receipt can bind it', currentDiffHash: current, baseCommit: head }
   }
 
   const matching = receipts.filter(r =>
@@ -527,9 +533,10 @@ export function verifyReceipts () {
     !vacuous.includes(r))
   const rangeMatching = rangeValid.filter(r => r.range.head === head)
   return {
-    ok: (matching.length > 0 || rangeMatching.length > 0) && tampered.length === 0,
+    ok: (matching.length > 0 || rangeMatching.length > 0) && tampered.length === 0 && unreadable.length === 0,
     stale: matching.length === 0 && rangeMatching.length === 0,
     tampered: tampered.map(r => r.taskId),
+    unreadable: unreadable.map(e => e.p),
     vacuous: vacuous.map(r => r.taskId),
     currentDiffHash: current,
     baseCommit: head,

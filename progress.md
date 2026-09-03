@@ -82,6 +82,8 @@ Nothing.
 
 ## Done
 
+- 2026-09-03 | #— unreadable receipts now fail closed and are quarantined instead of silently vanishing | evidence: verifyReceipts treated an unparseable receipt as if it did not exist - with a valid receipt present the verdict stayed green and the evidence loss left no trace; it now reports the unreadable file, refuses the verdict, and quarantines the bytes (rename aside + quarantine.jsonl); red-first test in tests/receipt-integrity.test.mjs (its own assertion bug - Array.includes is equality, not substring - was found and fixed during the red phase); 153 behavioural tests exit 0, mutation battery rerun on the clean tree
+
 - 2026-09-03 | #— the golden ruler now pins a REAL gate run, not just dry-run | evidence: new governedGate scenario (47 rows across 5 states) runs the gate end-to-end - command spawning, evidence capture, the ledger append and the attribute-coverage rows are now part of the byte-stable contract; check commands use the cross-platform-deterministic form the siblings' npm-baseline lesson prescribed (node -e with fixed stdout, never tool versions); double replay zero drift locally, mutation battery still 10/10
 
 - 2026-09-03 | #— preemptive sweep on the defect classes cc-base's new commits revealed: dsh is clean on both, and one is now pinned | evidence: path-shape audit - no abs() call in the engine libs emits an absolute path into stdout JSON, outputs are rel() throughout (their 19g disease absent); exclusion-table drift - DIFF_EXCLUDED and CONTEXT_DENY agree on the four runtime dirs and their one deliberate difference (trend packable, it is the committed shared debt ledger) is now documented at both sites and pinned by tests/table-consistency.test.mjs, so neither table can drift silently again
