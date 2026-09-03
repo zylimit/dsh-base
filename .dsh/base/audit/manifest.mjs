@@ -16,6 +16,7 @@ const MANAGED = [
   /^\.dsh\/base\/install\.mjs$/,
   /^\.dsh\/base\/lib\/.*\.mjs$/,
   /^\.dsh\/base\/audit\/.*\.mjs$/,
+  /^\.dsh\/base\/supervisor\.mjs$/,
   /^\.dsh\/base\/githooks\//,
   /^\.dsh\/docs\//,
   // The adapter table and the example catalog are distributed assets whose
