@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 91,
-  "digest": "88baeb1bd8eab114b42d2dd4194ab1ba6aae6c0d690bce5be721aef77a7abbb6",
+  "digest": "d832b79bb952e5eafd2944ebd55fb8a5957f8513cfb00636f3e828f139b9faff",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -41,8 +41,8 @@
     },
     {
       "path": ".dsh/base/dsb.mjs",
-      "sha256": "df3cb8c21735944b74d855a6141c4e541c9f4e746317b950cea9c6f3bc133f84",
-      "bytes": 50903
+      "sha256": "452fe425d844078179e38bb06512b8fa5c79c7c7a92ca82820a38cab127c5720",
+      "bytes": 51881
     },
     {
       "path": ".dsh/base/githooks/commit-msg",
@@ -81,8 +81,8 @@
     },
     {
       "path": ".dsh/base/lib/graph.mjs",
-      "sha256": "2e3818dd5cebf4e066e91bb8599d441dbde4cb36f7e9f71497a0e8d30c65f568",
-      "bytes": 44196
+      "sha256": "f109afb848d420f22f125a76b05bcb354d4edab3d9140c61ad0c24a96ff3df94",
+      "bytes": 46664
     },
     {
       "path": ".dsh/base/lib/quality.mjs",
@@ -96,8 +96,8 @@
     },
     {
       "path": ".dsh/base/lib/selftest.mjs",
-      "sha256": "075f8e712fc4519e65b8c88d741579af2f2f8999e820219b7c0e2b6d879ceee5",
-      "bytes": 34090
+      "sha256": "fd8e0d8a4e7c60ad7376fe140b4e3994eaa85eec238c9214473bc3bb7394d431",
+      "bytes": 35136
     },
     {
       "path": ".dsh/docs/ADOPTION.md",

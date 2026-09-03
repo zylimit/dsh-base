@@ -69,10 +69,38 @@ test('REQ-ARC-004 the live repository has no forbidden or undeclared edges', () 
   assert.equal(typeof r.json.unresolved, 'number', 'unresolved specifiers must be reported, not hidden')
 })
 
-test('REQ-ARC-005 the ratchet treats an empty history as a baseline', () => {
-  const r = trendGate({ metrics: { forbidden: 7, layerViolations: 2, undeclared: 11, cycles: 1 } }, [])
+test('REQ-ARC-005 the ratchet treats an empty history as a baseline for non-forbidden debt', () => {
+  const r = trendGate({ metrics: { forbidden: 0, layerViolations: 2, undeclared: 11, cycles: 1 } }, [])
   assert.equal(r.ok, true)
   assert.equal(r.baseline, true)
+})
+
+test('REQ-ARC-005 forbidden edges are never baselineable, not even on an empty history', () => {
+  const r = trendGate({ metrics: { forbidden: 1, layerViolations: 0, undeclared: 0, cycles: 0 } }, [])
+  assert.equal(r.ok, false)
+  assert.equal(r.forbiddenViolation, true)
+})
+
+test('REQ-ARC-005 the per-edge ratchet rejects a new debt edge at an unchanged count', () => {
+  const history = [
+    { at: 'x', metrics: { forbidden: 0, layerViolations: 0, undeclared: 1, cycles: 0 }, edges: { forbidden: [], layerViolations: [], undeclared: ['a->b'], cycles: [] } },
+    { at: 'y', metrics: { forbidden: 0, layerViolations: 0, undeclared: 1, cycles: 0 }, edges: { forbidden: [], layerViolations: [], undeclared: ['a->b'], cycles: [] } },
+  ]
+  const r = trendGate({ metrics: { forbidden: 0, layerViolations: 0, undeclared: 1, cycles: 0 }, edges: { forbidden: [], layerViolations: [], undeclared: ['c->d'], cycles: [] } }, history)
+  assert.equal(r.ok, false, 'count is unchanged but the debt edge is new')
+  assert.ok(r.regressions.some(x => x.edge === 'c->d'), JSON.stringify(r.regressions))
+})
+
+test('REQ-ARC-005 an edge present in every snapshot stays tolerated', () => {
+  const history = [{ at: 'x', metrics: { forbidden: 0, layerViolations: 0, undeclared: 1, cycles: 0 }, edges: { forbidden: [], layerViolations: [], undeclared: ['a->b'], cycles: [] } }]
+  const r = trendGate({ metrics: { forbidden: 0, layerViolations: 0, undeclared: 1, cycles: 0 }, edges: { forbidden: [], layerViolations: [], undeclared: ['a->b'], cycles: [] } }, history)
+  assert.equal(r.ok, true, JSON.stringify(r.regressions))
+})
+
+test('REQ-ARC-005 legacy count-based snapshots keep the old ratchet', () => {
+  const history = [{ at: 'x', metrics: { forbidden: 0, layerViolations: 0, undeclared: 1, cycles: 0 } }]
+  assert.equal(trendGate({ metrics: { forbidden: 0, layerViolations: 0, undeclared: 2, cycles: 0 } }, history).ok, false)
+  assert.equal(trendGate({ metrics: { forbidden: 0, layerViolations: 0, undeclared: 1, cycles: 0 } }, history).ok, true)
 })
 
 test('REQ-ARC-006 a live ADR without a resolvable enforcement fails', () => {

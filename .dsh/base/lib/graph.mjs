@@ -426,11 +426,27 @@ export function archCheck (catalog, { paths = null, useCache = true } = {}) {
 const TREND_PATH = () => path.join(BASE_DIR, 'trend', 'arch-trend.jsonl')
 const RATCHET_METRICS = ['forbidden', 'layerViolations', 'undeclared', 'cycles']
 
+/**
+ * Identity of the debt edges themselves, not just their count. A count ratchet
+ * has a hole: delete one debt edge and add another and the number never moves.
+ * The ratchet must compare edge identities against every prior snapshot.
+ */
+function edgeIdentities (result) {
+  const cycleKey = (c) => [...new Set(c)].sort().join('|')
+  return {
+    forbidden: (result.forbidden || []).map(e => e.from + '->' + e.to),
+    layerViolations: (result.layerViolations || []).map(e => e.from + '->' + e.to),
+    undeclared: (result.undeclared || []).map(e => e.from + '->' + e.to),
+    cycles: (result.cycles || []).map(cycleKey).filter(s => s.includes('|')),
+  }
+}
+
 export function recordTrend (result) {
   const p = TREND_PATH()
   const entry = {
     at: nowIso(),
     metrics: Object.fromEntries(RATCHET_METRICS.map(k => [k, result.metrics[k] || 0])),
+    edges: edgeIdentities(result),
     scanned: result.scanned,
   }
   let lines = []
@@ -453,11 +469,50 @@ export function readTrend () {
 
 /**
  * The ratchet turns one way only: historical debt is tolerated, new debt is not.
- * The gate fails when the newest measurement exceeds the best ever recorded.
+ * When snapshots carry edge identities, the ratchet compares edges against the
+ * intersection of every prior snapshot - a new debt edge fails even if the
+ * count stayed level. Forbidden edges are violations of the declared
+ * architecture itself, so they are never baselineable: zero-tolerance, however
+ * long the history. Snapshots without edge identities keep the count-based
+ * ratchet.
  */
 export function trendGate (current, history = readTrend()) {
+  const forbiddenNow = (current.metrics && current.metrics.forbidden) || 0
+  if (forbiddenNow > 0) {
+    return {
+      ok: false,
+      forbiddenViolation: true,
+      reason: 'forbidden dependency edges violate the declared architecture, not debt: the ratchet cannot baseline them',
+      current: current.metrics,
+      regressions: [{ metric: 'forbidden', best: 0, now: forbiddenNow }],
+      samples: history.length,
+    }
+  }
   if (history.length === 0) {
     return { ok: true, baseline: true, reason: 'no baseline recorded yet; run "dsb arch-check --record" first' }
+  }
+  const withEdges = history.filter(h => h.edges)
+  if (withEdges.length) {
+    const intersection = {}
+    const currentEdges = current.edges || { forbidden: [], layerViolations: [], undeclared: [], cycles: [] }
+    for (const k of ['undeclared', 'layerViolations', 'cycles']) {
+      const sets = withEdges.map(h => new Set(h.edges[k] || []))
+      intersection[k] = sets.reduce((acc, s) => new Set([...acc].filter(x => s.has(x))), new Set(sets[0] || []))
+    }
+    const regressions = []
+    for (const k of ['undeclared', 'layerViolations', 'cycles']) {
+      for (const id of currentEdges[k] || []) {
+        if (!intersection[k].has(id)) regressions.push({ metric: k, edge: id, reason: 'debt edge absent from at least one prior snapshot' })
+      }
+    }
+    return {
+      ok: regressions.length === 0,
+      perEdge: true,
+      intersection: Object.fromEntries(Object.entries(intersection).map(([k, v]) => [k, [...v]])),
+      current: current.metrics,
+      regressions,
+      samples: withEdges.length,
+    }
   }
   const best = {}
   for (const k of RATCHET_METRICS) {

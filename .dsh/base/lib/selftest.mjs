@@ -300,19 +300,31 @@ export function selftest () {
   })
 
   // ── drift ratchet ─────────────────────────────────────────────────────────
-  t('ratchet: without history the gate records a baseline instead of failing', () => {
-    const r = trendGate({ metrics: { forbidden: 5, layerViolations: 0, undeclared: 9, cycles: 0 } }, [])
+  t('ratchet: without history the gate records a baseline for non-forbidden debt', () => {
+    const r = trendGate({ metrics: { forbidden: 0, layerViolations: 0, undeclared: 9, cycles: 0 } }, [])
     ok(r.ok)
     ok(r.baseline)
   })
+  t('ratchet: forbidden edges are violations, not debt - never baselineable', () => {
+    const r = trendGate({ metrics: { forbidden: 5, layerViolations: 0, undeclared: 9, cycles: 0 } }, [])
+    ok(!r.ok)
+    ok(r.forbiddenViolation)
+  })
   t('ratchet: new debt beyond the historical best fails', () => {
     const history = [
-      { metrics: { forbidden: 3, layerViolations: 0, undeclared: 20, cycles: 1 } },
-      { metrics: { forbidden: 3, layerViolations: 0, undeclared: 12, cycles: 1 } },
+      { metrics: { forbidden: 0, layerViolations: 0, undeclared: 20, cycles: 1 } },
+      { metrics: { forbidden: 0, layerViolations: 0, undeclared: 12, cycles: 1 } },
     ]
-    const worse = trendGate({ metrics: { forbidden: 3, layerViolations: 0, undeclared: 13, cycles: 1 } }, history)
+    const worse = trendGate({ metrics: { forbidden: 0, layerViolations: 0, undeclared: 13, cycles: 1 } }, history)
     ok(!worse.ok, 'undeclared 13 exceeds the best ever recorded of 12')
     eq(worse.regressions.map(r => r.metric), ['undeclared'])
+  })
+  t('ratchet: per-edge identities catch a swap the count ratchet misses', () => {
+    const history = [{ metrics: { forbidden: 0, layerViolations: 0, undeclared: 1, cycles: 0 }, edges: { forbidden: [], layerViolations: [], undeclared: ['a->b'], cycles: [] } }]
+    const swapped = trendGate({ metrics: { forbidden: 0, layerViolations: 0, undeclared: 1, cycles: 0 }, edges: { forbidden: [], layerViolations: [], undeclared: ['c->d'], cycles: [] } }, history)
+    ok(!swapped.ok, 'count unchanged but the edge is new debt')
+    const tolerated = trendGate({ metrics: { forbidden: 0, layerViolations: 0, undeclared: 1, cycles: 0 }, edges: { forbidden: [], layerViolations: [], undeclared: ['a->b'], cycles: [] } }, history)
+    ok(tolerated.ok, 'an edge present in every snapshot is historical debt')
   })
   t('ratchet: repaying debt below the historical best passes', () => {
     const history = [{ metrics: { forbidden: 3, layerViolations: 0, undeclared: 12, cycles: 1 } }]

@@ -379,9 +379,23 @@ COMMANDS['review-pack'] = (args) => {
   const stat = git(['diff', '--stat', base]).stdout.trim()
   const nameStatus = git(['diff', '--name-status', base]).stdout.trim()
   const deletions = nameStatus.split('\n').filter(l => /^D\s/.test(l)).map(l => l.slice(1).trim())
+  const renames = nameStatus.split('\n').filter(l => /^R\d*\s/.test(l)).map(l => l.slice(1).trim())
   const untracked = git(['ls-files', '--others', '--exclude-standard']).stdout.split('\n').filter(Boolean)
   const full = git(['diff', base]).stdout
   const lines = full.split('\n')
+  // What left matters as much as what arrived. Render removed lines under a
+  // budget so the reviewer sees deletions even when skimming additions.
+  const removed = []
+  let removedTotal = 0
+  let currentFile = '(unknown)'
+  for (const l of lines) {
+    const h = /^diff --git a\/(.+?) b\//.exec(l)
+    if (h) { currentFile = h[1]; continue }
+    if (l.startsWith('-') && !l.startsWith('---')) {
+      removedTotal++
+      if (removed.length < 200) removed.push(currentFile + ': ' + l.slice(1))
+    }
+  }
   const spillDir = path.join(BASE_DIR, 'state', 'review')
   fs.mkdirSync(spillDir, { recursive: true })
   const stamp = Date.now()
@@ -411,6 +425,15 @@ COMMANDS['review-pack'] = (args) => {
     '## Deletion audit (files with removals — always review what left, not only what arrived)',
     '',
     deletions.length ? deletions.join('\n') : '(no deleted files)',
+    '',
+    '## Removed lines (budgeted; ' + removedTotal + ' total)',
+    '',
+    removed.length ? removed.join('\n') : '(no removed lines)',
+    (removed.length < removedTotal ? '\n...[truncated, ' + (removedTotal - removed.length) + ' more removed lines in the diff]' : ''),
+    '',
+    '## Renames',
+    '',
+    renames.length ? renames.join('\n') : '(no renames)',
     '',
     '## Untracked new files',
     '',
