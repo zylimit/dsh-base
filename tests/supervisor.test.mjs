@@ -78,6 +78,6 @@ test('stop terminates the child and the supervisor exits cleanly', async () => {
 })
 
 function freePort () {
-  const r = spawnSync(process.execPath, ['-e', "require('net').createServer().listen(0, function(){ console.log(this.address().port); this.close() })"], { encoding: 'utf8', windowsHide: true })
+  const r = spawnSync(process.execPath, ['-e', "require('net').createServer().listen(0, function(){ process.stdout.write(String(this.address().port)); this.close() })"], { encoding: 'utf8', windowsHide: true })
   return Number(r.stdout.trim())
 }

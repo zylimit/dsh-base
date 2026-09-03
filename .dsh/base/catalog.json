@@ -592,7 +592,8 @@
         "setup.ps1",
         "setup.sh",
         ".dsh/base/githooks/**",
-        ".github/**"
+        ".github/**",
+        ".dsh/base/supervisor.mjs"
       ],
       "layer": "tooling",
       "owners": [
