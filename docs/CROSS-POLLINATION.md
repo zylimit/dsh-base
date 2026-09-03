@@ -25,12 +25,13 @@ surface dsh does not have and will not fake. What the siblings measure with
 hooks, dsh measures with the engine; where they are ahead, this ledger is how
 we stay behind them never.
 
-Measured margins (2026-09-03): 95 self-test assertions, 157 behavioural tests,
-a 52-row golden-baseline ruler with a 13/13 mutation kill rate, all green in
+Measured margins (2026-09-03): 95 self-test assertions, 159 behavioural tests,
+a 58-row golden-baseline ruler with a 13/13 mutation kill rate, all green in
 CI across ubuntu/windows/macos x node 22/24. The ruler scenario set now
-includes a real gate run, a fast-mode loan window, and corrupt receipt/trend
-fixtures, so the newest integrity code dies twice: once by its behavioural
-test, once by the ruler.
+includes a real gate run, a fast-mode loan window, the full structured-review
+loop (start/blue/lenses/verdict/receipt), and corrupt receipt/trend fixtures,
+so the newest integrity code dies twice: once by its behavioural test, once
+by the ruler.
 
 ---
 

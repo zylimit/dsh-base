@@ -162,6 +162,24 @@ function scenarios () {
   fs.appendFileSync(path.join(fast, 'src', 'core', 'a.mjs'), '// fast scenario change\n')
   out.governedFast = { dir: fast, commands: [['fast', 'on', '--minutes', '60', '--reason', 'golden fast window'], ['gate'], ['risk']] }
 
+  // The structured review loop: start -> blue with evidence -> one clean
+  // report per required lens -> computed verdict -> the receipt it writes.
+  const rev = tmpDir('rev')
+  const runR = gitInit(rev)
+  seedGoverned(rev, runR)
+  fs.appendFileSync(path.join(rev, 'src', 'core', 'a.mjs'), '// review scenario change\n')
+  out.governedReview = {
+    dir: rev,
+    commands: [
+      ['review', 'start'],
+      { cmd: ['review', 'blue'], input: '{"claims":[{"claim":"the change returns 1","evidence":"node src/core/a.mjs printed 1 exit 0"}]}' },
+      { cmd: ['review', 'lens', 'correctness'], input: '{"findings":[]}' },
+      { cmd: ['review', 'lens', 'testing'], input: '{"findings":[]}' },
+      ['review', 'verdict'],
+      ['receipt', 'verify'],
+    ],
+  }
+
   const debt = tmpDir('debt')
   const runE = gitInit(debt)
   seedGoverned(debt, runE)
@@ -187,7 +205,10 @@ function scenarios () {
 // ── normalization (field-name-keyed; digests and counts verbatim) ──────────
 
 const TS_KEYS = /(^|_)(at|createdAt|completedAt|startedAt|endedAt|until|durationMs|elapsed|timestamp)(_|$)/i
-const ENV_KEYS = /^(node|platform|root|headCommit|baseCommit|version|arch|homedir|user|by|tmpdir|os|renamedTo|packPath|evidence)$/i
+// contentHash is masked although it is a digest: a receipt's contentHash binds
+// its createdAt, so it is time-bound by construction and can never be a stable
+// contract. Code digests (diffHash/planHash/packHash) stay verbatim.
+const ENV_KEYS = /^(node|platform|root|headCommit|baseCommit|version|arch|homedir|user|by|tmpdir|os|renamedTo|packPath|evidence|contentHash)$/i
 
 function normalize (value, key, fixtureDir) {
   if (value === null || value === undefined) return value
@@ -216,10 +237,12 @@ function normalize (value, key, fixtureDir) {
 // ── execution ───────────────────────────────────────────────────────────────
 
 function runCommand (dir, cmd) {
-  const args = cmd[0] === 'audit'
-    ? [path.join(REPO, '.dsh', 'base', 'audit', cmd[1])]
-    : [DSB, ...cmd]
-  const r = spawnSync(process.execPath, args, { cwd: dir, encoding: 'utf8', env: gitEnv(), windowsHide: true, maxBuffer: 32 * 1024 * 1024 })
+  const argv = Array.isArray(cmd) ? cmd : cmd.cmd
+  const input = Array.isArray(cmd) ? undefined : cmd.input
+  const args = argv[0] === 'audit'
+    ? [path.join(REPO, '.dsh', 'base', 'audit', argv[1])]
+    : [DSB, ...argv]
+  const r = spawnSync(process.execPath, args, { cwd: dir, encoding: 'utf8', env: gitEnv(), windowsHide: true, maxBuffer: 32 * 1024 * 1024, input })
   let json = null
   try { json = JSON.parse(r.stdout) } catch { json = { unparsed: String(r.stdout).slice(0, 200) } }
   return { exit: r.status === null ? -1 : r.status, json }
@@ -229,7 +252,8 @@ function collect (scn) {
   const rows = []
   for (const cmd of scn.commands) {
     const r = runCommand(scn.dir, cmd)
-    rows.push({ cmd: cmd.join(' '), exit: r.exit, json: normalize(r.json, null, scn.dir) })
+    const label = (Array.isArray(cmd) ? cmd.join(' ') : cmd.cmd.join(' ') + ' <stdin>')
+    rows.push({ cmd: label, exit: r.exit, json: normalize(r.json, null, scn.dir) })
   }
   return rows
 }

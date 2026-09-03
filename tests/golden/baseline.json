@@ -1208,6 +1208,144 @@
         }
       }
     ],
+    "governedReview": [
+      {
+        "cmd": "review start",
+        "exit": 0,
+        "json": {
+          "command": "review",
+          "sub": "start",
+          "ok": true,
+          "session": {
+            "version": 1,
+            "diffHash": "7237644c966a1aa46e9639fcf24eeeddc56f1188560fbbb4dcb07c7d82445fa5",
+            "baseCommit": "<ENV>",
+            "startedAt": "<TS>",
+            "scope": "",
+            "packPath": null,
+            "requiredLenses": [
+              "correctness",
+              "testing"
+            ],
+            "excludedLenses": [
+              {
+                "lens": "architecture",
+                "reason": "no affected module declares maintainability above minimal"
+              }
+            ],
+            "lineage": [],
+            "blue": null,
+            "lenses": {},
+            "verdict": null
+          }
+        }
+      },
+      {
+        "cmd": "review blue <stdin>",
+        "exit": 0,
+        "json": {
+          "command": "review",
+          "sub": "blue",
+          "ok": true,
+          "claims": 1
+        }
+      },
+      {
+        "cmd": "review lens correctness <stdin>",
+        "exit": 0,
+        "json": {
+          "command": "review",
+          "sub": "lens",
+          "ok": true,
+          "lens": "correctness",
+          "findings": 0
+        }
+      },
+      {
+        "cmd": "review lens testing <stdin>",
+        "exit": 0,
+        "json": {
+          "command": "review",
+          "sub": "lens",
+          "ok": true,
+          "lens": "testing",
+          "findings": 0
+        }
+      },
+      {
+        "cmd": "review verdict",
+        "exit": 0,
+        "json": {
+          "command": "review",
+          "sub": "verdict",
+          "ok": true,
+          "verdict": "ACCEPT",
+          "errors": [],
+          "errorCount": 0,
+          "unableLenses": [],
+          "lensCoverage": [
+            "correctness",
+            "testing"
+          ],
+          "excludedLenses": [
+            {
+              "lens": "architecture",
+              "reason": "no affected module declares maintainability above minimal"
+            }
+          ],
+          "stage": 3,
+          "isFinal": true,
+          "round": 1,
+          "maxRounds": 3,
+          "escalate": false,
+          "receipt": {
+            "version": 1,
+            "taskId": "review-7237644c",
+            "reviewer": "reviewer",
+            "verdict": "ACCEPT",
+            "scope": "working tree",
+            "notes": "",
+            "lenses": [
+              "correctness",
+              "testing"
+            ],
+            "baseCommit": "<ENV>",
+            "diffHash": "7237644c966a1aa46e9639fcf24eeeddc56f1188560fbbb4dcb07c7d82445fa5",
+            "createdAt": "<TS>",
+            "contentHash": "<ENV>"
+          },
+          "advice": "every stage passed, every required lens reported, and none found an error"
+        }
+      },
+      {
+        "cmd": "receipt verify",
+        "exit": 0,
+        "json": {
+          "command": "receipt",
+          "ok": true,
+          "stale": false,
+          "tampered": [],
+          "unreadable": [],
+          "vacuous": [],
+          "currentDiffHash": "7237644c966a1aa46e9639fcf24eeeddc56f1188560fbbb4dcb07c7d82445fa5",
+          "baseCommit": "<ENV>",
+          "matching": [
+            {
+              "taskId": "review-7237644c",
+              "reviewer": "reviewer",
+              "createdAt": "<TS>",
+              "lenses": [
+                "correctness",
+                "testing"
+              ],
+              "kind": "working-tree"
+            }
+          ],
+          "rangeMatching": [],
+          "receipts": 1
+        }
+      }
+    ],
     "governedDebt": [
       {
         "cmd": "catalog-lint",
