@@ -114,6 +114,7 @@ are fixed with tests:
 | review-receipt / review-report schemas | their echo of dsh review receipts | ours carry lens coverage and are pinned by the 61-row ruler; watching until their wiring lands |
 | 48-hour Rapid Mode window | rejected | dsh fast mode caps at 8 hours: a loan without a tight deadline is a discount; their own ADR-0002 said rapid must expire absolutely |
 | execpolicy-check adapter (Codex CLI bridge) | no surface | dsh has no Codex execpolicy host; the engine's own gate is the policy surface |
+| ba153ed (spec trace + release readiness binding) | their echo of dsh spec/trace/releaseReadiness | we hold the wired original: spec-lint + trace + the release conditions are tested and pinned by the 61-row ruler; theirs is still wip on a refactor branch (main untouched) - watching |
 
 ## Watching
 
