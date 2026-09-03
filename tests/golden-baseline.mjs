@@ -29,8 +29,10 @@ function gitEnv () {
 }
 
 function tmpDir (name) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dsb-golden-' + name + '-'))
-  return dir
+  // realpath once: macOS serves /var as a symlink to /private/var, and git
+  // reports the canonical path. The fixture and the mask must share one
+  // spelling or a canonical-path detail becomes platform drift.
+  return fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'dsb-golden-' + name + '-')))
 }
 
 function gitInit (dir) {
