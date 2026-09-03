@@ -820,15 +820,19 @@ export const REVIEW_PROFILES = Object.freeze({
 })
 
 const TIER_RANK = ['none', 'minimal', 'low', 'medium', 'high', 'critical']
+const PROFILE_RANK = { personal: 0, team: 1, production: 2, regulated: 3 }
 
 /**
  * Which lenses this review convenes.
  *
- * Order of authority: an explicit list wins; otherwise the profile sets the team,
+ * Order of authority: an explicit list wins; otherwise the profile sets the team
  * and a lens is then EXCLUDED when no affected module declares its attribute
- * above `minimal`. Attributes can only remove a lens, never add one — otherwise
- * a project that declared everything high would convene everybody, which is the
- * failure this is here to prevent.
+ * above `minimal`. Two axes bound the profile:
+ * - attributes can only REMOVE a lens, never add one - a project that declared
+ *   everything high must not convene everybody;
+ * - risk can only RAISE it: an affected module at high risk convenes at least
+ *   the team profile, at critical risk at least production. Riskier code gets
+ *   the deeper team even when the project configured a cheaper profile.
  */
 export function reviewLenses (catalog, { affected = null } = {}) {
   const explicit = catalog && catalog.review && Array.isArray(catalog.review.lenses) ? catalog.review.lenses : null
@@ -836,11 +840,17 @@ export function reviewLenses (catalog, { affected = null } = {}) {
 
   const profile = (catalog && catalog.review && catalog.review.profile) ||
     (catalog && catalog.profile) || 'team'
-  const base = REVIEW_PROFILES[profile] || REVIEW_PROFILES.team
+  let base = REVIEW_PROFILES[profile] || REVIEW_PROFILES.team
   if (!affected || !catalog || !Array.isArray(catalog.modules)) return base
 
   const mods = catalog.modules.filter(m => affected.includes(m.id))
   if (mods.length === 0) return base
+  const hasCritical = mods.some(m => m.riskTier === 'critical')
+  const hasHigh = mods.some(m => m.riskTier === 'high')
+  const floorProfile = hasCritical ? 'production' : (hasHigh ? 'team' : null)
+  if (floorProfile && (PROFILE_RANK[floorProfile] || 0) > (PROFILE_RANK[profile] || 0)) {
+    base = REVIEW_PROFILES[floorProfile]
+  }
   return base.filter(name => {
     const attr = LENS_LIBRARY[name] && LENS_LIBRARY[name].attribute
     // A lens with no attribute - correctness - is the floor of every review. It

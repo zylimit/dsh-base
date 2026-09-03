@@ -69,6 +69,27 @@ test('a lens is dropped when nothing affected declares its attribute', () => {
   } finally { rmDir(dir) }
 })
 
+test('a critical-risk module raises the review floor above the configured profile', () => {
+  const { dir } = repo(
+    { profile: 'personal' },
+    [{ id: 'core', paths: ['src/**'], riskTier: 'critical', attributes: { maintainability: 'high', security: 'high' } }])
+  try {
+    const r = dsb(['review', 'start'], { cwd: dir })
+    assert.deepEqual(r.json.session.requiredLenses, ['correctness', 'architecture', 'security'],
+      'risk raises the floor to production; attributes only shrink from there')
+  } finally { rmDir(dir) }
+})
+
+test('a high-risk module raises a personal review to the team floor', () => {
+  const { dir } = repo(
+    { profile: 'personal' },
+    [{ id: 'core', paths: ['src/**'], riskTier: 'high', attributes: { maintainability: 'high' } }])
+  try {
+    const r = dsb(['review', 'start'], { cwd: dir })
+    assert.deepEqual(r.json.session.requiredLenses, ['correctness', 'architecture'])
+  } finally { rmDir(dir) }
+})
+
 test('declaring everything critical cannot convene a bigger team than the profile', () => {
   const { dir } = repo(
     { profile: 'personal' },

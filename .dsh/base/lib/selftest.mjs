@@ -495,6 +495,18 @@ export function selftest () {
     ok(excluded.includes('privacy'))
     ok(lensExclusions(catalog, ['a', 'b']).every(x => x.reason.length > 0), 'an exclusion states its reason')
   })
+  t('review: risk tier raises the floor, attributes still only shrink it', () => {
+    const c = fixture()
+    c.review = { profile: 'personal' }
+    const ui = c.modules.find(m => m.id === 'ui')
+    ui.riskTier = 'critical'
+    ui.attributes = { maintainability: 'high', security: 'high' }
+    eq(reviewLenses(c, { affected: ['ui'] }), ['correctness', 'architecture', 'security'])
+    const api = c.modules.find(m => m.id === 'api')
+    api.riskTier = 'high'
+    api.attributes = { maintainability: 'high' }
+    eq(reviewLenses(c, { affected: ['api'] }), ['correctness', 'architecture'])
+  })
   t('review: attributes may only remove a lens, never add one', () => {
     const catalog = {
       profile: 'personal',

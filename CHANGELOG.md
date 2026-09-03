@@ -29,4 +29,5 @@ Initial release for the configuration repository.
 - Phantom rule detection: `rules-audit` classifies enforcement-shaped tokens that resolve to nothing (`dsb phantasm`, a missing script) as phantoms - a reference that reads as enforced while enforcing nothing - and reports them separately from silent rules.
 - Per-edge drift ratchet: trend snapshots record debt-edge identities, and `arch-trend --gate` rejects any edge absent from a prior snapshot even when the count stayed level; forbidden dependency edges are violations of the declared architecture and are never baselineable; legacy count-based snapshots keep the old ratchet.
 - The review evidence pack renders what left: a budgeted removed-lines section and a renames section beside the deletion audit, so reviewers cannot skim only the additions.
-- 93 engine self-test assertions and 141 behavioural tests; the scaffold governs itself.
+- Assurance floors, wired: an affected module at `high` risk convenes at least the `team` review profile and at `critical` risk at least `production` (attributes still only shrink the team); the release gate gains a blocking `review-depth` condition - the accepting receipt must convene the configured release floor (default `production`, never below `team`, `catalog.review.releaseFloor`).
+- 94 engine self-test assertions and 145 behavioural tests; the scaffold governs itself.

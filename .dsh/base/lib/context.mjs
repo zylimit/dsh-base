@@ -12,7 +12,7 @@ import {
   nowIso, git,
 } from './core.mjs'
 import { computeImpact, resolveVerification, lintCatalog, archCheck } from './graph.mjs'
-import { readTask, verifyLedger, verifyReceipts, readLedger, fastState, syncCheck, backlogList } from './quality.mjs'
+import { readTask, verifyLedger, verifyReceipts, readLedger, fastState, syncCheck, backlogList, REVIEW_PROFILES } from './quality.mjs'
 import { specLint, trace, skillsLint, agentsLint, adrCheck, fitness } from './scan.mjs'
 
 const FENCE = '\u0060\u0060\u0060'
@@ -677,6 +677,24 @@ export function releaseReadiness (catalog, { budget = 3000 } = {}) {
       const r = verifyReceipts()
       if (r.degraded) return { ok: false, reason: r.reason }
       return { ok: r.ok, reason: r.matching ? r.matching.length + ' fresh ACCEPT receipt(s)' : 'stale' }
+    }), true),
+    cond('review-depth', run(() => {
+      if (catalog && catalog.review && catalog.review.requireStructured === false) {
+        return { ok: true, reason: 'structured review is disabled; no lens floor applies' }
+      }
+      const requested = (catalog && catalog.review && catalog.review.releaseFloor) || 'production'
+      const rank = { personal: 0, team: 1, production: 2, regulated: 3 }
+      // A release is never shallower than the team floor: shipping under a
+      // correctness-only review is the hole this condition exists to close.
+      const required = (rank[requested] >= (rank.team || 1)) ? (REVIEW_PROFILES[requested] || REVIEW_PROFILES.production) : REVIEW_PROFILES.team
+      const r = verifyReceipts()
+      const best = [...(r.matching || []), ...(r.rangeMatching || [])]
+        .sort((a, b) => ((b.lenses || []).length) - ((a.lenses || []).length))[0]
+      if (!best) return { ok: false, reason: 'no fresh receipt to judge depth against' }
+      const have = new Set(best.lenses || [])
+      const missing = required.filter(n => !have.has(n))
+      if (missing.length) return { ok: false, reason: 'the accepting receipt convened fewer lenses than the release floor (' + requested + ') requires; missing: ' + missing.join(', ') }
+      return { ok: true, reason: 'receipt lens coverage satisfies the release floor (' + requested + ')' }
     }), true),
     cond('gate-fresh', run(() => {
       const gates = readLedger().filter(x => x.gate && !x.kind)

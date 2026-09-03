@@ -25,7 +25,7 @@ function repo () {
   return { dir, run, base }
 }
 
-const payload = JSON.stringify({ taskId: 'REL-1', reviewer: 'me', verdict: 'ACCEPT', scope: 'the release' })
+const payload = JSON.stringify({ taskId: 'REL-1', reviewer: 'me', verdict: 'ACCEPT', scope: 'the release', lenses: ['correctness', 'testing', 'architecture', 'security', 'reliability', 'performance'] })
 const RC = 'REQ-' + 'CALC-001'
 
 test('a range receipt refuses a ref that does not resolve', () => {

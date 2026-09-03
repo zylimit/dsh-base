@@ -11,6 +11,7 @@ import { dsb, tempDir, rmDir } from './helpers.mjs'
 // Assembled, never written literally: this file is itself scanned by the outer
 // repository's trace, and a literal id here would be a dangling reference.
 const RC = 'REQ-' + 'CALC-001'
+const LENSES = ['correctness', 'testing', 'architecture', 'security', 'reliability', 'performance']
 
 function repo () {
   const dir = tempDir('release')
@@ -67,7 +68,7 @@ test('release is blocked while the gate has not run on this surface', () => {
   try {
     fs.writeFileSync(path.join(dir, 'src', 'a.mjs'), 'export const a = 2\n')
     fs.appendFileSync(path.join(dir, 'progress.md'), '\n')
-    const w = dsb(['receipt', 'write'], { cwd: dir, input: JSON.stringify({ taskId: 'T-1', reviewer: 'me', verdict: 'ACCEPT', scope: 'src' }) })
+    const w = dsb(['receipt', 'write'], { cwd: dir, input: JSON.stringify({ taskId: 'T-1', reviewer: 'me', verdict: 'ACCEPT', scope: 'src', lenses: LENSES }) })
     assert.equal(w.code, 0)
     const r = dsb(['release'], { cwd: dir })
     assert.equal(r.code, 2)
@@ -85,13 +86,45 @@ test('release is ready once a fresh ACCEPT receipt exists and the gate passes', 
   try {
     fs.writeFileSync(path.join(dir, 'src', 'a.mjs'), 'export const a = 2\n')
     fs.appendFileSync(path.join(dir, 'progress.md'), '\n')
-    const w = dsb(['receipt', 'write'], { cwd: dir, input: JSON.stringify({ taskId: 'T-1', reviewer: 'me', verdict: 'ACCEPT', scope: 'src' }) })
+    const w = dsb(['receipt', 'write'], { cwd: dir, input: JSON.stringify({ taskId: 'T-1', reviewer: 'me', verdict: 'ACCEPT', scope: 'src', lenses: LENSES }) })
     assert.equal(w.code, 0)
     const g = dsb(['gate'], { cwd: dir })
     assert.equal(g.code, 0, JSON.stringify(g.json))
     const r = dsb(['release'], { cwd: dir })
     assert.equal(r.json.ready, true, JSON.stringify(r.json.blockers))
     assert.equal(r.code, 0)
+  } finally { rmDir(dir) }
+})
+
+test('release is blocked when the accepting receipt convened fewer lenses than the release floor', () => {
+  const { dir } = repo()
+  try {
+    fs.writeFileSync(path.join(dir, 'src', 'a.mjs'), 'export const a = 2\n')
+    fs.appendFileSync(path.join(dir, 'progress.md'), '\n')
+    const w = dsb(['receipt', 'write'], { cwd: dir, input: JSON.stringify({ taskId: 'T-1', reviewer: 'me', verdict: 'ACCEPT', scope: 'src', lenses: ['correctness'] }) })
+    assert.equal(w.code, 0)
+    const g = dsb(['gate'], { cwd: dir })
+    assert.equal(g.code, 0, JSON.stringify(g.json))
+    const r = dsb(['release'], { cwd: dir })
+    assert.equal(r.code, 2)
+    assert.ok(r.json.blockers.includes('review-depth'), JSON.stringify(r.json.blockers))
+  } finally { rmDir(dir) }
+})
+
+test('the release floor is configurable and never drops below team', () => {
+  const { dir } = repo()
+  try {
+    const catalog = JSON.parse(fs.readFileSync(path.join(dir, '.dsh', 'base', 'catalog.json'), 'utf8'))
+    catalog.review = { releaseFloor: 'team' }
+    fs.writeFileSync(path.join(dir, '.dsh', 'base', 'catalog.json'), JSON.stringify(catalog, null, 2))
+    fs.writeFileSync(path.join(dir, 'src', 'a.mjs'), 'export const a = 2\n')
+    fs.appendFileSync(path.join(dir, 'progress.md'), '\n')
+    const w = dsb(['receipt', 'write'], { cwd: dir, input: JSON.stringify({ taskId: 'T-2', reviewer: 'me', verdict: 'ACCEPT', scope: 'src', lenses: ['correctness', 'testing', 'architecture'] }) })
+    assert.equal(w.code, 0)
+    const g = dsb(['gate'], { cwd: dir })
+    assert.equal(g.code, 0, JSON.stringify(g.json))
+    const r = dsb(['release'], { cwd: dir })
+    assert.equal(r.code, 0, JSON.stringify(r.json.blockers))
   } finally { rmDir(dir) }
 })
 
