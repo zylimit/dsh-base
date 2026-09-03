@@ -649,13 +649,12 @@ export function completeTask (catalog, impact) {
  * precisely what gets skipped under deadline pressure.
  */
 export function syncCheck (catalog, { staged = false, paths = null } = {}) {
-  if (!isGitRepo()) return { ok: false, degraded: true, reason: 'not-a-git-repository' }
+  const changed = paths || (isGitRepo() ? changedPaths({ staged }).paths : null)
+  if (changed === null) return { ok: false, degraded: true, reason: 'not-a-git-repository', findings: [] }
 
   const mem = (catalog && catalog.memory) || {}
   const ledgerFile = mem.ledger || 'progress.md'
   const specDirs = (catalog && catalog.trace && catalog.trace.requirementDirs) || ['docs/requirements']
-
-  const changed = paths || changedPaths({ staged }).paths
   const has = (p) => changed.includes(p)
   const codeChanged = changed.filter(p => classifyPath(catalog, p).kind === 'module')
   const findings = []

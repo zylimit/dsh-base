@@ -1,0 +1,1250 @@
+{
+  "version": 1,
+  "generator": "tests/golden-baseline.mjs",
+  "scenarios": {
+    "nonGit": [
+      {
+        "cmd": "selftest",
+        "exit": 0,
+        "json": {
+          "command": "selftest",
+          "ok": true,
+          "total": 94,
+          "passed": 94,
+          "failed": 0,
+          "failures": []
+        }
+      },
+      {
+        "cmd": "doctor",
+        "exit": 0,
+        "json": {
+          "command": "doctor",
+          "ok": true,
+          "enabled": false,
+          "node": "<ENV>",
+          "platform": "<ENV>",
+          "root": "<ENV>",
+          "headCommit": null,
+          "modules": 0,
+          "checksConfigured": 0,
+          "modulesWithAttributes": 0,
+          "forbiddenEdges": 0,
+          "skills": 0,
+          "receiptsFresh": false,
+          "ledger": {
+            "ok": true,
+            "entries": 0,
+            "breaks": 0
+          },
+          "checks": [
+            {
+              "id": "node-version",
+              "ok": true,
+              "detail": "node <VER> (requires >= 20)"
+            },
+            {
+              "id": "git-repository",
+              "ok": false,
+              "detail": "not a git repository; every git-derived capability degrades"
+            },
+            {
+              "id": "catalog-present",
+              "ok": false,
+              "detail": "no catalog at .dsh/base/catalog.json (governance OFF; a valid silent state for small repos)"
+            },
+            {
+              "id": "root-agents-md",
+              "ok": false,
+              "detail": "missing project constitution"
+            },
+            {
+              "id": "skills-present",
+              "ok": false,
+              "detail": "0 skill file(s) under .dsh/skills"
+            },
+            {
+              "id": "ledger-intact",
+              "ok": true,
+              "detail": "0 ledger entries, chain intact"
+            },
+            {
+              "id": "git-hooks-installed",
+              "ok": false,
+              "detail": "core.hooksPath = (unset)"
+            },
+            {
+              "id": "attributes-declared",
+              "ok": true,
+              "detail": "0 module(s) declare quality attributes"
+            },
+            {
+              "id": "fast-mode",
+              "ok": true,
+              "detail": "closed"
+            }
+          ],
+          "failing": [
+            "git-repository",
+            "catalog-present",
+            "root-agents-md",
+            "skills-present",
+            "git-hooks-installed"
+          ]
+        }
+      },
+      {
+        "cmd": "catalog-lint",
+        "exit": 3,
+        "json": {
+          "command": "catalog-lint",
+          "ok": false,
+          "degraded": true,
+          "reason": "no module catalog at .dsh/base/catalog.json; governance is not enabled for this repository. Create it from .dsh/base/catalog.example.json to switch it on."
+        }
+      },
+      {
+        "cmd": "impact",
+        "exit": 3,
+        "json": {
+          "command": "impact",
+          "ok": false,
+          "degraded": true,
+          "reason": "no module catalog at .dsh/base/catalog.json; governance is not enabled for this repository. Create it from .dsh/base/catalog.example.json to switch it on."
+        }
+      },
+      {
+        "cmd": "budget",
+        "exit": 3,
+        "json": {
+          "command": "budget",
+          "ok": false,
+          "degraded": true,
+          "reason": "no module catalog at .dsh/base/catalog.json; governance is not enabled for this repository. Create it from .dsh/base/catalog.example.json to switch it on."
+        }
+      },
+      {
+        "cmd": "recap",
+        "exit": 0,
+        "json": {
+          "command": "recap",
+          "ok": true,
+          "chars": 174,
+          "budget": 6000,
+          "truncated": false,
+          "health": {
+            "ledger": "progress.md",
+            "bytes": 0,
+            "maxLedgerBytes": 24000,
+            "doneEntries": 0,
+            "keepDone": 40,
+            "noteEntries": 0,
+            "archive": "progress.archive.md",
+            "archiveBytes": 0,
+            "ok": true,
+            "advice": "memory is within budget"
+          },
+          "sources": [
+            "progress.md"
+          ],
+          "text": "# Recap - <ISO>\n\n## Position\n- branch unknown at no commit, 0 uncommitted path(s)\n- active task: none\n- last gate: never run\n- requirements: none declared\n"
+        }
+      },
+      {
+        "cmd": "release",
+        "exit": 3,
+        "json": {
+          "command": "release",
+          "ok": false,
+          "degraded": true,
+          "reason": "no module catalog at .dsh/base/catalog.json; governance is not enabled for this repository. Create it from .dsh/base/catalog.example.json to switch it on."
+        }
+      }
+    ],
+    "governedClean": [
+      {
+        "cmd": "selftest",
+        "exit": 0,
+        "json": {
+          "command": "selftest",
+          "ok": true,
+          "total": 94,
+          "passed": 94,
+          "failed": 0,
+          "failures": []
+        }
+      },
+      {
+        "cmd": "doctor",
+        "exit": 0,
+        "json": {
+          "command": "doctor",
+          "ok": true,
+          "enabled": true,
+          "node": "<ENV>",
+          "platform": "<ENV>",
+          "root": "<ENV>",
+          "headCommit": "<ENV>",
+          "modules": 3,
+          "checksConfigured": 1,
+          "modulesWithAttributes": 1,
+          "forbiddenEdges": 0,
+          "skills": 0,
+          "receiptsFresh": false,
+          "ledger": {
+            "ok": true,
+            "entries": 0,
+            "breaks": 0
+          },
+          "checks": [
+            {
+              "id": "node-version",
+              "ok": true,
+              "detail": "node <VER> (requires >= 20)"
+            },
+            {
+              "id": "git-repository",
+              "ok": true,
+              "detail": "git worktree at <FIXTURE>"
+            },
+            {
+              "id": "catalog-present",
+              "ok": true,
+              "detail": ".dsh/base/catalog.json"
+            },
+            {
+              "id": "root-agents-md",
+              "ok": true,
+              "detail": "231 bytes"
+            },
+            {
+              "id": "skills-present",
+              "ok": false,
+              "detail": "0 skill file(s) under .dsh/skills"
+            },
+            {
+              "id": "ledger-intact",
+              "ok": true,
+              "detail": "0 ledger entries, chain intact"
+            },
+            {
+              "id": "git-hooks-installed",
+              "ok": false,
+              "detail": "core.hooksPath = (unset)"
+            },
+            {
+              "id": "attributes-declared",
+              "ok": true,
+              "detail": "1 module(s) declare quality attributes"
+            },
+            {
+              "id": "fast-mode",
+              "ok": true,
+              "detail": "closed"
+            }
+          ],
+          "failing": [
+            "skills-present",
+            "git-hooks-installed"
+          ]
+        }
+      },
+      {
+        "cmd": "catalog-lint",
+        "exit": 0,
+        "json": {
+          "command": "catalog-lint",
+          "ok": true,
+          "findings": [],
+          "counts": {
+            "error": 0,
+            "warning": 0,
+            "modules": 3,
+            "trackedPaths": 10,
+            "unmapped": 0,
+            "truncated": false
+          }
+        }
+      },
+      {
+        "cmd": "impact",
+        "exit": 0,
+        "json": {
+          "command": "impact",
+          "changed": [],
+          "direct": [],
+          "affected": [],
+          "expansionReasons": [],
+          "degraded": false,
+          "verification": {}
+        }
+      },
+      {
+        "cmd": "arch-check",
+        "exit": 0,
+        "json": {
+          "command": "arch-check",
+          "scanned": 4,
+          "skippedLanguage": 0,
+          "unresolved": 0,
+          "unresolvedSamples": [],
+          "edges": 0,
+          "forbidden": [],
+          "layerViolations": [],
+          "undeclared": [],
+          "unusedDeclarations": [
+            {
+              "from": "core",
+              "to": "store"
+            },
+            {
+              "from": "api",
+              "to": "core"
+            }
+          ],
+          "cycles": [],
+          "metrics": {
+            "forbidden": 0,
+            "layerViolations": 0,
+            "undeclared": 0,
+            "cycles": 0,
+            "unusedDeclarations": 2
+          },
+          "ok": true
+        }
+      },
+      {
+        "cmd": "attributes",
+        "exit": 0,
+        "json": {
+          "command": "attributes",
+          "ok": true,
+          "rows": [
+            {
+              "module": "core",
+              "attribute": "reliability",
+              "tier": "low",
+              "claiming": [
+                "unit"
+              ],
+              "wired": [
+                "unit"
+              ],
+              "blocking": false
+            }
+          ],
+          "gaps": [],
+          "counts": {
+            "declarations": 1,
+            "gaps": 0
+          }
+        }
+      },
+      {
+        "cmd": "adr-check",
+        "exit": 0,
+        "json": {
+          "command": "adr-check",
+          "ok": true,
+          "adrs": 1,
+          "live": 1,
+          "manualOnly": 0,
+          "findings": [],
+          "counts": {
+            "error": 0,
+            "warning": 0
+          }
+        }
+      },
+      {
+        "cmd": "rules-audit",
+        "exit": 0,
+        "json": {
+          "command": "rules-audit",
+          "ok": true,
+          "counts": {
+            "total": 2,
+            "enforced": 1,
+            "declaredUnenforced": 0,
+            "unenforced": 0,
+            "phantom": 1,
+            "maxUnenforced": null
+          },
+          "enforcementRatio": 0.5,
+          "rows": [
+            {
+              "file": "AGENTS.md",
+              "line": 17,
+              "section": "Rules",
+              "state": "enforced",
+              "enforcedBy": [
+                "gate"
+              ],
+              "phantoms": [],
+              "text": "- A real reference: `dsb gate` exists."
+            },
+            {
+              "file": "AGENTS.md",
+              "line": 18,
+              "section": "Rules",
+              "state": "phantom",
+              "enforcedBy": [],
+              "phantoms": [
+                ".dsh/base/audit/ghost.mjs"
+              ],
+              "text": "- A phantom reference: `.dsh/base/audit/ghost.mjs` does not."
+            }
+          ],
+          "findings": [
+            {
+              "severity": "error",
+              "code": "RULE_PHANTOM",
+              "file": "AGENTS.md",
+              "line": 18,
+              "message": "rule names \".dsh/base/audit/ghost.mjs\" as its enforcement, but nothing by that name exists: \"- A phantom reference: `.dsh/base/audit/ghost.mjs` does not.\". A phantom reads as enforced while enforcing nothing - fix the reference, build the command, or mark the rule prompt-only."
+            }
+          ],
+          "advice": "every rule either names its enforcement or admits it has none."
+        }
+      },
+      {
+        "cmd": "dod",
+        "exit": 2,
+        "json": {
+          "command": "dod",
+          "ok": false,
+          "steps": [
+            {
+              "id": "catalog-lint",
+              "status": "PASS",
+              "blocking": true,
+              "reason": "{\"error\":0,\"warning\":0,\"modules\":3,\"trackedPaths\":10,\"unmapped\":0,\"truncated\":false}"
+            },
+            {
+              "id": "skills-lint",
+              "status": "PASS",
+              "blocking": true,
+              "reason": "{\"error\":0,\"warning\":0,\"skills\":0}"
+            },
+            {
+              "id": "agents-lint",
+              "status": "PASS",
+              "blocking": true,
+              "reason": "{\"error\":0,\"warning\":3,\"contracts\":0}"
+            },
+            {
+              "id": "spec-lint",
+              "status": "FAIL",
+              "blocking": true,
+              "reason": "{\"error\":5,\"warning\":0,\"requirements\":1}"
+            },
+            {
+              "id": "adr-check",
+              "status": "PASS",
+              "blocking": true,
+              "reason": "{\"error\":0,\"warning\":0}"
+            },
+            {
+              "id": "attributes",
+              "status": "PASS",
+              "blocking": true,
+              "reason": "{\"declarations\":1,\"gaps\":0}"
+            },
+            {
+              "id": "arch-check",
+              "status": "PASS",
+              "blocking": true
+            },
+            {
+              "id": "fitness",
+              "status": "PASS",
+              "blocking": true,
+              "reason": "{\"error\":0,\"warning\":0}"
+            },
+            {
+              "id": "trace",
+              "status": "PASS",
+              "blocking": true
+            },
+            {
+              "id": "ledger",
+              "status": "PASS",
+              "blocking": true
+            },
+            {
+              "id": "risk",
+              "status": "PASS",
+              "blocking": false,
+              "reason": "{\"error\":0,\"warning\":0}"
+            },
+            {
+              "id": "budget",
+              "status": "PASS",
+              "blocking": false
+            }
+          ],
+          "blockingFailures": [
+            "spec-lint"
+          ]
+        }
+      },
+      {
+        "cmd": "fast status",
+        "exit": 0,
+        "json": {
+          "command": "fast",
+          "sub": "status",
+          "active": false,
+          "expired": false,
+          "record": null,
+          "skippable": []
+        }
+      },
+      {
+        "cmd": "budget",
+        "exit": 0,
+        "json": {
+          "command": "budget",
+          "ok": true,
+          "metrics": {
+            "changedFiles": 1,
+            "changedLines": 0,
+            "added": 0,
+            "removed": 0,
+            "modulesTouched": 0,
+            "newFiles": 1,
+            "affectedModules": 0
+          },
+          "limits": {
+            "maxChangedFiles": 40,
+            "maxChangedLines": 1500,
+            "maxModulesTouched": 3,
+            "maxNewFiles": 25
+          },
+          "findings": [],
+          "advice": "Change is within the declared budget."
+        }
+      },
+      {
+        "cmd": "trace",
+        "exit": 0,
+        "json": {
+          "command": "trace",
+          "ok": true,
+          "coverage": 1,
+          "minCoverage": 1,
+          "total": 1,
+          "verified": 1,
+          "unverified": [],
+          "orphaned": [],
+          "dangling": [],
+          "danglingInDocs": [],
+          "danglingInDocsCount": 0,
+          "rows": [
+            {
+              "id": "REQ-GOLDEN-001",
+              "definedIn": "docs/requirements/PRODUCT-SPEC.md",
+              "adrs": [],
+              "tests": [
+                "src/core/a.test.mjs"
+              ],
+              "testCount": 1,
+              "codeCount": 1,
+              "modules": [
+                "core"
+              ],
+              "verified": true,
+              "implemented": true
+            }
+          ],
+          "advice": "Every declared requirement is referenced by at least one test."
+        }
+      },
+      {
+        "cmd": "spec-lint",
+        "exit": 1,
+        "json": {
+          "command": "spec-lint",
+          "ok": false,
+          "files": 2,
+          "ids": [
+            {
+              "id": "REQ-GOLDEN-001",
+              "file": "docs/requirements/PRODUCT-SPEC.md",
+              "line": 3
+            }
+          ],
+          "findings": [
+            {
+              "severity": "error",
+              "code": "ATTRIBUTE_UNADDRESSED",
+              "attribute": "resilience",
+              "message": "no requirement addresses \"resilience\"; each key attribute must be stated, or declared out of scope with a written reason"
+            },
+            {
+              "severity": "error",
+              "code": "ATTRIBUTE_UNADDRESSED",
+              "attribute": "security",
+              "message": "no requirement addresses \"security\"; each key attribute must be stated, or declared out of scope with a written reason"
+            },
+            {
+              "severity": "error",
+              "code": "ATTRIBUTE_UNADDRESSED",
+              "attribute": "safety",
+              "message": "no requirement addresses \"safety\"; each key attribute must be stated, or declared out of scope with a written reason"
+            },
+            {
+              "severity": "error",
+              "code": "ATTRIBUTE_UNADDRESSED",
+              "attribute": "privacy",
+              "message": "no requirement addresses \"privacy\"; each key attribute must be stated, or declared out of scope with a written reason"
+            },
+            {
+              "severity": "error",
+              "code": "ATTRIBUTE_UNADDRESSED",
+              "attribute": "reliability",
+              "message": "no requirement addresses \"reliability\"; each key attribute must be stated, or declared out of scope with a written reason"
+            }
+          ],
+          "counts": {
+            "error": 5,
+            "warning": 0,
+            "requirements": 1
+          }
+        }
+      },
+      {
+        "cmd": "spec --all",
+        "exit": 0,
+        "json": {
+          "command": "spec",
+          "ok": true,
+          "total": 1,
+          "selected": [
+            "REQ-GOLDEN-001"
+          ],
+          "rendered": 1,
+          "omitted": 0,
+          "affectedModules": null,
+          "noLink": false,
+          "chars": 258,
+          "budget": 6000,
+          "withinBudget": true,
+          "text": "# Requirements in scope (all)\n\n1 of 1 declared requirement(s) touch this change; 1 rendered, 0 omitted for budget.\n### REQ-GOLDEN-001 - one\n\nWHEN the program runs, the system SHALL return one.\n\nAcceptance: the value is 1.\n\n_verified by: src/core/a.test.mjs_\n"
+        }
+      },
+      {
+        "cmd": "task status",
+        "exit": 0,
+        "json": {
+          "command": "task",
+          "ok": true,
+          "task": null,
+          "diffHash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+        }
+      },
+      {
+        "cmd": "diff-hash",
+        "exit": 0,
+        "json": {
+          "command": "diff-hash",
+          "diffHash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "staged": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+        }
+      },
+      {
+        "cmd": "recap",
+        "exit": 0,
+        "json": {
+          "command": "recap",
+          "ok": true,
+          "chars": 220,
+          "budget": 6000,
+          "truncated": false,
+          "health": {
+            "ledger": "progress.md",
+            "bytes": 34,
+            "maxLedgerBytes": 24000,
+            "doneEntries": 0,
+            "keepDone": 40,
+            "noteEntries": 0,
+            "archive": "progress.archive.md",
+            "archiveBytes": 0,
+            "ok": true,
+            "advice": "memory is within budget"
+          },
+          "sources": [
+            "progress.md",
+            "docs/requirements/PRODUCT-SPEC.md"
+          ],
+          "text": "# Recap - <ISO>\n\n## Position\n- branch main at 51244fc4c78d6431393853b943ec42fbfc9d54c1, 1 uncommitted path(s)\n- active task: none\n- last gate: never run\n- requirements: 1 declared, test coverage 100 %\n"
+        }
+      },
+      {
+        "cmd": "invariants",
+        "exit": 0,
+        "json": {
+          "command": "invariants",
+          "ok": true,
+          "chars": 804,
+          "budget": 1200,
+          "truncated": false,
+          "text": "# Invariants - re-read after any compaction and at every phase boundary\n\n1. EVIDENCE. Name the command, run it fresh, read output AND exit code, confirm it supports THIS claim, then speak. Never \"should work\" or \"looks correct\".\n2. STATES. exit 0 clean | 1 violation | 2 blocking gate | 3 degraded | 4 stale. Exit 3 is NOT a pass. A missing tool is BLOCKED. An empty plan is BLOCKED.\n3. FLOOR. security, safety and privacy are never waived, never fast-skipped, never downgraded. There is no expressible exception.\n4. SCOPE. Change only what the task envelope names. Missing information is not permission.\n5. TIERS. HIGH acts - push, release, deploy, destructive commands, secrets, migration, new dependency - stop for explicit human authorization.\n\n## Live state\n- task: none open\n- last gate: never run\n"
+        }
+      },
+      {
+        "cmd": "sync-check",
+        "exit": 0,
+        "json": {
+          "command": "sync-check",
+          "ok": true,
+          "changed": 1,
+          "codeChanged": 0,
+          "ledgerFile": "progress.md",
+          "ledgerInChange": false,
+          "findings": [],
+          "counts": {
+            "error": 0,
+            "warning": 0
+          }
+        }
+      },
+      {
+        "cmd": "risk",
+        "exit": 0,
+        "json": {
+          "command": "risk",
+          "ok": true,
+          "findings": [],
+          "counts": {
+            "error": 0,
+            "warning": 0
+          }
+        }
+      },
+      {
+        "cmd": "release",
+        "exit": 2,
+        "json": {
+          "command": "release",
+          "ok": false,
+          "ready": false,
+          "blockers": [
+            "dod-static",
+            "receipt-fresh",
+            "review-depth",
+            "gate-fresh"
+          ],
+          "warnings": [],
+          "items": [
+            {
+              "id": "dod-static",
+              "ok": false,
+              "blocking": true,
+              "detail": "failing: spec"
+            },
+            {
+              "id": "trace-coverage",
+              "ok": true,
+              "blocking": true,
+              "detail": "coverage 100 %"
+            },
+            {
+              "id": "ledger-intact",
+              "ok": true,
+              "blocking": true,
+              "detail": "0 entries"
+            },
+            {
+              "id": "receipt-fresh",
+              "ok": false,
+              "blocking": true,
+              "detail": "no-change: the working tree matches HEAD, so no receipt can bind it"
+            },
+            {
+              "id": "review-depth",
+              "ok": false,
+              "blocking": true,
+              "detail": "no fresh receipt to judge depth against"
+            },
+            {
+              "id": "gate-fresh",
+              "ok": false,
+              "blocking": true,
+              "detail": "no gate has ever run here; a release is the evidence the gate produced"
+            },
+            {
+              "id": "fast-mode-closed",
+              "ok": true,
+              "blocking": true,
+              "detail": "closed"
+            },
+            {
+              "id": "fast-debt-repaid",
+              "ok": true,
+              "blocking": true,
+              "detail": "last gate was a full run"
+            },
+            {
+              "id": "review-backlog",
+              "ok": true,
+              "blocking": false,
+              "detail": "0 open entry(ies), 0 expired"
+            },
+            {
+              "id": "decay-signals",
+              "ok": true,
+              "blocking": false,
+              "detail": "0 error(s), 0 warning(s)"
+            },
+            {
+              "id": "sync-clean",
+              "ok": true,
+              "blocking": true,
+              "detail": "0 governed file(s) changed this commit-window"
+            }
+          ],
+          "chars": 980,
+          "budget": 3000,
+          "truncated": false,
+          "text": "# Release readiness - <ISO>\n\nTagging, pushing and deploying are HIGH-tier human acts. This command never performs them.\nIt assembles the evidence; the human makes the decision on these facts.\n\n## Conditions\n- [ ] dod-static (blocking) - failing: spec\n- [x] trace-coverage (blocking) - coverage 100 %\n- [x] ledger-intact (blocking) - 0 entries\n- [ ] receipt-fresh (blocking) - no-change: the working tree matches HEAD, so no receipt can bind it\n- [ ] review-depth (blocking) - no fresh receipt to judge depth against\n- [ ] gate-fresh (blocking) - no gate has ever run here; a release is the evidence the gate produced\n- [x] fast-mode-closed (blocking) - closed\n- [x] fast-debt-repaid (blocking) - last gate was a full run\n- [x] review-backlog - 0 open entry(ies), 0 expired\n- [x] decay-signals - 0 error(s), 0 warning(s)\n- [x] sync-clean (blocking) - 0 governed file(s) changed this commit-window\n\n## NOT READY - blocking conditions above must be repaired first."
+        }
+      },
+      {
+        "cmd": "gate --dry-run",
+        "exit": 0,
+        "json": {
+          "command": "gate",
+          "at": "<TS>",
+          "gate": "PASS",
+          "reason": "no-affected-modules: no change reaches a governed module",
+          "fastMode": false,
+          "fastReason": null,
+          "fastUntil": null,
+          "skippedByFastMode": [],
+          "baseCommit": "<ENV>",
+          "diffHash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "planHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "modules": [],
+          "degraded": false,
+          "results": [],
+          "attributeCoverage": [],
+          "attributeGaps": [],
+          "waivers": [],
+          "waiversBlocked": []
+        }
+      },
+      {
+        "cmd": "audit scan-secrets.mjs",
+        "exit": 0,
+        "json": {
+          "command": "scan-secrets",
+          "ok": true,
+          "scanned": 10,
+          "staged": false,
+          "findings": []
+        }
+      },
+      {
+        "cmd": "audit check-syntax.mjs",
+        "exit": 0,
+        "json": {
+          "command": "check-syntax",
+          "ok": true,
+          "checked": 4,
+          "failures": []
+        }
+      }
+    ],
+    "governedDirty": [
+      {
+        "cmd": "impact",
+        "exit": 0,
+        "json": {
+          "command": "impact",
+          "changed": [
+            "progress.md",
+            "src/core/a.mjs"
+          ],
+          "direct": [
+            "core"
+          ],
+          "affected": [
+            "api",
+            "core"
+          ],
+          "expansionReasons": [],
+          "degraded": false,
+          "verification": {
+            "core": [
+              "unit"
+            ],
+            "api": [
+              "unit"
+            ]
+          }
+        }
+      },
+      {
+        "cmd": "budget",
+        "exit": 0,
+        "json": {
+          "command": "budget",
+          "ok": true,
+          "metrics": {
+            "changedFiles": 2,
+            "changedLines": 5,
+            "added": 5,
+            "removed": 0,
+            "modulesTouched": 1,
+            "newFiles": 0,
+            "affectedModules": 2
+          },
+          "limits": {
+            "maxChangedFiles": 40,
+            "maxChangedLines": 1500,
+            "maxModulesTouched": 3,
+            "maxNewFiles": 25
+          },
+          "findings": [],
+          "advice": "Change is within the declared budget."
+        }
+      },
+      {
+        "cmd": "task status",
+        "exit": 0,
+        "json": {
+          "command": "task",
+          "ok": true,
+          "task": null,
+          "diffHash": "b5d8d5244f9b6f2b2a231c48ad8ec267601308d02cf6ce365a0eefd66f03e52b"
+        }
+      },
+      {
+        "cmd": "gate --dry-run",
+        "exit": 2,
+        "json": {
+          "command": "gate",
+          "at": "<TS>",
+          "gate": "BLOCKED",
+          "reason": "every-check-skipped",
+          "fastMode": false,
+          "fastReason": null,
+          "fastUntil": null,
+          "skippedByFastMode": [],
+          "baseCommit": "<ENV>",
+          "diffHash": "b5d8d5244f9b6f2b2a231c48ad8ec267601308d02cf6ce365a0eefd66f03e52b",
+          "planHash": "178d2baa7c787dc80e8052cfc269db122c12553b0741f73b21b1952fbef558ef",
+          "modules": [
+            "api",
+            "core"
+          ],
+          "degraded": false,
+          "results": [
+            {
+              "id": "unit",
+              "status": "SKIPPED",
+              "reason": "dry-run",
+              "durationMs": "<NUM>"
+            }
+          ],
+          "attributeCoverage": [
+            {
+              "module": "core",
+              "attribute": "reliability",
+              "tier": "low",
+              "claiming": [
+                "unit"
+              ],
+              "executed": [
+                "unit"
+              ],
+              "passing": [],
+              "contradicting": [],
+              "covered": false
+            }
+          ],
+          "attributeGaps": [],
+          "waivers": [],
+          "waiversBlocked": []
+        }
+      },
+      {
+        "cmd": "spec --paths src/core/a.mjs",
+        "exit": 0,
+        "json": {
+          "command": "spec",
+          "ok": true,
+          "total": 1,
+          "selected": [
+            "REQ-GOLDEN-001"
+          ],
+          "rendered": 1,
+          "omitted": 0,
+          "affectedModules": [
+            "api",
+            "core"
+          ],
+          "noLink": false,
+          "chars": 268,
+          "budget": 6000,
+          "withinBudget": true,
+          "text": "# Requirements in scope for [api, core]\n\n1 of 1 declared requirement(s) touch this change; 1 rendered, 0 omitted for budget.\n### REQ-GOLDEN-001 - one\n\nWHEN the program runs, the system SHALL return one.\n\nAcceptance: the value is 1.\n\n_verified by: src/core/a.test.mjs_\n"
+        }
+      },
+      {
+        "cmd": "sync-check",
+        "exit": 0,
+        "json": {
+          "command": "sync-check",
+          "ok": true,
+          "changed": 4,
+          "codeChanged": 1,
+          "ledgerFile": "progress.md",
+          "ledgerInChange": true,
+          "findings": [],
+          "counts": {
+            "error": 0,
+            "warning": 0
+          }
+        }
+      },
+      {
+        "cmd": "risk",
+        "exit": 0,
+        "json": {
+          "command": "risk",
+          "ok": true,
+          "findings": [],
+          "counts": {
+            "error": 0,
+            "warning": 0
+          }
+        }
+      }
+    ],
+    "governedDebt": [
+      {
+        "cmd": "catalog-lint",
+        "exit": 1,
+        "json": {
+          "command": "catalog-lint",
+          "ok": false,
+          "findings": [
+            {
+              "severity": "error",
+              "code": "DANGLING_DEP",
+              "message": "module \"core\" dependsOn unknown module \"missing\"",
+              "module": "core"
+            },
+            {
+              "severity": "error",
+              "code": "UNMAPPED",
+              "message": "1 tracked path(s) belong to no module, global or ignored entry; they would silently escape every targeted gate"
+            }
+          ],
+          "counts": {
+            "error": 2,
+            "warning": 0,
+            "modules": 2,
+            "trackedPaths": 12,
+            "unmapped": 1,
+            "truncated": false
+          }
+        }
+      },
+      {
+        "cmd": "trace",
+        "exit": 0,
+        "json": {
+          "command": "trace",
+          "ok": true,
+          "coverage": 1,
+          "minCoverage": 1,
+          "total": 1,
+          "verified": 1,
+          "unverified": [],
+          "orphaned": [],
+          "dangling": [],
+          "danglingInDocs": [],
+          "danglingInDocsCount": 0,
+          "rows": [
+            {
+              "id": "REQ-GOLDEN-001",
+              "definedIn": "docs/requirements/PRODUCT-SPEC.md",
+              "adrs": [],
+              "tests": [
+                "src/core/a.test.mjs"
+              ],
+              "testCount": 1,
+              "codeCount": 1,
+              "modules": [
+                "core"
+              ],
+              "verified": true,
+              "implemented": true
+            }
+          ],
+          "advice": "Every declared requirement is referenced by at least one test."
+        }
+      },
+      {
+        "cmd": "arch-check",
+        "exit": 0,
+        "json": {
+          "command": "arch-check",
+          "scanned": 4,
+          "skippedLanguage": 0,
+          "unresolved": 0,
+          "unresolvedSamples": [],
+          "edges": 0,
+          "forbidden": [],
+          "layerViolations": [],
+          "undeclared": [],
+          "unusedDeclarations": [
+            {
+              "from": "core",
+              "to": "missing"
+            },
+            {
+              "from": "api",
+              "to": "core"
+            }
+          ],
+          "cycles": [],
+          "metrics": {
+            "forbidden": 0,
+            "layerViolations": 0,
+            "undeclared": 0,
+            "cycles": 0,
+            "unusedDeclarations": 2
+          },
+          "ok": true
+        }
+      },
+      {
+        "cmd": "adr-check",
+        "exit": 0,
+        "json": {
+          "command": "adr-check",
+          "ok": true,
+          "adrs": 1,
+          "live": 1,
+          "manualOnly": 0,
+          "findings": [],
+          "counts": {
+            "error": 0,
+            "warning": 0
+          }
+        }
+      },
+      {
+        "cmd": "rules-audit",
+        "exit": 0,
+        "json": {
+          "command": "rules-audit",
+          "ok": true,
+          "counts": {
+            "total": 2,
+            "enforced": 1,
+            "declaredUnenforced": 0,
+            "unenforced": 0,
+            "phantom": 1,
+            "maxUnenforced": null
+          },
+          "enforcementRatio": 0.5,
+          "rows": [
+            {
+              "file": "AGENTS.md",
+              "line": 17,
+              "section": "Rules",
+              "state": "enforced",
+              "enforcedBy": [
+                "gate"
+              ],
+              "phantoms": [],
+              "text": "- A real reference: `dsb gate` exists."
+            },
+            {
+              "file": "AGENTS.md",
+              "line": 18,
+              "section": "Rules",
+              "state": "phantom",
+              "enforcedBy": [],
+              "phantoms": [
+                ".dsh/base/audit/ghost.mjs"
+              ],
+              "text": "- A phantom reference: `.dsh/base/audit/ghost.mjs` does not."
+            }
+          ],
+          "findings": [
+            {
+              "severity": "error",
+              "code": "RULE_PHANTOM",
+              "file": "AGENTS.md",
+              "line": 18,
+              "message": "rule names \".dsh/base/audit/ghost.mjs\" as its enforcement, but nothing by that name exists: \"- A phantom reference: `.dsh/base/audit/ghost.mjs` does not.\". A phantom reads as enforced while enforcing nothing - fix the reference, build the command, or mark the rule prompt-only."
+            }
+          ],
+          "advice": "every rule either names its enforcement or admits it has none."
+        }
+      },
+      {
+        "cmd": "attributes",
+        "exit": 0,
+        "json": {
+          "command": "attributes",
+          "ok": true,
+          "rows": [
+            {
+              "module": "core",
+              "attribute": "reliability",
+              "tier": "low",
+              "claiming": [
+                "unit"
+              ],
+              "wired": [
+                "unit"
+              ],
+              "blocking": false
+            }
+          ],
+          "gaps": [],
+          "counts": {
+            "declarations": 1,
+            "gaps": 0
+          }
+        }
+      },
+      {
+        "cmd": "task status",
+        "exit": 0,
+        "json": {
+          "command": "task",
+          "ok": true,
+          "task": null,
+          "diffHash": "3d9f3da1c38a1a5abf93081a44f3319d47cd1732cb15f6765714286994246f26"
+        }
+      },
+      {
+        "cmd": "risk",
+        "exit": 0,
+        "json": {
+          "command": "risk",
+          "ok": true,
+          "findings": [
+            {
+              "severity": "warning",
+              "code": "QUARANTINED_STATE",
+              "message": "1 runtime state file(s) quarantined; most recent: .dsh/base/state/task.json (corrupt task state; a fresh task envelope must be opened)"
+            }
+          ],
+          "counts": {
+            "error": 0,
+            "warning": 1
+          }
+        }
+      }
+    ]
+  }
+}

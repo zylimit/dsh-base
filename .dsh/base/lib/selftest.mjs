@@ -7,7 +7,7 @@
 
 import {
   globToRegExp, globSpecificity, classifyPath, matchesAny, sha256Lf, stripJsonComments,
-  CATCH_ALL_GLOBS, ATTRIBUTES, TIERS, PROTECTED_ATTRIBUTES, EMPTY_DIFF_HASH,
+  CATCH_ALL_GLOBS, ATTRIBUTES, TIERS, PROTECTED_ATTRIBUTES, EMPTY_DIFF_HASH, exists,
 } from './core.mjs'
 import { lintCatalog, computeImpact, resolveVerification, extractImports, resolveSpecifier, findCycles, trendGate } from './graph.mjs'
 import {
@@ -335,6 +335,7 @@ export function selftest () {
 
   // ── frontmatter ───────────────────────────────────────────────────────────
   t('skills: a reserved instruction file at the skills root is not a skill', () => {
+    if (!exists('.dsh/skills')) return // host-independent: behavioural tests cover skills-lint on fixtures
     const r = skillsLintFn(['.dsh/skills'])
     ok(!r.skills.some(s => s.name === 'AGENTS' || s.name === 'README'),
       'AGENTS.md and README.md at a skills root must not be parsed as skills')
@@ -405,7 +406,7 @@ export function selftest () {
     eq(phantomTokens('Every decision is enforced by \x60dsb gate\x60.', known), [])
     eq(phantomTokens('Declared in \x60fleet.json\x60.', known), [], 'data files are named, not enforcement claims')
     eq(phantomTokens('Run \x60dsb fast on --minutes 30\x60.', known), [], 'flags and metavariables are not phantoms')
-    eq(phantomTokens('See \x60tests/helpers.mjs\x60.', known), [], 'a real file is enforcement, not a phantom')
+    if (exists('tests/helpers.mjs')) eq(phantomTokens('See \x60tests/helpers.mjs\x60.', known), [], 'a real file is enforcement, not a phantom')
   })
   t('sync: code changed without the ledger is a violation', () => {
     const c = fixture()
