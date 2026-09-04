@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 93,
-  "digest": "346841d1570a69844ba11cbef75cc25b76a5eb40bdf5dd0451eb5a41fce5a3a6",
+  "digest": "989d42020bf326108e73b622d6ed4d7009879d94ca60ad49c8aa23af4d370aac",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -86,13 +86,13 @@
     },
     {
       "path": ".dsh/base/lib/quality.mjs",
-      "sha256": "5ecd31cd7bebcc9560bc27ced434d6a9b63b27e051fffc03b822d44508baf438",
-      "bytes": 56159
+      "sha256": "41b7da8bbac755b3b6be6e3ecd1995d1ff73947763e42be8b819c2e59a661f05",
+      "bytes": 57308
     },
     {
       "path": ".dsh/base/lib/scan.mjs",
-      "sha256": "a5c0d90a08bf9cd8ad20f3434b4efa79f2d02bc7009d2c45b750d6d3dd1539a9",
-      "bytes": 39554
+      "sha256": "17cf45c950915539088fa2cbfaa02ac407b0a86e0328cafcdd97d2ee80b334df",
+      "bytes": 39772
     },
     {
       "path": ".dsh/base/lib/selftest.mjs",
@@ -391,8 +391,8 @@
     },
     {
       "path": "docs/CROSS-POLLINATION.md",
-      "sha256": "90ed97b84f3c79712e9b5dde68f65f30619759bc391447c987ece11f7d8225a8",
-      "bytes": 13131
+      "sha256": "3681b641fe8457e84dd4b6f3b6ec129fe08e368e18a95647ca791ed89eceaf31",
+      "bytes": 14729
     },
     {
       "path": "docs/OPERATIONS.md",

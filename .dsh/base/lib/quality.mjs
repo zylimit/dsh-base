@@ -477,6 +477,7 @@ export function writeReceipt (payload, opts = {}) {
     lenses: Array.isArray(payload.lenses) ? payload.lenses : null,
     baseCommit: head,
     diffHash: diffHash(),
+    engineHash: engineIdentityHash(),
     createdAt: nowIso(),
   }
   if (opts.base) {
@@ -498,11 +499,24 @@ export function writeReceipt (payload, opts = {}) {
   return record
 }
 
+/**
+ * The identity of the engine that judges this repository. A receipt binds the
+ * engine too: evidence produced by an older scaffold cannot certify a newer
+ * one, so upgrading the scaffold stales every receipt and forces re-review.
+ * The hash covers the CLI and every library file, LF-normalized.
+ */
+export function engineIdentityHash () {
+  const lib = listFiles(rel(path.join(BASE_DIR, 'lib'))).filter(p => p.endsWith('.mjs')).sort()
+  const files = [rel(path.join(BASE_DIR, 'dsb.mjs')), ...lib]
+  return sha256(files.map(f => f + ':' + sha256Lf(readText(f, ''))).join('\n'))
+}
+
 /** Any byte of the working tree changing stales every receipt bound to it. */
-export function verifyReceipts () {
+export function verifyReceipts (opts = {}) {
   if (!isGitRepo()) return { ok: false, degraded: true, reason: 'not-a-git-repository' }
   const current = diffHash()
   const head = headCommit()
+  const engineHash = opts.engineHash || engineIdentityHash()
 
   const dir = RECEIPT_DIR()
   const entries = fs.existsSync(dir)
@@ -518,6 +532,10 @@ export function verifyReceipts () {
     const { contentHash, ...rest } = r
     return sha256Lf(JSON.stringify(rest)) !== contentHash
   })
+  // A receipt without an engineHash predates the binding, and one with a
+  // different hash was produced by a different engine: either way it cannot
+  // certify this one.
+  const engineMismatch = receipts.filter(r => r.engineHash !== engineHash)
   // A receipt recorded against the empty-diff identity reviewed nothing and can
   // never be evidence, whatever the tree looks like later.
   const vacuous = receipts.filter(r => r.diffHash === EMPTY_DIFF_HASH)
@@ -537,7 +555,8 @@ export function verifyReceipts () {
   if (diffIsEmpty()) {
     if (rangeValid.length > 0) {
       return {
-        ok: unreadable.length === 0, stale: false, tampered: [], unreadable: unreadable.map(e => e.p), vacuous: vacuous.map(r => r.taskId),
+        ok: unreadable.length === 0 && engineMismatch.length === 0, stale: false, tampered: [], unreadable: unreadable.map(e => e.p), vacuous: vacuous.map(r => r.taskId),
+        engineMismatch: engineMismatch.map(r => r.taskId), engineHash,
         currentDiffHash: current, baseCommit: head,
         matching: [],
         rangeMatching: rangeValid.map(r => ({ taskId: r.taskId, reviewer: r.reviewer, createdAt: r.createdAt, lenses: r.lenses || null, kind: 'range', range: r.range })),
@@ -555,10 +574,12 @@ export function verifyReceipts () {
     !vacuous.includes(r))
   const rangeMatching = rangeValid.filter(r => r.range.head === head)
   return {
-    ok: (matching.length > 0 || rangeMatching.length > 0) && tampered.length === 0 && unreadable.length === 0,
+    ok: (matching.length > 0 || rangeMatching.length > 0) && tampered.length === 0 && unreadable.length === 0 && engineMismatch.length === 0,
     stale: matching.length === 0 && rangeMatching.length === 0,
     tampered: tampered.map(r => r.taskId),
     unreadable: unreadable.map(e => e.p),
+    engineMismatch: engineMismatch.map(r => r.taskId),
+    engineHash,
     vacuous: vacuous.map(r => r.taskId),
     currentDiffHash: current,
     baseCommit: head,

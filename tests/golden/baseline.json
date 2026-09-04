@@ -559,6 +559,8 @@
         "json": {
           "command": "trace",
           "ok": true,
+          "truncated": false,
+          "reason": null,
           "coverage": 1,
           "minCoverage": 1,
           "total": 1,
@@ -1289,6 +1291,7 @@
             ],
             "baseCommit": "<ENV>",
             "diffHash": "7237644c966a1aa46e9639fcf24eeeddc56f1188560fbbb4dcb07c7d82445fa5",
+            "engineHash": "1250ab9152e56fc85417fc9b9ae43fcb03252e2dd2e3be23c38619a212c3bcff",
             "createdAt": "<TS>",
             "contentHash": "<ENV>"
           },
@@ -1304,6 +1307,8 @@
           "stale": false,
           "tampered": [],
           "unreadable": [],
+          "engineMismatch": [],
+          "engineHash": "1250ab9152e56fc85417fc9b9ae43fcb03252e2dd2e3be23c38619a212c3bcff",
           "vacuous": [],
           "currentDiffHash": "7237644c966a1aa46e9639fcf24eeeddc56f1188560fbbb4dcb07c7d82445fa5",
           "baseCommit": "<ENV>",
@@ -1348,6 +1353,7 @@
             ],
             "baseCommit": "<ENV>",
             "diffHash": "af9c920c73a5198825fdf6ec0ef324c0b823c4374617f491bc81c0f06d79b40d",
+            "engineHash": "1250ab9152e56fc85417fc9b9ae43fcb03252e2dd2e3be23c38619a212c3bcff",
             "createdAt": "<TS>",
             "range": {
               "base": "HEAD~1",
@@ -1535,6 +1541,8 @@
         "json": {
           "command": "trace",
           "ok": true,
+          "truncated": false,
+          "reason": null,
           "coverage": 1,
           "minCoverage": 1,
           "total": 1,
@@ -1750,6 +1758,8 @@
           "unreadable": [
             ".dsh/base/receipts/broken.json"
           ],
+          "engineMismatch": [],
+          "engineHash": "1250ab9152e56fc85417fc9b9ae43fcb03252e2dd2e3be23c38619a212c3bcff",
           "vacuous": [],
           "currentDiffHash": "3d9f3da1c38a1a5abf93081a44f3319d47cd1732cb15f6765714286994246f26",
           "baseCommit": "<ENV>",

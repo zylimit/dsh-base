@@ -618,7 +618,9 @@ export function trace (catalog) {
   const coverage = rows.length ? (rows.length - unverified.length) / rows.length : 0
 
   return {
-    ok: coverage >= minCoverage && dangling.length === 0,
+    ok: coverage >= minCoverage && dangling.length === 0 && !t.truncated,
+    truncated: t.truncated,
+    reason: t.truncated ? 'the tracked file list was truncated at ' + catalog.maxTrackedPaths + ' of ' + t.total + '; coverage over an incomplete set proves nothing' : null,
     coverage: Number(coverage.toFixed(4)),
     minCoverage,
     total: rows.length,
