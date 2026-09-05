@@ -140,9 +140,23 @@ are fixed with tests:
 
 Also notable: codex now carries a feedback file named review-agent-no-inline-guard-vocabulary.md - the exact discipline this session recommended after their triple moderation block. The observation loop feeds both directions; ours is recorded, theirs is now too.
 
+### cursor-base joins the observation (2026-09-05, nine commits, 2.0.0)
+
+| Commit | Mechanism | Verdict | Why |
+|---|---|---|---|
+| 9748a24 | 2.0.0: tiered assurance, structured review, memory, governance audit | watching | the trio converges on one design space - which validates dsh's architecture; the differentiation is now wiring quality, test depth and honesty, where dsh holds the 61-row ruler, 164 tests and six-job CI |
+| fc3ea07 | range review kept fresh against its own base, receipt bound to it | already have | dsh range receipts (write --base) do exactly this, shipped rounds earlier and pinned in the ruler |
+| 05ff9ab..417962b | structured self-review three rounds, engine escalated at round 3 | already have | dsh review maxRounds escalation is the same mechanism |
+| 06aaf2b, 7cd02d5 | Windows service-tree kill (EBUSY), SIGTERM-is-TerminateProcess | already have | the same class cc-base hit; dsh supervisor stop kills only the child and lets the parent finish - pinned by the backoff-window stop test |
+| their Risks section | authorship is a per-conversation claim, health probe trusts any 2xx/3xx | note | honest risk ledgers are the cheapest high-value practice; ours is in progress.md the same way |
+
+### grok-base (checked 2026-09-05)
+
+Active at v3.3.0 (last commit minutes before this check, 145 files): shell classifier vectors, forbid-ratchet tests, CI hygiene, fitness false-green fixes, Windows missing-binary BLOCKED. No big release this cycle; incremental fixes only - smaller surface than the other three.
+
 ## Watching
 
-- cc-base and codex-base are checked for new commits every round; new candidate
+- cc-base, codex-base and cursor-base are checked for new commits every round; new candidate
   mechanisms go through the verdict table before any code moves.
 - codex-base receipt v2 policy-binding and the rapid-loan DEFERRED naming are
   the two watching items; both need a real assurance lattice first.
