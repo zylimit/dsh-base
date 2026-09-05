@@ -124,6 +124,22 @@ are fixed with tests:
 | f3cd449 trace truncation | their batch-1 plans truncated trace -> rc3 | preempted | dsh trace ignored t.truncated and reported ok over an incomplete set - fixed before their batch landed: ok folds !truncated with a reason (tests/trace-truncation.test.mjs) |
 | f3cd449 receipt engineHash (their batch 3, from codex identity.mjs) | runtime tree hash into evidence identity | preempted | dsh receipts now bind engineIdentityHash - evidence from an older scaffold cannot certify a newer one, so a scaffold upgrade stales receipts and forces re-review (tests/engine-binding.test.mjs) |
 
+### The big day 2026-09-04/05 — both delivered real work
+
+| Commit | Mechanism | Verdict | Why |
+|---|---|---|---|
+| cc a30aa21 (#47) | authorship auto-recording: PostToolUse hook feeds agent_type + file_path into an authorship ledger, making author != reviewer machine-enforced | verified real | their A/B evidence shows enforced:true with a ledger and an honest false without one; record-keeping fails open (never blocks a tool). dsh has no PostToolUse surface, so our law 5b.6 stays honestly prompt-only - and theirs now admits the earlier half-wiring in the commit message |
+| cc ca8f080 (#20b) | waivers pre-declared; an executed FAIL is no longer rewritten to SKIPPED | their absorption of dsh waivePlan | the exact mechanism we shipped in round 1; their golden re-record was their stated reason for deferring it |
+| cc 750fe76 | instruction-exemption window hash rebinding + local git hooks install | their absorption of dsh window-bound exemptions | rebinding after the exemption context changed; the CI red they fixed 3 times was hook-install state |
+| cc d3e0d1a | secret pattern scheme relaxation + fast-mode CRLF fork + static-check.ps1 | note | their fix list; the CRLF fork is the class our LF-normalization is structurally immune to |
+| cc de9864c (#41) | atomic installer lock creation | their batch-5 slice | codex-inspired; our installer has staged swap + the dsh-base-new sidecar policy instead |
+| cc b976a08 (v3-D) | 22 pairs of node-hook red-lock tests; v3 moves hooks from bash/ps1 pairs to one Node implementation | watching | their v3 "tiered execution + trimming" echoes codex assurance profiles; dsh already has one Node engine |
+| cc #52 (TODO) | pre-push block reasons are not persisted | already have | dsh persists every gate with reason + results in the ledger and the gate log |
+| codex 9e455d5 + e2199a6 | v5 assurance harness complete; policy-v2 resource caps, read-only floors, context depth/budgets wired to one resolver | verified real this time | harness.mjs +921 lines, bootstrap +264 - the 17-control facade is being wired for real; the commit honestly says human acceptance unverified |
+| codex 6d1429d, 912238c | command-safety gap closure, git-config and trace evidence gaps | watching | re-evaluate against our command-safety equivalents when they merge the refactor branch |
+
+Also notable: codex now carries a feedback file named review-agent-no-inline-guard-vocabulary.md - the exact discipline this session recommended after their triple moderation block. The observation loop feeds both directions; ours is recorded, theirs is now too.
+
 ## Watching
 
 - cc-base and codex-base are checked for new commits every round; new candidate
