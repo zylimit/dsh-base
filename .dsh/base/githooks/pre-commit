@@ -46,6 +46,11 @@ run skills-lint  node .dsh/base/dsb.mjs skills-lint
 run agents-lint  node .dsh/base/dsb.mjs agents-lint
 run fitness      node .dsh/base/dsb.mjs fitness --staged
 run sync-check   node .dsh/base/dsb.mjs sync-check --staged
+# The scaffold repo carries a distribution manifest; a changed managed asset
+# without a regenerated manifest is caught at commit time, not on push.
+if [ -f FRAMEWORK-MANIFEST.json ]; then
+  run manifest     node .dsh/base/audit/manifest.mjs --check
+fi
 
 node .dsh/base/dsb.mjs budget --staged >/dev/null 2>&1 || \
   echo "dsh-base: change budget exceeded. Split the change or record an explicit decision." >&2

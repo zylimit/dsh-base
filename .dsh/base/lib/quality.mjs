@@ -773,9 +773,15 @@ export function fastState () {
   const raw = readJson(p, null)
   if (raw === null && exists(p)) quarantine(p, 'corrupt fast-mode state; the window is treated as closed')
   if (!raw || !raw.until) return { active: false, expired: false, record: null }
-  const until = new Date(raw.until)
-  const expired = !(until > new Date())
-  return { active: !expired, expired, record: raw, until: raw.until, reason: raw.reason, minutes: raw.minutes }
+  // Read-side clamp: the loan is capped at 8 hours from the write-time epoch,
+  // whatever the stored until claims. A hand-edited future timestamp must not
+  // turn a dated loan into a permanent discount. (The siblings' v3 lesson.)
+  const written = new Date(raw.until)
+  const epoch = raw.createdAt ? new Date(raw.createdAt) : new Date(written.getTime() - 480 * 60000)
+  const capMs = Math.min(Number(raw.minutes) || 60, 480) * 60000
+  const cap = new Date(Math.min(epoch.getTime() + capMs, written.getTime()))
+  const expired = !(cap > new Date())
+  return { active: !expired, expired, record: raw, until: cap.toISOString(), reason: raw.reason, minutes: Math.min(Number(raw.minutes) || 60, 480) }
 }
 
 export function setFast ({ on, minutes = 60, reason = '', by = '' }) {

@@ -124,6 +124,21 @@ are fixed with tests:
 | f3cd449 trace truncation | their batch-1 plans truncated trace -> rc3 | preempted | dsh trace ignored t.truncated and reported ok over an incomplete set - fixed before their batch landed: ok folds !truncated with a reason (tests/trace-truncation.test.mjs) |
 | f3cd449 receipt engineHash (their batch 3, from codex identity.mjs) | runtime tree hash into evidence identity | preempted | dsh receipts now bind engineIdentityHash - evidence from an older scaffold cannot certify a newer one, so a scaffold upgrade stales receipts and forces re-review (tests/engine-binding.test.mjs) |
 
+### cc-base 2.0.0 delivered (harvest 2026-09-06, 70 commits since f3cd449)
+
+| Commit(s) | Mechanism | Verdict | Why |
+|---|---|---|---|
+| v3-A series | tier architecture: profile.json three strength tiers, tier.mjs single resolver, 22 hooks three-state; fast mode folded into tiers (advise blocks nothing but records debt) | watching | their assurance-profile answer; dsh has REVIEW_PROFILES + fast mode + floors - the same design space, different shape |
+| v3-D series | all 52 bash/ps1 hooks deleted; 22 hooks ported to one Node runtime (239/0 red locks) | no surface | dsh has no host hook surface; our single Node engine is the equivalent move, made at founding |
+| 873fb98 + 89727eb | fast-window read-side 8h clamp anchored on the write-time epoch; future timestamps cannot shift the window | absorbed | our fastState trusted the stored until - a hand-edited future date extended the loan indefinitely; fixed red-first (tests/fast-clamp.test.mjs) |
+| f2eee5c | manifest --check compares-only and is hooked to pre-commit | absorbed | our pre-commit now runs the manifest check when FRAMEWORK-MANIFEST.json exists, so a changed managed asset without a regenerated manifest is caught at commit time |
+| 346b354 | their whole mutation matrix deleted; meta-tests do not enter the release chain | divergence, keep ours | our battery stays: it is the guard against unguarded implementations, run manually and pinned by the ruler |
+| ad319fb | golden baseline thinned 29k->14k lines by hashing big stdout by size | note | we keep full structure with field-name masking and verbatim digests; both rulers hold, different cost trade |
+| 56448b6 | six exclusion tables consolidated into one exclusions.json + generator with a drift gate | equivalent, keep ours | our two tables + exhaustive guard test pin the same contract with less machinery |
+| 05970e3 | CLAUDE.md dieted 349->188 lines | note | our AGENTS.md is 18.5KB and the user has ruled the size argument settled |
+| 6f67a18 | dispatch only minimal context; subagents must not self-derive/verify/long-report (user's 60-round complaint) | note | our law 9 envelope + evidence handles already codify this |
+| dbbb35a | repo went public with internal addresses scrubbed | note | not our call |
+
 ### codex-base 2.0.0 delivered (harvest 2026-09-06, refactor branch merged, 13 commits)
 
 | Commit | Mechanism | Verdict | Why |
