@@ -124,6 +124,18 @@ are fixed with tests:
 | f3cd449 trace truncation | their batch-1 plans truncated trace -> rc3 | preempted | dsh trace ignored t.truncated and reported ok over an incomplete set - fixed before their batch landed: ok folds !truncated with a reason (tests/trace-truncation.test.mjs) |
 | f3cd449 receipt engineHash (their batch 3, from codex identity.mjs) | runtime tree hash into evidence identity | preempted | dsh receipts now bind engineIdentityHash - evidence from an older scaffold cannot certify a newer one, so a scaffold upgrade stales receipts and forces re-review (tests/engine-binding.test.mjs) |
 
+### codex-base 2.0.0 delivered (harvest 2026-09-06, refactor branch merged, 13 commits)
+
+| Commit | Mechanism | Verdict | Why |
+|---|---|---|---|
+| 9e455d5 | v5 assurance harness complete (harness.mjs +921, bootstrap +264) | watching | real wiring this time; the resolver now drives policy - their own admission of human-acceptance-unverified stands |
+| e2199a6 | flexible assurance: policy v2 resource caps, read-only floors, policy-aware context budgets | watching | the floors direction matches our PROFILE_RANK; the context-budget-per-policy idea is recorded for the next context-pack change |
+| 6d1429d, 912238c | command-safety gaps, git-config and trace evidence gaps | already have | our gate is the command-safety surface and our trace fails truncated measurements |
+| 85bf110 | authorized Git lifecycle automation | no surface | dsh never automates git operations; release never tags |
+| a862013 | stale gate-log lock recovery test | no surface | dsh gate log is append-only with no locks; corruption fails visible instead |
+| 989fe43 | hook decision preservation + PowerShell 7 interop | already have | dsh gate log preserves every decision; setup.ps1 already requires PowerShell 7 |
+| their v5 spec-lint: only a heading declares a requirement | heading-bound declarations | absorbed this harvest | our specLint counted prose citations as declarations - our own PRODUCT-SPEC prose index line was a phantom-declaration factory; fixed red-first (tests/spec-heading.test.mjs), 27 requirements re-anchored to their real headings with zero loss |
+
 ### The big day 2026-09-04/05 — both delivered real work
 
 | Commit | Mechanism | Verdict | Why |

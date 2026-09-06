@@ -329,6 +329,11 @@ export function specLint (catalog) {
       if (idx >= 0) findings.push({ file: f, line: idx + 1, severity: 'error', code: 'PLACEHOLDER', message: 'placeholder "' + ph + '" in a requirement document; a half-written requirement is worse than an absent one' })
     }
     for (let i = 0; i < lines.length; i++) {
+      // Only a heading declares a requirement. A prose citation is a
+      // reference, and counting it as a declaration manufactures a phantom
+      // requirement every downstream gate then chases. (The siblings' v5
+      // spec-lint lesson: heading-bound declarations.)
+      if (!/^#{1,6}\s+/.test(lines[i].trim())) continue
       const m = /\b((?:REQ|NFR)-[A-Z]{2,6}-\d{3,4})\b/.exec(lines[i])
       if (!m) continue
       const id = m[1]
