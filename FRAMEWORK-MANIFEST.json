@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 93,
-  "digest": "3f8960c3961d2c3938fb596acc6f81ecf929b0956974b9755eca47c321d989d8",
+  "digest": "1e8789bf1dd2a4a245e92e3391ed5cd9995dcd35718c8abf466f7e6a04c192f0",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -91,8 +91,8 @@
     },
     {
       "path": ".dsh/base/lib/scan.mjs",
-      "sha256": "98aa52232fc35664f3d025a855bff4be20f47d6c876d9db6718a79ef02b7cbbc",
-      "bytes": 40104
+      "sha256": "f566c012b332e6e5774fd7d92f953460337eaa9208151f8c31da014f646e5c66",
+      "bytes": 41320
     },
     {
       "path": ".dsh/base/lib/selftest.mjs",
@@ -241,8 +241,8 @@
     },
     {
       "path": ".dsh/skills/requirements-elicitation/SKILL.md",
-      "sha256": "5a23f55d74896b90e49c0132e97e486aeaa66d67bcc25104a97f8db06a6b3baf",
-      "bytes": 7899
+      "sha256": "2b8ed45f0a6cc2b543f11778391756df0f873f256f2c27d0fe37311bb4e34667",
+      "bytes": 10411
     },
     {
       "path": ".dsh/skills/resilience-engineering/SKILL.md",

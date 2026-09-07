@@ -455,9 +455,27 @@ export function skillsLint (dirs = null) {
           findings.push({ file, severity: 'error', code: 'CAMEL_CASE_KEY', message: 'frontmatter key "' + key + '" is camelCase; the harness accepts only "disable-model-invocation" and "user-invocable", and drops the entire skill on a rejected spelling' })
         }
       }
-      for (const key of ['disable-model-invocation', 'user-invocable']) {
+      for (const key of ['disable-model-invocation', 'user-invocable', 'bridge']) {
         if (meta[key] !== undefined && !BOOLISH.has(String(meta[key]).toLowerCase())) {
           findings.push({ file, severity: 'error', code: 'NON_BOOLEAN_INVOCATION', message: key + ' must be boolean-like; an invalid value drops the entire skill from discovery' })
+        }
+      }
+      // The bridge contract: a business-facing skill opts in with bridge: true
+      // and must then carry dialogue examples, the fact-vs-inference marking
+      // convention, and a handoff block. Machine-enforced, so the bridge cannot
+      // be thinned into slogans later; every other skill stays exempt.
+      const isBridge = meta.bridge !== undefined && BOOLISH.has(String(meta.bridge).toLowerCase()) && String(meta.bridge).toLowerCase() !== 'false'
+      if (isBridge) {
+        for (const sec of ['## Dialogue examples', '## Facts vs inference', '## Handoff']) {
+          const idx = fm.body.indexOf(sec)
+          if (idx < 0) {
+            findings.push({ file, severity: 'error', code: 'BRIDGE_SECTION_MISSING', message: 'bridge skill lacks section "' + sec + '"' })
+            continue
+          }
+          const rest = fm.body.slice(idx + sec.length)
+          const next = rest.search(/\n## /)
+          const sectionBody = (next >= 0 ? rest.slice(0, next) : rest).split('\n').filter(l => l.trim()).length
+          if (sectionBody < 2) findings.push({ file, severity: 'error', code: 'BRIDGE_SECTION_MISSING', message: 'bridge section "' + sec + '" has no content' })
         }
       }
       const bytes = Buffer.byteLength(text, 'utf8')

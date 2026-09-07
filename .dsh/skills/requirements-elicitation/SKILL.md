@@ -2,6 +2,7 @@
 name: requirements-elicitation
 description: Use when a product, feature, or change lacks a decidable specification; produces EARS-form requirements with acceptance criteria in PRODUCT-SPEC.md.
 whenToUse: Before design or planning, whenever requirements are absent, vague, or adjective-based.
+bridge: true
 ---
 
 ## Purpose
@@ -45,6 +46,60 @@ Produces `docs/requirements/PRODUCT-SPEC.md` (EARS-form REQ/NFR entries with Giv
 | Unwanted behaviour | IF <condition>, THEN the <system> SHALL <response>. | `REQ-AUTH-004`: IF five consecutive sign-in attempts for one account fail within 60 seconds, THEN the API SHALL reject further attempts for that account for 300 seconds and emit an audit event. |
 | Optional feature | WHERE <feature is included>, the <system> SHALL <response>. | `REQ-BILL-005`: WHERE the enterprise plan is enabled, the service SHALL export invoices as PDF within 10 seconds of request. |
 | Complex | WHILE <state>, WHEN <trigger>, the <system> SHALL <response>. | `REQ-SYNC-006`: WHILE a sync is in progress, WHEN the user edits a queued record, the client SHALL keep the local edit and mark the record for re-sync without data loss. |
+
+## Dialogue examples
+
+Two real exchanges, compressed: watch how the question digs for WHY, how the
+follow-up unblocks one decision, and how a correction changes the document.
+
+Exchange 1 - from "make a calculator" to a decidable spec:
+
+    User: make me a calculator.
+    AI:   Who uses it? How many times a day? What do you reach for today?
+    User: Just me, for tax rates. I open Excel now.
+    AI:   So the core is "opens faster than Excel, and the tax rate is
+          remembered". Let me draft the spec around those two capabilities
+          and park everything else as open questions - agree?
+    User: Yes.
+    -> What happened: the first two questions filled dimensions 1-3 with user
+       facts (F). The restatement gave the user one concrete sentence to
+       correct, and they confirmed it instead.
+
+Exchange 2 - the user rejects the depth; the correction must be visible:
+
+    User: This spec is too detailed. I am not shipping this.
+    AI:   Then I cut three things: error handling drops from REQ to an open
+          question, the multi-user journey goes, tax-rate memory stays.
+          I will run spec-lint again and write the CHANGELOG entry naming
+          exactly what was removed - so you can see what your instruction
+          changed.
+    User: Right, that depth.
+    -> What happened: no apology, no "noted". The correction became three
+       concrete named edits, so the user saw exactly what changed.
+
+## Facts vs inference
+
+Every line in the spec carries a Source marker; nothing unmarked:
+
+| Mark | Meaning | Rule |
+|---|---|---|
+| F | user-confirmed fact | quote or point at where the user said it; never re-interpret it later |
+| I | AI inference | restated in concrete context ("I infer X because you said Y") and stays I until the user confirms it |
+| U | unknown | goes to Open questions with owner and deadline; never silently filled with a plausible default |
+
+The next role trusts only F as foundation. I is a proposal awaiting confirmation;
+U is a named gap. A spec full of unmarked statements is not a spec, it is a guess
+dressed as one.
+
+## Handoff
+
+What the next role receives, every time:
+
+1. PRODUCT-SPEC.md - F/I/U-marked requirements, EARS form, acceptance criteria.
+2. PRODUCT-SPEC-CHANGELOG.md - paired entry naming added/changed/removed ids.
+3. Open questions - owner, deadline, and which decision each one unblocks.
+4. The confirmed-scope boundary: what the user explicitly cut, so nobody
+   re-adds it in the next phase "for completeness".
 
 ## Output contract
 `docs/requirements/PRODUCT-SPEC.md` sections, in order: Problem and framing / Users and jobs / Scope (in and explicitly out) / Journeys / Functional requirements / Quality requirements / Constraints / Open questions with owner and deadline.

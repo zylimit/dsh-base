@@ -36,7 +36,18 @@ exists.
    push detail into `references/`.
 4. Every skill body carries the same six sections: Purpose, When this fires,
    Procedure, Output contract, Stop conditions, Anti-patterns.
-5. Duplicate skill names shadow each other silently. Names are unique here.
+5. The bridge contract: a skill whose work is human-facing business understanding
+   opts in with frontmatter `bridge: true` and then MUST carry three extra
+   sections, enforced by skills-lint (BRIDGE_SECTION_MISSING):
+   - `## Dialogue examples` - two or more real exchanges showing how to ask,
+     follow up, and converge; a correction shown as concrete named edits.
+   - `## Facts vs inference` - the F/I/U marking convention the skill's outputs
+     must carry: F user-confirmed fact, I AI inference restated in context, U
+     unknown parked with owner and deadline.
+   - `## Handoff` - exactly what the next role receives and trusts.
+   These sections are paid at load time like the rest of the body; keep the
+   dialogue examples compressed. A skill that never asks a human does not opt in.
+6. Duplicate skill names shadow each other silently. Names are unique here.
 
 ## Verification
 
