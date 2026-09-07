@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 93,
-  "digest": "7a831a5b61e7df528661586b19f6bbacc86f863d304d3757d932a55451e29bb0",
+  "digest": "72212d3b8692ee07719a04635d860daa643f0da40788036f26a4350463b83b2d",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -181,8 +181,8 @@
     },
     {
       "path": ".dsh/skills/architecture-design/SKILL.md",
-      "sha256": "8e6212a10916929ea1cbf65925ed55f2a709f478a63ff4103d099121e8b985b3",
-      "bytes": 8079
+      "sha256": "e2ae4d1a455d679beda6bf041878ed097876fa53ca06e830a8bad044630fabed",
+      "bytes": 10577
     },
     {
       "path": ".dsh/skills/architecture-guard/SKILL.md",
@@ -291,8 +291,8 @@
     },
     {
       "path": ".dsh/skills/work-planning/SKILL.md",
-      "sha256": "c495d06bc780d9f396846cc1288850fa34769098d7de4645c722474dbb89ae8b",
-      "bytes": 6257
+      "sha256": "b8636fe1eced47f3f992c65209c2deaa99b83f3080a2fb6189f70bfeb2e5dc12",
+      "bytes": 8526
     },
     {
       "path": ".dsh/templates/ADR.md",

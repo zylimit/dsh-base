@@ -2,6 +2,7 @@
 name: work-planning
 description: Use when an approved spec and architecture must become an executable DEV-PLAN.md whose tasks a zero-context subagent can run without asking questions.
 whenToUse: After spec-lint and catalog-lint pass, before any implementation begins.
+bridge: true
 ---
 
 ## Purpose
@@ -35,6 +36,50 @@ Produces the plan, a REQ-to-phase coverage table, and a budget verdict per task.
 8. Check blast radius per task with `node .dsh/base/dsb.mjs impact` against its Scope paths. A task touching more than `maxModulesTouched` modules is a cross-cutting change and must be split by module or given an explicit ADR.
 9. Confirm each task's Verification command resolves to real checks: the module's `verification[]` ids must exist in `catalog.json` `checks` (proved by `catalog-lint` exit `0`). A task whose verification is "manual inspection" is not planned; give it a command or mark it review-only.
 10. Register execution with `node .dsh/base/dsb.mjs task start` when a task begins and `task complete` when its verification passes; `task status` is the recovery source after a session break.
+
+## Dialogue examples
+
+Two real exchanges, compressed: the first reorders the plan by value; the second
+keeps a genuine unknown visible instead of hiding it inside a task.
+
+Exchange 1 - the human wants value first; the plan reorders, the deferral is named:
+
+    User: 先要能跑起来,别的以后再说。
+    AI:   那我把「能跑的最小闭环」放 Phase 1,单任务单文件;安全加固和
+          性能留在后面,并在 Deferred items 写明每个的解锁条件(什么时候
+          提回 P1)。这样你最快能摸到东西,后面也不会丢。
+    User: 好。
+    -> What happened: "later" did not become a vague note. Every deferred item
+       carries the condition that raises it back, so the value-first order is
+       a decision with a trail, not an excuse.
+
+Exchange 2 - a real unknown stays an unknown, never a placeholder inside a task:
+
+    User: 同步冲突怎么处理,我们也没想好。
+    AI:   那这单独立成 Phase 2 的决策任务:owner 是你,Verification 是
+          「选定方案并写进 ADR」,在它 close 之前,依赖它的任务不排期。
+          现在硬写一个「合理处理冲突」,实现者会替你发明一个。
+    User: 对,别替我发明。
+    -> What happened: the unknown became a scheduled decision with an owner,
+       and everything downstream of it stayed unscheduled - the plan states
+       the dependency instead of burying it.
+
+## Facts vs inference
+
+| Plan element | Marker | Rule |
+|---|---|---|
+| Goal, Scope, Verification | F | derived from the approved spec and catalog; a task cannot invent them |
+| Assumptions section | I | every assumption is named and carries the check that would falsify it; unconfirmed assumptions block the phases that depend on them |
+| Deferred items, open questions | U | owner, deadline, and the condition that raises each one back; never a placeholder inside a task |
+
+## Handoff
+
+The implementer receives the five-element task; the plan also hands off:
+
+1. The REQ-to-phase coverage table, so trace stays provable as tasks complete.
+2. The decision tasks with owners - phases depending on an open decision are
+   not scheduled until it closes.
+3. Which tasks are review-only, so nobody waits for a gate that will not run.
 
 ## Output contract
 `docs/plan/DEV-PLAN.md` sections: Summary / Assumptions / Phase list / Coverage table / Deferred items / Risks.

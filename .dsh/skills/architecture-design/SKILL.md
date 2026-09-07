@@ -2,6 +2,7 @@
 name: architecture-design
 description: Use when designing or restructuring a system; produces ARCHITECTURE.md plus the enforced catalog.json module graph, and per-module AGENTS.md contracts.
 whenToUse: After the spec is decidable and before planning, or whenever module boundaries change.
+bridge: true
 ---
 
 ## Purpose
@@ -42,6 +43,56 @@ A design that cannot be expressed as modules, layers and forbidden dependencies 
 
 7. Write `AGENTS.md` in each module directory. The linter requires exactly these four headings: `Purpose`, `Boundaries`, `Invariants`, `Verification`. dsh auto-loads that file whenever a first-party `read`/`write`/`edit` touches the directory, so it is the cheapest boundary contract available. Keep it under `agentsMd.maxBytes` (default 12000).
 8. Verify in order and stop on the first failure: `node .dsh/base/dsb.mjs catalog-lint` (exit `1`: unknown layer, unknown check id, undeclared module path, cycle), `node .dsh/base/dsb.mjs arch-check` (exit `1`: forbidden or undeclared edge; `--record` writes the trend baseline), `node .dsh/base/dsb.mjs agents-lint` (exit `1`: missing root `AGENTS.md`, or a `high`/`critical` module with no `AGENTS.md`), and `node .dsh/base/dsb.mjs arch-trend --gate` to reject an increase in violations.
+
+## Dialogue examples
+
+Two real exchanges, compressed: the first derives the design from business
+facts instead of fashion; the second explains a tradeoff and lets the human
+choose with the consequence named.
+
+Exchange 1 - from business responsibility to module boundaries:
+
+    AI:   谁在写这几个模块?改动总是一起发生吗?
+    User: 就我一个。凭证和会话总是一起改。
+    AI:   那它们是一个模块,不是一个目录一个模块。业务上它们同一份职责,
+          拆开只会让 impact 要么全炸要么全漏。我把它们合成 auth。
+    User: 行。
+    -> What happened: the boundary came from responsibility and co-change,
+       not from the directory tree - the exact rule cochange enforces later.
+
+Exchange 2 - a tradeoff is explained, the human chooses, the consequence is named:
+
+    AI:   同步接口简单但一个挂全挂;异步队列能扛挂但你要养消息中间件,
+          团队就你一个人。
+    User: 先同步。
+    AI:   同步,并且把失败后果写进模块的风险档:availability 定 medium,
+          触发条件是「下游超时率过 1%」,到那时再升档换异步。取舍进 ADR。
+    -> What happened: the choice was made with the tradeoff and the
+       upgrade-trigger both named, so the future decision is scheduled, not
+       re-litigated.
+
+## Facts vs inference
+
+| Design element | Marker | Rule |
+|---|---|---|
+| business responsibilities, data ownership, team facts | F | restated from the spec or the human, never assumed |
+| layer direction, module boundaries, tier choices | I | every I is a proposal with a named alternative, presented to the human before the catalog encodes it |
+| failure consequences not yet known | U | recorded in the architecture document as open questions, not silently defaulted to "resilient" |
+
+The catalog encodes F and confirmed I only. An unconfirmed tier is a guess
+that the attribute gate will later turn into a false green or a false red.
+
+## Handoff
+
+The planner and implementers receive:
+
+1. ARCHITECTURE.md with the decision table - every tradeoff named with its
+   rejected alternative and the trigger that would reverse it.
+2. The catalog graph the machine enforces - the same design, not a second one.
+3. ADRs with Enforced-by lines - so a decision reads as enforced only when
+   something actually enforces it.
+4. The open questions with owners, because an unresolved failure consequence
+   must block the tier that depends on it.
 
 ## Output contract
 - `docs/architecture/ARCHITECTURE.md`: Context / Components and responsibilities / Data ownership / Boundaries and failure modes / Layer map (outermost first) / Module table / Decisions (ADR links) / Rejected alternatives.
