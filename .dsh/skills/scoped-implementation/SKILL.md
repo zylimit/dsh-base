@@ -2,6 +2,7 @@
 name: scoped-implementation
 description: Use when executing one planned task as the implementer; enforces the task envelope, scope discipline, self-verification, and the six-field result envelope.
 whenToUse: Every implementation turn, and every delegated coding subagent run.
+bridge: true
 ---
 
 ## Purpose
@@ -35,6 +36,63 @@ Produces a diff confined to Scope plus a verified result the caller can act on w
 - Sequence dependent work with `await`; run mutating calls (`write`, `edit`) one at a time in the order you intend.
 - Wrap calls that may legitimately fail in `try/catch` on `ToolCallError` and continue, so one missing path does not abort the batch.
 - Use `edit` for targeted changes and `write` only for new files or full replacement; read the file first.
+
+## Dialogue examples
+
+Two real exchanges, compressed: the first is a business-meaning contradiction
+found during implementation and sent back upstream; the second is the
+author-bias trap the red phase exists to catch.
+
+Exchange 1 - the code contradicts the rule's intent; fix upstream, not silently:
+
+    AI:   The waiver path rewrites an executed FAIL into SKIPPED, but the
+          law says evidence is immutable. The task says "make waivers
+          stricter" - the task is the symptom, the law is the intent.
+    User: 所以怎么改?
+    AI:   Pre-declared skip instead: the waiver resolves before the check
+          runs, and an executed FAIL stays. That is a law edit plus the
+          engine change plus a red test - one change, not a quiet bend.
+    User: 改。
+    -> What happened: a contradiction between task wording and business
+       meaning did not become a silent choice. It became an upstream
+       correction (the law) carried in the same change, and the user saw
+       which rule moved and why.
+
+Exchange 2 - the author's own test carries the author's mistake:
+
+    AI:   The new test passes locally, but it asserted the wrong thing:
+          Array.includes is equality, not substring, so the check never
+          tested what the message claimed.
+    User: 这不是 bug 吗?
+    AI:   对,是测试作者的错。红转绿流程本来就会抓:让测试先红,红的时候
+          读断言本身,发现断言和意图不符,改断言再绿。
+    -> What happened: self-testing bias (the author's assumption baked into
+       the assertion) was caught by forcing the test to fail first and
+       reading the failure, not the pass.
+
+## Facts vs inference
+
+The six-field envelope is the marker system:
+
+| Envelope field | Marker | Rule |
+|---|---|---|
+| Scope, Verification | F | caller-confirmed facts; a missing or vague field is NEEDS_CONTEXT, never inferred |
+| anything about intent | I | restate it concretely ("I read the task as X because of Y") and confirm before acting on it |
+| Not verified, pre-existing failures | U | reported, not silently fixed and not silently inherited |
+
+A business-meaning contradiction between the task and the spec, the law, or
+the catalog is not a choice between them: it is an upstream finding. Fix the
+upstream document in the same change and say so in the envelope.
+
+## Handoff
+
+The reviewer and the caller receive, every time:
+
+1. The six-field result envelope with Status up front.
+2. The diff confined to Scope, plus any scope extension requested and refused.
+3. Evidence pointers only - commands with exit codes and paths, no log dumps.
+4. The upstream corrections this change had to make (law, spec, catalog),
+   because the reviewer must judge them as part of the change.
 
 ## Output contract
 ```

@@ -2,6 +2,7 @@
 name: progress-ledger
 description: Use when recording or recovering project state in progress.md; defines the section contract, evidence rule, confidence gate, archiving, and the recovery procedure.
 whenToUse: At the end of every working turn, and at the start of any resumed or compacted session.
+bridge: true
 ---
 
 ## Purpose
@@ -33,6 +34,64 @@ It exists because the model's context is not memory - a compacted summary is a c
 
 ### Interaction with dsh compaction
 dsh may compact a long session into a summary. That summary is a claim about the past, not a fact: it can drop a constraint, merge two decisions, or keep a superseded one. It also does not repair instruction drift: measured across 23 models, a summary carries the drift forward rather than correcting it, so the constitution decays inside a long session while the summary still reads healthy. Rules: (1) after compaction, re-read the four recovery sources AND run `node .dsh/base/dsb.mjs invariants` before acting; (2) never promote a statement from a compacted summary into `Pinned` or `Decisions` without re-deriving it from a file or a command; (3) write to `progress.md` before the context gets long, not after - the ledger is the anti-compaction mechanism.
+
+## Dialogue examples
+
+Two real exchanges, compressed: the first shows a correction changing what the
+memory stores; the second shows an authorization that must be recorded so the
+next session never re-asks it.
+
+Exchange 1 - the human rejects the cost framing; the memory must change, not the apology:
+
+    AI:   The constitution is 13 KB; keeping it small saves every session's
+          context budget.
+    User: 算个屁 - the size argument is wrong. The real cost is the three
+          memory files, and they grow.
+    AI:   Then the rule changes to what actually enforces the cost:
+          sync-check binds code and memory to the same commit, and recap is
+          the fixed-cost recovery. I am rewriting the law to say the
+          enforcement ratio is what matters, not the bytes.
+    User: 对,三文件,三个屁。
+    -> What happened: the correction did not become a "noted". The law and the
+       ledger entries were rewritten so the wrong framing cannot come back,
+       and the user saw exactly which line changed and why.
+
+Exchange 2 - the human authorizes autonomy; record it so nobody re-asks:
+
+    User: 三轮直接往下,除非阻塞了,不然不要找我。
+    AI:   Understood: three rounds of autonomous work, escalate only on a
+          blocker. Recording this in Pinned as the session mandate, so the
+          next session inherits it instead of asking again.
+    -> What happened: the authorization became a pinned constraint with a
+       scope and an expiry, so "already answered" questions are never re-asked
+       by the next role or session.
+
+## Facts vs inference
+
+The confidence gate maps onto the same markers the bridge uses everywhere:
+
+| Ledger section | Marker | Rule |
+|---|---|---|
+| Done | F only | every entry carries an evidence pointer; a claim without one is not F and is not written |
+| Decisions | F or I | F when the human chose it (rejected alternative named); I when the AI proposed it and confirmation is still pending - an unconfirmed proposal stays in Notes until the human says yes |
+| Notes | I or U | hedged language is demoted here tagged Needs-Confirmation, with the command that would settle it |
+| Pinned | F only | immutability means immutability: only human-confirmed constraints, never inference |
+
+A next session that trusts an I as an F has fabricated its own foundation. The
+markers are what make "the user already taught us this" a checkable statement
+instead of a vibe.
+
+## Handoff
+
+What the next session, next role, or next agent receives:
+
+1. The four recovery sources read in order: progress.md, PRODUCT-SPEC.md,
+   PRODUCT-SPEC-CHANGELOG.md, and the live engine state (task status + ledger).
+2. The invariants re-derived by command, not by memory: node .dsh/base/dsb.mjs invariants.
+3. The F/I/U status of every entry it will build on - Done as fact, pending
+   decisions as proposals, hedged notes as open questions.
+4. The mandate recorded in Pinned (what was authorized, with scope and expiry),
+   so already-answered questions are not re-asked.
 
 ## Output contract
 ```

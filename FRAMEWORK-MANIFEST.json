@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 93,
-  "digest": "1e8789bf1dd2a4a245e92e3391ed5cd9995dcd35718c8abf466f7e6a04c192f0",
+  "digest": "7a831a5b61e7df528661586b19f6bbacc86f863d304d3757d932a55451e29bb0",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -226,8 +226,8 @@
     },
     {
       "path": ".dsh/skills/progress-ledger/SKILL.md",
-      "sha256": "f8bbccfcbe67131cf5149ac1aa22497b896dd7793c72632a1ddc91fcd722d1eb",
-      "bytes": 8815
+      "sha256": "ae46b69409aafc31ad01980727d044bd625e6ddeff539d64268abd315cb664b1",
+      "bytes": 11862
     },
     {
       "path": ".dsh/skills/release-readiness/SKILL.md",
@@ -261,8 +261,8 @@
     },
     {
       "path": ".dsh/skills/scoped-implementation/SKILL.md",
-      "sha256": "e05e3f39ac063cfd1f1959a2d9efd31671819b8a1b611f08dd0b8539e4b3f0b0",
-      "bytes": 6827
+      "sha256": "9a36713ed6cddb48303a020079f4f1f77822c950b7272959c257bceb545148e4",
+      "bytes": 9596
     },
     {
       "path": ".dsh/skills/skill-authoring/SKILL.md",
