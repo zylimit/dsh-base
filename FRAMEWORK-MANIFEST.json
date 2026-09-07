@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 93,
-  "digest": "72212d3b8692ee07719a04635d860daa643f0da40788036f26a4350463b83b2d",
+  "digest": "f5b4b0ef0b4f70c45bbc07913b4965aef22caf23113aae611c44ba7bf018a8b4",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -201,13 +201,13 @@
     },
     {
       "path": ".dsh/skills/dsb-operating-loop/SKILL.md",
-      "sha256": "31484ebf1087fc616bb4f777232eea3dd24c189f69af6dd9c08ddcc87a5bd969",
-      "bytes": 8735
+      "sha256": "a883742bb39d7a75af0f4b8120d8c58e69dc1caec64e707d3108e472424038b9",
+      "bytes": 11620
     },
     {
       "path": ".dsh/skills/feedback-and-evolution/SKILL.md",
-      "sha256": "99e497990cc7c27fdbead3943fd8b447cd1cf259f52acf5ec288c419183096b6",
-      "bytes": 7604
+      "sha256": "20b1cb74e2016877d6b4a29c95e6666fb606217722d8f955544173496776c5ff",
+      "bytes": 9570
     },
     {
       "path": ".dsh/skills/incident-response/SKILL.md",

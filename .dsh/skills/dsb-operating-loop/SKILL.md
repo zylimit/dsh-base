@@ -2,6 +2,7 @@
 name: dsb-operating-loop
 description: Use when any non-trivial change starts or resumes; drives the nine-phase dsb loop, the evidence rule that bans unproven claims, and the three approval tiers.
 whenToUse: Any change beyond a trivial one-line edit, and every session resume or handoff.
+bridge: true
 ---
 
 ## Purpose
@@ -58,6 +59,56 @@ Banned phrases: "should work", "probably", "looks correct". Replace with either 
 | HIGH | `git push`, tag, release, deploy, destructive commands (`rm -r`, `git reset --hard`, force-push, DB writes), secrets or credentials, schema migration, dependency addition or upgrade, license change, editing `.dsh/base/lib/*` | Stop and obtain explicit human authorization via `ask_user_question` before acting |
 
 When the tier is ambiguous, take the higher tier. Delegated subagents run with approval policy pinned to `never`: a subagent that hits a HIGH-tier need must report `BLOCKED` upward, not attempt the action.
+
+0. Pick the interaction depth before entering the loop. The depth adapts to
+   business understanding, problem complexity, and user willingness - and it
+   changes by signal, not by mood.
+
+| Depth | Trigger | Behaviour |
+|---|---|---|
+| 1 Advance | scope is clear, verification decidable, the user said go | proceed phase by phase, report at each gate, never re-ask an answered or authorized question |
+| 2 Explore | the problem matters and the understanding is not confirmed | co-explore: restate understanding in concrete context, ask 1-2 questions, each naming the decision it unblocks, iterate until F/I/U is sorted |
+| 3 Learn | the user is teaching business context | listen first: record user facts (F) into the ledger immediately, do not interrupt with solutions or "let me explain" |
+
+   Transitions: an authorization received at any depth is recorded in Pinned
+   with scope and expiry, so the next session inherits it. A correction from
+   the user changes the depth or the artifact - never just an apology.
+
+## Dialogue examples
+
+Two real exchanges, compressed: the first shows the depth switching on a user
+signal; the second shows learning mode listening before proposing.
+
+Exchange 1 - the user authorizes autonomy; the loop switches depth and records it:
+
+    User: 三轮直接往下,除非阻塞了,不然不要找我。
+    AI:   明白:三轮自主,只在阻塞时升级。这条记进 Pinned(范围:本次目标,
+          有效期:三轮),后面两轮我只在每个闸门报告。
+    -> What happened: the authorization became a recorded mandate, so "already
+       answered" questions are not re-asked - by this session or the next.
+
+Exchange 2 - the user is teaching; learning mode records facts first:
+
+    User: 我们这行,标书错了比慢更致命。
+    AI:   记下了:F - 正确性优先于速度,这是你们行业的既定事实。我先不动
+          方案,继续听:还有什么是我按通用工程直觉就会搞错的?
+    -> What happened: the user's business knowledge became an F in the ledger
+       before any solution talk - the loop learns before it moves.
+
+## Facts vs inference
+
+| Loop element | Marker | Rule |
+|---|---|---|
+| artifacts closed by a gate (spec, catalog, ledger entry, receipt) | F | machine-verified; a phase built on an unclosed gate is I no matter how confident it reads |
+| envelope fields, approval-tier judgement | F from the user, I from the agent | an I is restated concretely and confirmed before it becomes scope |
+| the mandate in Pinned | F | authorizations only; never inference |
+
+## Handoff
+
+The next session receives: the phase to re-enter (earliest artifact missing,
+stale, or unproven), the replayable trail, the Pinned mandate with scope and
+expiry, and the depth that was in force - so it resumes the conversation the
+user was actually having, not the one the artifacts suggest.
 
 ## Output contract
 Every turn that advances the loop ends with this block:

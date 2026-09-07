@@ -2,6 +2,7 @@
 name: feedback-and-evolution
 description: Use when the same correction, defect or workaround recurs, when proposing to graduate a lesson into a mechanism, or when auditing whether existing checks earn their cost.
 whenToUse: After any repeated correction, and at every phase close for the gate-effectiveness audit.
+bridge: true
 ---
 
 ## Purpose
@@ -37,6 +38,10 @@ skipped: <false | YYYY-MM-DD reason>
 
 ## Candidate mechanism
 <check id | fitness rule id | skill step | prose - and why that layer.>
+
+## What changed (shown to the human)
+- file: <before> -> <after>   (filled in when the lesson is applied; a
+  correction the user cannot see is an apology with extra steps)
 ```
 2. Increment `occurrences` and update `last_seen`. Never fork a second file for the same behaviour; the count is the signal.
 
@@ -45,6 +50,10 @@ skipped: <false | YYYY-MM-DD reason>
 2. Choose the target by the preference order in section "Graduation targets".
 3. Present the proposal to the human with: the lesson slug, occurrence count, proposed target, the exact catalog or file edit, and the cost (what it adds to every run).
 4. Every graduation needs explicit human confirmation. On confirmation, apply the edit and set `graduated:`. On refusal, set `skipped: <date> <reason>` and never re-propose that lesson.
+5. After applying, show the human the before/after of the exact edit - one line
+   per changed file - and record it under the lesson's What changed section.
+   The correction is not done until the user can see what their instruction
+   changed. This is the visibility step: no "noted", no silent fix.
 
 ### L3 - Optimise the owning skill
 1. When a covering skill exists but was not followed, the defect is in the skill, not in the agent: the trigger, an ambiguous step, or a missing stop condition.
@@ -71,6 +80,36 @@ Instruction prose is last because it is the only layer billed on every request w
 3. A control that has never intervened is cost plus false confidence. It must earn its place with data: show a run where it would have failed (a deliberate red test), or retire it.
 4. Retirement is a catalog edit with human confirmation, recorded as a lesson with `graduated: check:<id>` reversed to a note. Protected attributes (`security`, `safety`, `privacy`) are never retired on cost grounds.
 5. `node .dsh/base/dsb.mjs fitness --all` and `node .dsh/base/dsb.mjs dod` after any catalog edit; exit 1 means the edit broke a rule.
+
+## Dialogue examples
+
+One real exchange, compressed: the correction changes the mechanism, and the
+human sees the exact change before the topic closes.
+
+    User: Stop telling me "noted" - I want to see which line you changed.
+    AI:   Understood. This correction lands in quality.mjs applyWaivers:
+          before, an executed FAIL was rewritten into SKIPPED; after, the
+          waiver resolves before the check runs and an executed result is
+          immutable - plus one red test. Is this diff what you meant?
+    User: Exactly.
+    -> What happened: the correction became a visible before/after, not a
+       feedback file entry. The user confirms the CHANGE, not the apology.
+
+## Facts vs inference
+
+| Lesson element | Marker | Rule |
+|---|---|---|
+| source: human-correction | F | the user said it; quote or point at it, never paraphrase it away |
+| source: review / gate-failure / defect | F | machine-observed with evidence pointers |
+| Candidate mechanism and graduation target | I | a proposal until the human confirms; a refused proposal stays skipped with the date and reason |
+| occurrences count | F | the signal that turns a logbook into a mechanism |
+
+## Handoff
+
+The next audit receives: the lesson files with What changed filled in, the
+graduation decisions with human confirmations, and the gate-audit data - so a
+future session can tell a mechanism that earned its cost from one that never
+fired, without re-litigating the corrections that built them.
 
 ## Output contract
 Lesson file: `.dsh/base/feedback/<slug>.md` with the frontmatter above.
