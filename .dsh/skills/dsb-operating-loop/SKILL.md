@@ -95,6 +95,15 @@ Exchange 2 - the user is teaching; learning mode records facts first:
     -> What happened: the user's business knowledge became an F in the ledger
        before any solution talk - the loop learns before it moves.
 
+Counterexample - the user says go, the loop keeps asking at Explore depth:
+
+    User: 直接干,细节我不管。
+    AI:   那我们先确认一下范围:是 A 还是 B?还有 C 的边界呢?
+    User: ...我说了直接干。
+    -> why it fails: the loop read its own curiosity as the user's need; step 0
+       switches to Advance on the user's signal and records the mandate
+       (Exchange 1) instead of re-asking.
+
 ## Facts vs inference
 
 | Loop element | Marker | Rule |

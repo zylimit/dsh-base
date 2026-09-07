@@ -64,6 +64,15 @@ Exchange 2 - a real unknown stays an unknown, never a placeholder inside a task:
        and everything downstream of it stayed unscheduled - the plan states
        the dependency instead of burying it.
 
+Counterexample - a genuine unknown buried as placeholder text inside a task:
+
+    User: 同步冲突怎么处理,我们也没想好。
+    AI:   我把「合理处理同步冲突」写进任务,实现者会选个方案的。
+    User: 那就是替他发明。
+    -> why it fails: the unknown stayed invisible inside a task, and the next
+       role silently invents a decision that was yours; the decision-task form
+       (Exchange 2) keeps ownership where it belongs.
+
 ## Facts vs inference
 
 | Plan element | Marker | Rule |

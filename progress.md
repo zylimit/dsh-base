@@ -13,6 +13,9 @@ and hedged language is demoted to `Notes` as `Needs-Confirmation`.
 
 ## Decisions
 
+- 2026-09-07 | chose content-level scenario pins over simulated conversations for bridge validation | a scripted dialogue proves the test author's expectations, never the skill's behaviour, so the battery asserts that each real scenario class is covered by the owning skill and that the correction-visibility loop is lint-enforced; the behavioural remainder is declared prompt-only instead of simulated into a false green | tests/bridge-scenarios.test.mjs, docs/bridge-validation.md
+- 2026-09-07 | chose LESSON_WHAT_CHANGED_MISSING as an error over a warning | a graduated lesson that keeps the unfilled template means the user never saw what their correction changed - the exact failure the visibility loop exists to prevent; a warning would let the apology-with-extra-steps pattern graduate silently | skills-lint lesson pass, tests/feedback-lesson.test.mjs
+
 - 2026-09-07 | chose per-item enforcement marks over whole-section prose | laws mix enforceable and behavioural items, so a section-level mark either overclaims (prose reads as enforced) or underclaims (a real check reads as unenforced); rules-audit now measures the honest state item by item | rules-audit counts, AGENTS.md laws 3-10
 - 2026-09-07 | chose to delete the verify alias over keeping two names for one gate | a duplicated entry point doubles the surface every future change must touch and ADR-0004 named both; gate remains the single name and adr-check proves nothing phantom remains | COMMANDS.gate, ADR-0004 Enforced-by: gate | selftest
 
@@ -84,6 +87,8 @@ and hedged language is demoted to `Notes` as `Needs-Confirmation`.
 Nothing.
 
 ## Done
+
+- 2026-09-07 | #— the bridge is validated against real scenarios, and the two gaps validation found are closed | evidence: tests/bridge-scenarios.test.mjs pins 10 real scenario classes from the session history to their owning skills (S1 calculator WHY-dig .. S10 Advance/Explore/Learn); the validation run was red-first and the red named exactly two gaps: counterexamples (0 of 7 bridge skills had one) and correction visibility being prompt-only; now all 7 bridge skills carry a compressed counterexample (default failure + why it fails + the correcting step, contract in .dsh/skills/AGENTS.md invariant 5) and skills-lint gained the lesson pass - a lesson with graduated: set fails LESSON_WHAT_CHANGED_MISSING until its What changed block carries a real before/after line, and an unreadable feedback dir fails closed (tests/feedback-lesson.test.mjs, red -> green); 186/186 behavioural tests, gate exit 0, golden 0 drift; fitness caught my own empty catch mid-round (no-silent-failure worked as designed); docs/bridge-validation.md holds the scenario matrix and stated tradeoffs
 
 - 2026-09-07 | #— simplification round: every constitution rule names its enforcement, and the duplicate verify alias is gone | evidence: rules-audit 93 rows = 64 enforced / 29 declared prompt-only / 0 unenforced / 0 phantom (ratio 0.533 -> 0.688, findings empty); 15 rules bound to the commands that actually enforce them (arch-check, gate, attributes, catalog-lint, waiver, fast, review, impact, ledger, fleet) and 20 behavioural rules marked prompt-only, law 6.5 split so the waiver/ledger mechanism stays bound while the argument-reuse half admits prompt-only; COMMANDS.verify deleted (the gate under a second name), ENGINE_CAPABILITIES and ADR-0004 Enforced-by updated, adr-check 0 errors; node --test 170/170 pass, gate exit 0 (15/15 checks PASS, 0 attribute gaps), golden-baseline --check 0 drift, FRAMEWORK-MANIFEST.json regenerated (93 files)
 

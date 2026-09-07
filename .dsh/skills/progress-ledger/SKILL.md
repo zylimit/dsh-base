@@ -66,6 +66,15 @@ Exchange 2 - the human authorizes autonomy; record it so nobody re-asks:
        scope and an expiry, so "already answered" questions are never re-asked
        by the next role or session.
 
+Counterexample - the correction is acknowledged, the memory is not changed:
+
+    User: 算个屁 - the size argument is wrong.
+    AI:   Noted, I will keep that in mind.
+    User: ...why is the wrong framing still in the law?
+    -> why it fails: a "noted" is an apology with extra steps; the law and
+       the ledger are the memory, and the correction is not applied until
+       they visibly change (Exchange 1).
+
 ## Facts vs inference
 
 The confidence gate maps onto the same markers the bridge uses everywhere:

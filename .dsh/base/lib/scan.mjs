@@ -494,6 +494,36 @@ export function skillsLint (dirs = null) {
   for (const n of [...new Set(names.filter((x, i) => names.indexOf(x) !== i))]) {
     findings.push({ severity: 'error', code: 'DUPLICATE_SKILL', message: 'duplicate skill name "' + n + '"; the nearer layer silently shadows the other' })
   }
+  // The correction-visibility loop, machine-enforced: a lesson marked graduated
+  // claims the fix was applied, and a correction the user cannot see is an
+  // apology with extra steps. The What changed block must carry a real
+  // before/after line, not the unfilled template.
+  const lessonRoot = '.dsh/base/feedback'
+  if (exists(lessonRoot)) {
+    let lessonEntries = []
+    try { lessonEntries = fs.readdirSync(abs(lessonRoot), { withFileTypes: true }) } catch (err) {
+      findings.push({ file: lessonRoot, severity: 'error', code: 'LESSON_DIR_UNREADABLE', message: 'the feedback directory exists but cannot be listed (' + (err && err.message || err) + '); the correction-visibility check cannot run, and an unverified check is not a pass' })
+    }
+    for (const e of lessonEntries) {
+      if (!e.isFile() || !e.name.endsWith('.md')) continue
+      const file = lessonRoot + '/' + e.name
+      const text = readText(file, '')
+      const fm = parseFrontmatter(text)
+      if (!fm.ok) { findings.push({ file, severity: 'error', code: 'BAD_FRONTMATTER', message: fm.reason }); continue }
+      const grad = String(fm.data.graduated || 'false').toLowerCase()
+      if (grad === 'false') continue
+      const idx = fm.body.indexOf('## What changed')
+      if (idx < 0) {
+        findings.push({ file, severity: 'error', code: 'LESSON_WHAT_CHANGED_MISSING', message: 'lesson is marked graduated (' + grad + ') but has no "## What changed (shown to the human)" section; an applied fix the user cannot see is an apology with extra steps' })
+        continue
+      }
+      const rest = fm.body.slice(idx + '## What changed'.length)
+      const next = rest.search(/\n## /)
+      const section = next >= 0 ? rest.slice(0, next) : rest
+      const filled = section.split('\n').some(l => /^\s*-\s*file:\s+\S/.test(l) && l.includes('->') && !l.includes('<before>') && !l.includes('<after>'))
+      if (!filled) findings.push({ file, severity: 'error', code: 'LESSON_WHAT_CHANGED_MISSING', message: 'lesson is marked graduated but its What changed block is still the unfilled template; fill the before -> after line so the human can see what their correction changed' })
+    }
+  }
   const errors = findings.filter(f => f.severity === 'error')
   return { ok: errors.length === 0, skills, findings, counts: { error: errors.length, warning: findings.length - errors.length, skills: skills.length } }
 }

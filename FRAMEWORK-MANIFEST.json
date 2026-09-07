@@ -1,8 +1,8 @@
 {
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
-  "managedFiles": 93,
-  "digest": "fd14fdaf0690b6a75292a78ef7ad1405699d1bf415d8a56b18284b1bde975063",
+  "managedFiles": 94,
+  "digest": "4426670586e474949a41a400326f0e755592ccec7a516097bfa65f48ce6dc545",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -91,8 +91,8 @@
     },
     {
       "path": ".dsh/base/lib/scan.mjs",
-      "sha256": "26411dbb8718d70061921f52f9d230c807112f13b2d6fa856f87e1a5708d2181",
-      "bytes": 41310
+      "sha256": "698668ad6286713c8fa89c06bd0729d4813d9e404c380b0eb6885ec12c86dc3b",
+      "bytes": 43488
     },
     {
       "path": ".dsh/base/lib/selftest.mjs",
@@ -181,8 +181,8 @@
     },
     {
       "path": ".dsh/skills/architecture-design/SKILL.md",
-      "sha256": "e2ae4d1a455d679beda6bf041878ed097876fa53ca06e830a8bad044630fabed",
-      "bytes": 10577
+      "sha256": "90a9d22d9bcb2b3801d7336398427ce600bb0cf8c60ae0ce98a9c369692602c6",
+      "bytes": 11037
     },
     {
       "path": ".dsh/skills/architecture-guard/SKILL.md",
@@ -201,13 +201,13 @@
     },
     {
       "path": ".dsh/skills/dsb-operating-loop/SKILL.md",
-      "sha256": "a883742bb39d7a75af0f4b8120d8c58e69dc1caec64e707d3108e472424038b9",
-      "bytes": 11620
+      "sha256": "b5b5d2966a5694fe07f9019ca82d99a69d687d501a76e7d243bce0ed2351fa15",
+      "bytes": 12044
     },
     {
       "path": ".dsh/skills/feedback-and-evolution/SKILL.md",
-      "sha256": "20b1cb74e2016877d6b4a29c95e6666fb606217722d8f955544173496776c5ff",
-      "bytes": 9570
+      "sha256": "d7806f658fb5c4ca67e435f96790becf5163bac5d7238028cacef68163676b31",
+      "bytes": 10250
     },
     {
       "path": ".dsh/skills/incident-response/SKILL.md",
@@ -226,8 +226,8 @@
     },
     {
       "path": ".dsh/skills/progress-ledger/SKILL.md",
-      "sha256": "ae46b69409aafc31ad01980727d044bd625e6ddeff539d64268abd315cb664b1",
-      "bytes": 11862
+      "sha256": "2e523f83f2dbc265ddc40760e729b216ac4269a8a4ff9a4ba6622cce33a8c730",
+      "bytes": 12279
     },
     {
       "path": ".dsh/skills/release-readiness/SKILL.md",
@@ -241,8 +241,8 @@
     },
     {
       "path": ".dsh/skills/requirements-elicitation/SKILL.md",
-      "sha256": "2b8ed45f0a6cc2b543f11778391756df0f873f256f2c27d0fe37311bb4e34667",
-      "bytes": 10411
+      "sha256": "5711b387de4b5d8b01c6c4af0781132364ee6c64cb153454cf2571a1c426d3aa",
+      "bytes": 10820
     },
     {
       "path": ".dsh/skills/resilience-engineering/SKILL.md",
@@ -261,8 +261,8 @@
     },
     {
       "path": ".dsh/skills/scoped-implementation/SKILL.md",
-      "sha256": "9a36713ed6cddb48303a020079f4f1f77822c950b7272959c257bceb545148e4",
-      "bytes": 9596
+      "sha256": "3107de8b20dde679826fdbeaf5432f26455642ba9ac995906b03be7da686a911",
+      "bytes": 10119
     },
     {
       "path": ".dsh/skills/skill-authoring/SKILL.md",
@@ -291,8 +291,8 @@
     },
     {
       "path": ".dsh/skills/work-planning/SKILL.md",
-      "sha256": "b8636fe1eced47f3f992c65209c2deaa99b83f3080a2fb6189f70bfeb2e5dc12",
-      "bytes": 8526
+      "sha256": "2f59d0cc5cdd2f0d62eba6da66157135672928fb0a6ff75d2a6d8fbd40661b75",
+      "bytes": 8998
     },
     {
       "path": ".dsh/templates/ADR.md",
@@ -443,6 +443,11 @@
       "path": "docs/adr/ADR-0009-fleet-layer-governs-the-contract-surface.md",
       "sha256": "a7f5721df777c88c6671b123b2b50fb36c916f93cfc1f17827f016ccb5e82ab0",
       "bytes": 3769
+    },
+    {
+      "path": "docs/bridge-validation.md",
+      "sha256": "eb9d0ed2fba3d7f1a83e80ed31a123b94acc4f79f8506093e258145d6e6e2c0b",
+      "bytes": 5604
     },
     {
       "path": "docs/requirements/PRODUCT-SPEC-CHANGELOG.md",

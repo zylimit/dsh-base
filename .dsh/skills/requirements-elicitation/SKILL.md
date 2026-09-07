@@ -77,6 +77,16 @@ Exchange 2 - the user rejects the depth; the correction must be visible:
     -> What happened: no apology, no "noted". The correction became three
        concrete named edits, so the user saw exactly what changed.
 
+Counterexample - answering the feature name instead of digging for WHY:
+
+    User: make me a calculator.
+    AI:   Sure - I will build a four-function calculator and ship it
+          tomorrow.
+    User: ...I need tax rates, not arithmetic.
+    -> why it fails: the agent spent the budget on a guess; the name is a
+       symptom, and only the WHY questions (steps 1-2) turn it into a
+       decidable spec.
+
 ## Facts vs inference
 
 Every line in the spec carries a Source marker; nothing unmarked:

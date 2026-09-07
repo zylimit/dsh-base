@@ -40,7 +40,9 @@ exists.
    opts in with frontmatter `bridge: true` and then MUST carry three extra
    sections, enforced by skills-lint (BRIDGE_SECTION_MISSING):
    - `## Dialogue examples` - two or more real exchanges showing how to ask,
-     follow up, and converge; a correction shown as concrete named edits.
+     follow up, and converge; a correction shown as concrete named edits; plus
+     at least one counterexample naming the default failure the skill exists to
+     prevent (pinned by tests/bridge-scenarios.test.mjs).
    - `## Facts vs inference` - the F/I/U marking convention the skill's outputs
      must carry: F user-confirmed fact, I AI inference restated in context, U
      unknown parked with owner and deadline.

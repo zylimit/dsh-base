@@ -71,6 +71,15 @@ Exchange 2 - a tradeoff is explained, the human chooses, the consequence is name
        upgrade-trigger both named, so the future decision is scheduled, not
        re-litigated.
 
+Counterexample - boundaries from the directory tree instead of responsibility:
+
+    AI:   auth/ 和 credentials/ 是两个目录,所以是两个模块,各带一个
+          catalog 条目。
+    User: 可是凭证和会话总是一起改啊。
+    -> why it fails: the design encodes the filesystem, so impact either fires
+       on every change or misses the co-change; responsibility and cochange
+       decide the boundary (Exchange 1), the tree follows.
+
 ## Facts vs inference
 
 | Design element | Marker | Rule |

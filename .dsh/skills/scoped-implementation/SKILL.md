@@ -70,6 +70,17 @@ Exchange 2 - the author's own test carries the author's mistake:
        the assertion) was caught by forcing the test to fail first and
        reading the failure, not the pass.
 
+Counterexample - bending the task to the code instead of fixing upstream:
+
+    AI:   The task says "make waivers rewrite FAILs" but the law forbids it -
+          I will implement the task anyway and note the deviation in the
+          envelope.
+    User: 所以法律还在自相矛盾?
+    -> why it fails: the contradiction was recorded instead of fixed; the
+       envelope note is a workaround that survives forever. The upstream
+       document changes in the same commit (Exchange 1), or the task goes
+       back.
+
 ## Facts vs inference
 
 The six-field envelope is the marker system:

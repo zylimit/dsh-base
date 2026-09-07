@@ -41,7 +41,8 @@ skipped: <false | YYYY-MM-DD reason>
 
 ## What changed (shown to the human)
 - file: <before> -> <after>   (filled in when the lesson is applied; a
-  correction the user cannot see is an apology with extra steps)
+  correction the user cannot see is an apology with extra steps; enforced by
+  skills-lint: LESSON_WHAT_CHANGED_MISSING once graduated is set)
 ```
 2. Increment `occurrences` and update `last_seen`. Never fork a second file for the same behaviour; the count is the signal.
 
@@ -54,6 +55,10 @@ skipped: <false | YYYY-MM-DD reason>
    per changed file - and record it under the lesson's What changed section.
    The correction is not done until the user can see what their instruction
    changed. This is the visibility step: no "noted", no silent fix.
+6. Run `node .dsh/base/dsb.mjs skills-lint` (exit 0 required). A graduated
+   lesson whose What changed block is still the template fails with
+   `LESSON_WHAT_CHANGED_MISSING` - the loop is not complete until the machine
+   says so.
 
 ### L3 - Optimise the owning skill
 1. When a covering skill exists but was not followed, the defect is in the skill, not in the agent: the trigger, an ambiguous step, or a missing stop condition.
@@ -94,6 +99,15 @@ human sees the exact change before the topic closes.
     User: Exactly.
     -> What happened: the correction became a visible before/after, not a
        feedback file entry. The user confirms the CHANGE, not the apology.
+
+Counterexample - the fifth occurrence is recorded, nothing is proposed:
+
+    AI:   (same correction, fifth time) Recording occurrence 5 under the
+          same slug.
+    User: 记了五次,然后呢?
+    -> why it fails: a logbook is not a mechanism; at 3 occurrences L2 stops
+       recording and proposes a graduation, so the fifth occurrence never
+       happens.
 
 ## Facts vs inference
 
