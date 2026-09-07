@@ -181,6 +181,16 @@ Also notable: codex now carries a feedback file named review-agent-no-inline-gua
 
 Active at v3.3.0 (last commit minutes before this check, 145 files): shell classifier vectors, forbid-ratchet tests, CI hygiene, fitness false-green fixes, Windows missing-binary BLOCKED. No big release this cycle; incremental fixes only - smaller surface than the other three.
 
+### 2026-09-07 sweep
+
+| commit | candidate | verdict | why |
+|---|---|---|---|
+| codex 8663861 | v2 harness upgrade deletes the entire shell-hook layer (auto-push, pre-commit-check, static-check, stop-gate ...) | watching | their hooks moved onto a native harness surface; dsh keeps the git-hook seam because the DeepSeek Harness has no hook system - what survives their migration, and what they abandon, is the signal on which of our own hook checks earn their keep under native hooking |
+| kimi 0218051 | initial scaffold release: FRAMEWORK-MANIFEST, CROSS-POLLINATION, PROTOCOLS, QUALITY-ATTRIBUTES, DEV-PLAN, isolation profiles - the dsh shape | watching | a follower build; nothing to absorb on day one, re-checked when it ships its first mechanism round |
+| cursor 8017024 | let git push reach the approval prompt instead of a hard deny | no surface | their harness has an approval prompt; dsh has no hooks - push gating lives in the pre-push hook plus the HIGH-tier human rule |
+| grok 2a76e93 | Windows relative bin paths, hardened .cmd exits | already have | dsh winShimDirs and the stripped-PATH probe shipped earlier and are pinned |
+| cc f40948e | network-layer large-push block and chunked workaround | no surface | their network environment, nothing to absorb |
+
 ## Watching
 
 - cc-base, codex-base and cursor-base are checked for new commits every round; new candidate
