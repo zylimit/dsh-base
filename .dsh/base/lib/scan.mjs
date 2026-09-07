@@ -230,7 +230,7 @@ export const FITNESS_RULE_IDS = RULE_DEFS.map(r => r.id)
 
 const RETIRED = /(superseded|deprecated|rejected|withdrawn|retired)/i
 const ENGINE_CAPABILITIES = new Set([
-  'arch-check', 'arch-trend', 'catalog-lint', 'impact', 'verify', 'gate', 'fitness',
+  'arch-check', 'arch-trend', 'catalog-lint', 'impact', 'gate', 'fitness',
   'attributes', 'receipt', 'waiver', 'budget', 'trace', 'agents-lint', 'skills-lint',
   'spec-lint', 'adr-check', 'context-pack', 'layers', 'forbiddenDependencies',
   'sync-check', 'recap', 'archive', 'init', 'ledger', 'risk', 'gate-audit',

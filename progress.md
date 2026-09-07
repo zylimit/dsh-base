@@ -13,6 +13,9 @@ and hedged language is demoted to `Notes` as `Needs-Confirmation`.
 
 ## Decisions
 
+- 2026-09-07 | chose per-item enforcement marks over whole-section prose | laws mix enforceable and behavioural items, so a section-level mark either overclaims (prose reads as enforced) or underclaims (a real check reads as unenforced); rules-audit now measures the honest state item by item | rules-audit counts, AGENTS.md laws 3-10
+- 2026-09-07 | chose to delete the verify alias over keeping two names for one gate | a duplicated entry point doubles the surface every future change must touch and ADR-0004 named both; gate remains the single name and adr-check proves nothing phantom remains | COMMANDS.gate, ADR-0004 Enforced-by: gate | selftest
+
 - 2026-09-03 | chose pre-declared waivers over post-hoc FAIL rewriting | both sibling scaffolds name "rewriting an executed FAIL into SKIPPED" as an anti-pattern they refuse to copy; an executed result is an immutable ledger fact, so the waiver now resolves before the check runs and a protected check runs regardless | waivePlan, covered by tests/waiver-honesty.test.mjs and selftest
 - 2026-09-03 | chose gate-fresh as a blocking release condition over receipt-only readiness | a review receipt proves lenses reported, not that checks passed; release now demands a full, passing gate bound to exactly the release surface | release gate-fresh, covered by tests/release.test.mjs and tests/range-receipt.test.mjs
 
@@ -81,6 +84,8 @@ and hedged language is demoted to `Notes` as `Needs-Confirmation`.
 Nothing.
 
 ## Done
+
+- 2026-09-07 | #— simplification round: every constitution rule names its enforcement, and the duplicate verify alias is gone | evidence: rules-audit 93 rows = 64 enforced / 29 declared prompt-only / 0 unenforced / 0 phantom (ratio 0.533 -> 0.688, findings empty); 15 rules bound to the commands that actually enforce them (arch-check, gate, attributes, catalog-lint, waiver, fast, review, impact, ledger, fleet) and 20 behavioural rules marked prompt-only, law 6.5 split so the waiver/ledger mechanism stays bound while the argument-reuse half admits prompt-only; COMMANDS.verify deleted (the gate under a second name), ENGINE_CAPABILITIES and ADR-0004 Enforced-by updated, adr-check 0 errors; node --test 170/170 pass, gate exit 0 (15/15 checks PASS, 0 attribute gaps), golden-baseline --check 0 drift, FRAMEWORK-MANIFEST.json regenerated (93 files)
 
 - 2026-09-06 | #— the two behavioural mechanisms landed: correction visibility and the interaction-depth dial | evidence: feedback-and-evolution now requires the What changed section in every lesson file and a mandatory after-apply step showing the human the before/after of the exact edit - a correction the user cannot see is an apology with extra steps; dsb-operating-loop gained depth step 0 (Advance / Explore / Learn with triggers, transitions and the mandate recorded in Pinned) plus its bridge sections; both opted into the bridge contract; skills-lint 0 errors
 

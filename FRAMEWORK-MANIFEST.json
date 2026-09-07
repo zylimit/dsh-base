@@ -2,7 +2,7 @@
   "schema": "sha256-lf-v1",
   "version": "1.0.0",
   "managedFiles": 93,
-  "digest": "f5b4b0ef0b4f70c45bbc07913b4965aef22caf23113aae611c44ba7bf018a8b4",
+  "digest": "fd14fdaf0690b6a75292a78ef7ad1405699d1bf415d8a56b18284b1bde975063",
   "files": [
     {
       "path": ".dsh/base/adapters.json",
@@ -41,8 +41,8 @@
     },
     {
       "path": ".dsh/base/dsb.mjs",
-      "sha256": "452fe425d844078179e38bb06512b8fa5c79c7c7a92ca82820a38cab127c5720",
-      "bytes": 51881
+      "sha256": "a32a28a98ea4f96fe8871d39a854a4c4fb262bc09493897e1d19077298e07711",
+      "bytes": 51849
     },
     {
       "path": ".dsh/base/githooks/commit-msg",
@@ -91,8 +91,8 @@
     },
     {
       "path": ".dsh/base/lib/scan.mjs",
-      "sha256": "f566c012b332e6e5774fd7d92f953460337eaa9208151f8c31da014f646e5c66",
-      "bytes": 41320
+      "sha256": "26411dbb8718d70061921f52f9d230c807112f13b2d6fa856f87e1a5708d2181",
+      "bytes": 41310
     },
     {
       "path": ".dsh/base/lib/selftest.mjs",
@@ -386,8 +386,8 @@
     },
     {
       "path": "AGENTS.md",
-      "sha256": "8a8ebb8f1c8443e3cf618e7857d853e1a9bbfda703b1ccaa0ec44f1f88d5b63f",
-      "bytes": 18561
+      "sha256": "da3972e4be150daf41b0c5f6c9eec68e4aac1f5f26684d3045fdb7a949e4f2ae",
+      "bytes": 19301
     },
     {
       "path": "docs/CROSS-POLLINATION.md",
@@ -416,8 +416,8 @@
     },
     {
       "path": "docs/adr/ADR-0004-missing-evidence-blocks.md",
-      "sha256": "6e7927cdde1a88d90f9428393827e1c5592ce42309e12692aabeb8511c9fcead",
-      "bytes": 1398
+      "sha256": "fb43457a34df0d3381032381d7be79560d3ec1ba352f917210fe36ebbd53ced2",
+      "bytes": 1389
     },
     {
       "path": "docs/adr/ADR-0005-protected-attributes.md",

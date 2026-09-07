@@ -143,7 +143,6 @@ COMMANDS.gate = (args) => {
   const { detail, ...payload } = r
   return emit({ command: 'gate', ...payload }, code)
 }
-COMMANDS.verify = COMMANDS.gate
 
 COMMANDS.attributes = () => {
   const catalog = needCatalog('attributes'); if (!catalog) return EXIT.DEGRADED

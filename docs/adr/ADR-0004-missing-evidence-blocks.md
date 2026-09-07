@@ -3,7 +3,7 @@
 Status: Accepted
 Date: 2025-01-01
 Deciders: maintainers
-Enforced-by: gate | selftest | verify
+Enforced-by: gate | selftest
 
 ## Context
 
